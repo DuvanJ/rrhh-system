@@ -1,0 +1,29 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+    string usuario = ViewBag.Usuario as string ?? "Usuario";
+    string perfil = ViewBag.Perfil as string ?? "";
+}
+
+<div class="container mt-4">
+
+    <h2>Bienvenido, @usuario</h2>
+    <h5>Perfil: @perfil</h5>
+    <hr />
+
+    @if (perfil == "Administrador")
+    {
+        <partial name="_AdminDashboard" />
+    }
+    else if (perfil == "RRHH")
+    {
+        <partial name="_RRHHDashboard" />
+    }
+    else if (perfil == "Colaborador")
+    {
+        <partial name="_ColaboradorDashboard" />
+    }
+    else
+    {
+        <p class="text-danger">No se ha identificado el perfil. Contacte al administrador.</p>
+    }
+</div>

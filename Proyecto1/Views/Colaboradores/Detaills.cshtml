@@ -1,0 +1,17 @@
+﻿@model Proyecto1.Models.Colaborador
+
+<h2>Detalles del Colaborador</h2>
+
+<table class="table table-bordered">
+    <tr><th>Cédula</th><td>@Model.Cedula</td></tr>
+    <tr><th>Nombre</th><td>@Model.Nombre</td></tr>
+    <tr><th>Apellidos</th><td>@Model.Apellidos</td></tr>
+    <tr><th>Puesto</th><td>@Model.Puesto</td></tr>
+    <tr><th>Departamento</th><td>@Model.Departamento</td></tr>
+    <tr><th>Fecha Ingreso</th><td>@Model.FechaIngreso.ToString("yyyy-MM-dd")</td></tr>
+    <tr><th>Salario Base</th><td>@Model.SalarioBase</td></tr>
+    <tr><th>Correo</th><td>@Model.Correo</td></tr>
+</table>
+
+<a href="/Colaboradores" class="btn btn-secondary">Volver</a>
+<a href="/Colaboradores/Edit/@Model.IdColaborador" class="btn btn-warning">Editar</a>

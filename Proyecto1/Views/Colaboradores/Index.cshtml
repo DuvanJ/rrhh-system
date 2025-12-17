@@ -1,0 +1,41 @@
+﻿@model List<Proyecto1.Models.Colaborador>
+
+<h2>Colaboradores</h2>
+
+<a href="/Colaboradores/Create" class="btn btn-primary mb-3">Nuevo Colaborador</a>
+
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Cédula</th>
+            <th>Nombre</th>
+            <th>Apellidos</th>
+            <th>Puesto</th>
+            <th>Departamento</th>
+            <th>Ingreso</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var c in Model)
+        {
+            <tr>
+                <td>@c.Cedula</td>
+                <td>@c.Nombre</td>
+                <td>@c.Apellidos</td>
+                <td>@c.Puesto</td>
+                <td>@c.Departamento</td>
+                <td>@c.FechaIngreso.ToString("yyyy-MM-dd")</td>
+
+                <td>
+                    <a href="/Colaboradores/Details/@c.IdColaborador" class="btn btn-info btn-sm">Detalles</a>
+                    <a href="/Colaboradores/Edit/@c.IdColaborador" class="btn btn-warning btn-sm">Editar</a>
+                    <a href="/Colaboradores/Delete/@c.IdColaborador" class="btn btn-danger btn-sm">Eliminar</a>
+                </td>
+
+            </tr>
+        }
+    </tbody>
+</table>
+

@@ -1,0 +1,329 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|c:\\users\\usuario\\source\\repos\\proyecto1\\proyecto1\\views\\colaboradores\\delete.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|solutionrelative:proyecto1\\views\\colaboradores\\delete.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|c:\\users\\usuario\\source\\repos\\proyecto1\\proyecto1\\views\\colaboradores\\detaills.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|solutionrelative:proyecto1\\views\\colaboradores\\detaills.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|c:\\users\\usuario\\source\\repos\\proyecto1\\proyecto1\\views\\colaboradores\\edit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|solutionrelative:proyecto1\\views\\colaboradores\\edit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|c:\\users\\usuario\\source\\repos\\proyecto1\\proyecto1\\views\\colaboradores\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|solutionrelative:proyecto1\\views\\colaboradores\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|c:\\users\\usuario\\source\\repos\\proyecto1\\proyecto1\\views\\colaboradores\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|solutionrelative:proyecto1\\views\\colaboradores\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|c:\\users\\usuario\\source\\repos\\proyecto1\\proyecto1\\controllers\\colaboradorescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|solutionrelative:proyecto1\\controllers\\colaboradorescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|c:\\users\\usuario\\source\\repos\\proyecto1\\proyecto1\\bll\\colaboradoresservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|solutionrelative:proyecto1\\bll\\colaboradoresservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|c:\\users\\usuario\\source\\repos\\proyecto1\\proyecto1\\dal\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|solutionrelative:proyecto1\\dal\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|c:\\users\\usuario\\source\\repos\\proyecto1\\proyecto1\\models\\colaborador.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|solutionrelative:proyecto1\\models\\colaborador.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|c:\\users\\usuario\\source\\repos\\proyecto1\\proyecto1\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|solutionrelative:proyecto1\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|c:\\users\\usuario\\source\\repos\\proyecto1\\proyecto1\\views\\usuarios\\editar.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|solutionrelative:proyecto1\\views\\usuarios\\editar.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|c:\\users\\usuario\\source\\repos\\proyecto1\\proyecto1\\views\\usuarios\\crear.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|solutionrelative:proyecto1\\views\\usuarios\\crear.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|c:\\users\\usuario\\source\\repos\\proyecto1\\proyecto1\\views\\usuarios\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|solutionrelative:proyecto1\\views\\usuarios\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|c:\\users\\usuario\\source\\repos\\proyecto1\\proyecto1\\controllers\\usuarioscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|solutionrelative:proyecto1\\controllers\\usuarioscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|c:\\users\\usuario\\source\\repos\\proyecto1\\proyecto1\\controllers\\logincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|solutionrelative:proyecto1\\controllers\\logincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|c:\\users\\usuario\\source\\repos\\proyecto1\\proyecto1\\models\\usuario.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|solutionrelative:proyecto1\\models\\usuario.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|c:\\users\\usuario\\source\\repos\\proyecto1\\proyecto1\\bll\\usuarioservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BA15CAB9-141E-42CF-B291-C290962BC310}|Proyecto1\\Proyecto1.csproj|solutionrelative:proyecto1\\bll\\usuarioservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 14,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c64b9c2-e352-428e-a56d-0ace190b99a6}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{eefa5220-e298-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{74946827-37a0-11d2-a273-00c04f8ef4ff}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{873151d0-cf2e-48cc-b4bf-ad0394f6a3c3}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:948051171:0:{83107a3e-496a-485e-b455-16ddb978e55e}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\Views\\Colaboradores\\Index.cshtml",
+              "RelativeDocumentMoniker": "Proyecto1\\Views\\Colaboradores\\Index.cshtml",
+              "ToolTip": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\Views\\Colaboradores\\Index.cshtml",
+              "RelativeToolTip": "Proyecto1\\Views\\Colaboradores\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-12-08T03:38:58.427Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "ColaboradoresService.cs",
+              "DocumentMoniker": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\BLL\\ColaboradoresService.cs",
+              "RelativeDocumentMoniker": "Proyecto1\\BLL\\ColaboradoresService.cs",
+              "ToolTip": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\BLL\\ColaboradoresService.cs",
+              "RelativeToolTip": "Proyecto1\\BLL\\ColaboradoresService.cs",
+              "ViewState": "AgIAAB8AAAAAAAAAAAAUwFEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-08T03:36:56.543Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "ColaboradoresController.cs",
+              "DocumentMoniker": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\Controllers\\ColaboradoresController.cs",
+              "RelativeDocumentMoniker": "Proyecto1\\Controllers\\ColaboradoresController.cs",
+              "ToolTip": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\Controllers\\ColaboradoresController.cs",
+              "RelativeToolTip": "Proyecto1\\Controllers\\ColaboradoresController.cs",
+              "ViewState": "AgIAABUAAAAAAAAAAAAywEcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-08T03:37:59.936Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Create.cshtml",
+              "DocumentMoniker": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\Views\\Colaboradores\\Create.cshtml",
+              "RelativeDocumentMoniker": "Proyecto1\\Views\\Colaboradores\\Create.cshtml",
+              "ToolTip": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\Views\\Colaboradores\\Create.cshtml",
+              "RelativeToolTip": "Proyecto1\\Views\\Colaboradores\\Create.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAADEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-12-08T03:39:28.672Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Edit.cshtml",
+              "DocumentMoniker": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\Views\\Colaboradores\\Edit.cshtml",
+              "RelativeDocumentMoniker": "Proyecto1\\Views\\Colaboradores\\Edit.cshtml",
+              "ToolTip": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\Views\\Colaboradores\\Edit.cshtml",
+              "RelativeToolTip": "Proyecto1\\Views\\Colaboradores\\Edit.cshtml",
+              "ViewState": "AgIAAAEAAAAAAAAAAAAIwDMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-12-08T03:40:09.478Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Detaills.cshtml",
+              "DocumentMoniker": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\Views\\Colaboradores\\Detaills.cshtml",
+              "RelativeDocumentMoniker": "Proyecto1\\Views\\Colaboradores\\Detaills.cshtml",
+              "ToolTip": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\Views\\Colaboradores\\Detaills.cshtml",
+              "RelativeToolTip": "Proyecto1\\Views\\Colaboradores\\Detaills.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-12-08T03:41:10.287Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Delete.cshtml",
+              "DocumentMoniker": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\Views\\Colaboradores\\Delete.cshtml",
+              "RelativeDocumentMoniker": "Proyecto1\\Views\\Colaboradores\\Delete.cshtml",
+              "ToolTip": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\Views\\Colaboradores\\Delete.cshtml",
+              "RelativeToolTip": "Proyecto1\\Views\\Colaboradores\\Delete.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-12-08T03:40:41.896Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "ApplicationDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\DAL\\ApplicationDbContext.cs",
+              "RelativeDocumentMoniker": "Proyecto1\\DAL\\ApplicationDbContext.cs",
+              "ToolTip": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\DAL\\ApplicationDbContext.cs",
+              "RelativeToolTip": "Proyecto1\\DAL\\ApplicationDbContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-08T03:05:55.251Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Colaborador.cs",
+              "DocumentMoniker": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\Models\\Colaborador.cs",
+              "RelativeDocumentMoniker": "Proyecto1\\Models\\Colaborador.cs",
+              "ToolTip": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\Models\\Colaborador.cs",
+              "RelativeToolTip": "Proyecto1\\Models\\Colaborador.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-08T03:35:31.191Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\Program.cs",
+              "RelativeDocumentMoniker": "Proyecto1\\Program.cs",
+              "ToolTip": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\Program.cs",
+              "RelativeToolTip": "Proyecto1\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-08T03:49:02.501Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "LoginController.cs",
+              "DocumentMoniker": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\Controllers\\LoginController.cs",
+              "RelativeDocumentMoniker": "Proyecto1\\Controllers\\LoginController.cs",
+              "ToolTip": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\Controllers\\LoginController.cs",
+              "RelativeToolTip": "Proyecto1\\Controllers\\LoginController.cs",
+              "ViewState": "AgIAABUAAAAAAAAAAAAywC0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-08T03:06:46.82Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "Editar.cshtml",
+              "DocumentMoniker": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\Views\\Usuarios\\Editar.cshtml",
+              "RelativeDocumentMoniker": "Proyecto1\\Views\\Usuarios\\Editar.cshtml",
+              "ToolTip": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\Views\\Usuarios\\Editar.cshtml",
+              "RelativeToolTip": "Proyecto1\\Views\\Usuarios\\Editar.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-12-08T01:50:06.252Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "Crear.cshtml",
+              "DocumentMoniker": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\Views\\Usuarios\\Crear.cshtml",
+              "RelativeDocumentMoniker": "Proyecto1\\Views\\Usuarios\\Crear.cshtml",
+              "ToolTip": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\Views\\Usuarios\\Crear.cshtml",
+              "RelativeToolTip": "Proyecto1\\Views\\Usuarios\\Crear.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-12-08T01:49:38.524Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\Views\\Usuarios\\Index.cshtml",
+              "RelativeDocumentMoniker": "Proyecto1\\Views\\Usuarios\\Index.cshtml",
+              "ToolTip": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\Views\\Usuarios\\Index.cshtml",
+              "RelativeToolTip": "Proyecto1\\Views\\Usuarios\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAIwDIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-12-08T01:49:04.246Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "Usuario.cs",
+              "DocumentMoniker": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\Models\\Usuario.cs",
+              "RelativeDocumentMoniker": "Proyecto1\\Models\\Usuario.cs",
+              "ToolTip": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\Models\\Usuario.cs",
+              "RelativeToolTip": "Proyecto1\\Models\\Usuario.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-08T01:41:16.077Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "UsuarioService.cs",
+              "DocumentMoniker": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\BLL\\UsuarioService.cs",
+              "RelativeDocumentMoniker": "Proyecto1\\BLL\\UsuarioService.cs",
+              "ToolTip": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\BLL\\UsuarioService.cs",
+              "RelativeToolTip": "Proyecto1\\BLL\\UsuarioService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-08T01:39:53.9Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "UsuariosController.cs",
+              "DocumentMoniker": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\Controllers\\UsuariosController.cs",
+              "RelativeDocumentMoniker": "Proyecto1\\Controllers\\UsuariosController.cs",
+              "ToolTip": "C:\\Users\\Usuario\\source\\repos\\Proyecto1\\Proyecto1\\Controllers\\UsuariosController.cs",
+              "RelativeToolTip": "Proyecto1\\Controllers\\UsuariosController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAIUAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-07T21:35:14.688Z"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

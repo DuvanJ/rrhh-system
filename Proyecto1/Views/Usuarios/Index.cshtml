@@ -1,0 +1,50 @@
+﻿@model List<Proyecto1.Models.Usuario>
+
+<h2>Usuarios del Sistema</h2>
+
+<a class="btn btn-primary mb-3" href="/Usuarios/Crear">+ Crear Usuario</a>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Usuario</th>
+            <th>Correo</th>
+            <th>Perfil</th>
+            <th>Estado</th>
+            <th>Opciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var u in Model)
+        {
+            <tr>
+                <td>@u.NombreUsuario</td>
+                <td>@u.Correo</td>
+                <td>@u.NombrePerfil</td>
+                <td>
+                    @if (u.Estado)
+                    {
+                        <span class="badge bg-success">Activo</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Inactivo</span>
+                    }
+                </td>
+
+                <td>
+                    <a class="btn btn-warning btn-sm" href="/Usuarios/Editar/@u.IdUsuario">Editar</a>
+
+                    @if (u.Estado)
+                    {
+                        <a class="btn btn-danger btn-sm" href="/Usuarios/Desactivar/@u.IdUsuario">Desactivar</a>
+                    }
+                    else
+                    {
+                        <a class="btn btn-success btn-sm" href="/Usuarios/Activar/@u.IdUsuario">Activar</a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
