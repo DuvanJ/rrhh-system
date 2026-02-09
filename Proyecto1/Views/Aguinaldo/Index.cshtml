@@ -1,0 +1,162 @@
+﻿@model List<Proyecto1.Models.Aguinaldo>
+@{
+    int anio = ViewBag.Anio;
+    decimal total = ViewBag.Total;
+    int? idCol = ViewBag.IdColaborador as int?;
+}
+
+<h2 class="fw-bold mb-3">Gestión de Aguinaldo</h2>
+
+<!-- ================= MENSAJES ================= -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        ✔ @Html.Raw(TempData["Success"])
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Warning"] != null)
+{
+    <div class="alert alert-warning alert-dismissible fade show">
+        ⚠ @Html.Raw(TempData["Warning"])
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Info"] != null)
+{
+    <div class="alert alert-info alert-dismissible fade show">
+        ℹ @Html.Raw(TempData["Info"])
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- ================= CONFIRMAR RECALCULAR ================= -->
+@if (TempData["ConfirmRecalcular"] != null)
+{
+    <div class="alert alert-danger fw-bold d-flex justify-content-between align-items-center">
+        <div>
+            ⚠ El aguinaldo de la temporada @anio ya fue calculado.<br />
+            ¿Desea recalcularlo?
+        </div>
+
+        <div class="d-flex gap-2">
+            <!-- BOTÓN NO -->
+            <a asp-action="Index" asp-route-anio="@anio" class="btn btn-secondary btn-sm">
+                ❌ No
+            </a>
+
+            <!-- BOTÓN SÍ -->
+            <form method="post" asp-action="Calcular">
+                <input type="hidden" name="anio" value="@anio" />
+                <input type="hidden" name="recalcular" value="true" />
+                <button class="btn btn-danger btn-sm">
+                    🔄 Sí, recalcular
+                </button>
+            </form>
+        </div>
+    </div>
+}
+
+
+
+<!-- ================= FILTROS ================= -->
+<form method="get" class="row g-2 mb-3">
+
+    <div class="col-md-2">
+        <input type="number" name="anio" value="@anio" class="form-control" placeholder="Año" />
+    </div>
+
+    <div class="col-md-3">
+        <input type="number" name="idColaborador" value="@idCol" class="form-control" placeholder="ID Colaborador" />
+    </div>
+
+    <div class="col-md-2">
+        <button class="btn btn-primary w-100">🔍 Consultar</button>
+    </div>
+
+</form>
+
+<!-- ================= CALCULAR ================= -->
+<form method="post" asp-action="Calcular" class="mb-3">
+    <input type="hidden" name="anio" value="@anio" />
+    <button class="btn btn-success">
+        ➕ Calcular Aguinaldo @anio
+    </button>
+</form>
+
+<!-- ================= RESUMEN ================= -->
+<div class="alert alert-info fw-bold fs-5">
+    💰 Total Aguinaldo @anio: ₡@total.ToString("N2")
+</div>
+
+<!-- ================= TABLA ================= -->
+<table class="table table-bordered table-striped table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th>Colaborador</th>
+            <th>Total Salarios</th>
+            <th>Aguinaldo</th>
+            <th>Estado</th>
+            <th style="width:180px">Acciones</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="5" class="text-center text-muted">
+                    No existen registros de aguinaldo para este período.
+                </td>
+            </tr>
+        }
+        else
+        {
+            foreach (var a in Model)
+            {
+                <tr>
+                    <td>@a.NombreColaborador</td>
+                    <td>₡@a.TotalSalarios.ToString("N2")</td>
+                    <td class="fw-bold text-success">₡@a.MontoAguinaldo.ToString("N2")</td>
+
+                    <td>
+                        @if (a.Estado == "Pagado")
+                        {
+                            <span class="badge bg-success">✔ Pagado</span>
+                        }
+                        else if (a.Estado == "Aprobado")
+                        {
+                            <span class="badge bg-warning text-dark">Aprobado</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-info text-dark">Calculado</span>
+                        }
+                    </td>
+
+                    <td>
+                        @if (a.Estado == "Calculado")
+                        {
+                            <form asp-action="Aprobar" method="post" class="d-inline">
+                                <input type="hidden" name="id" value="@a.IdAguinaldo" />
+                                <input type="hidden" name="anio" value="@anio" />
+                                <button class="btn btn-success btn-sm">Aprobar</button>
+                            </form>
+                        }
+
+                        @if (a.Estado == "Aprobado")
+                        {
+                            <form asp-action="Pagar" method="post" class="d-inline">
+                                <input type="hidden" name="id" value="@a.IdAguinaldo" />
+                                <input type="hidden" name="anio" value="@anio" />
+                                <button class="btn btn-warning btn-sm">Pagar</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

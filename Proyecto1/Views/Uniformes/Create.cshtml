@@ -1,0 +1,159 @@
+﻿@model Proyecto1.Models.EntregaUniformeVM
+
+@{
+    ViewData["Title"] = "Registrar entrega de uniforme";
+}
+
+<h2>Registrar entrega de uniforme</h2>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<form asp-action="Create" method="post">
+
+    
+    <!-- BUSCAR COLABORADOR POR ID -->
+    <div class="form-group">
+        <label>ID Colaborador</label>
+        <input asp-for="IdColaborador" id="IdColaborador" class="form-control" />
+        <button type="button" class="btn btn-info mt-2" onclick="buscarColaborador()">
+            Buscar
+        </button>
+    </div>
+
+    <div class="form-group">
+        <label>Nombre</label>
+        <input type="text" id="NombreColaborador" class="form-control" readonly />
+    </div>
+
+    <div class="form-group mt-3">
+        <label>Fecha de entrega</label>
+        <input asp-for="FechaEntrega" type="date" class="form-control" />
+    </div>
+
+    <div class="form-group mt-3">
+        <label>Observaciones</label>
+        <textarea asp-for="Observaciones" class="form-control"></textarea>
+    </div>
+
+    <hr />
+
+    <h4>Uniformes</h4>
+
+    <table class="table table-bordered" id="tablaUniformes">
+        <thead class="table-light">
+            <tr>
+                <th>Tipo uniforme</th>
+                <th>Talla</th>
+                <th>Cantidad</th>
+                <th>Costo</th>
+                <th>Cobrar</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <button type="button" class="btn btn-success" id="btnAgregar">
+        + Agregar uniforme
+    </button>
+
+    <br /><br />
+
+    <button type="submit" class="btn btn-primary">
+        Guardar entrega
+    </button>
+
+    <a asp-action="Index" class="btn btn-secondary">
+        Cancelar
+    </a>
+    ```
+
+</form>
+
+@section Scripts {
+
+    <script>
+        let index = 0;
+
+        const tipos = `
+            @foreach (var t in Model.TiposUniforme ?? new List<Proyecto1.Models.TipoUniforme>())
+            {
+                    <text><option value="@t.IdTipoUniforme">@t.NombreTipo</option></text>
+            }
+        `;
+
+        const tallas = `
+            <option>XS</option>
+            <option>S</option>
+            <option>M</option>
+            <option>L</option>
+            <option>XL</option>
+            <option>XXL</option>
+        `;
+
+        document.getElementById("btnAgregar").addEventListener("click", function () {
+
+            let fila = `
+            <tr>
+                <td>
+                    <select name="Uniformes[${index}].IdTipoUniforme" class="form-control">
+                        ${tipos}
+                    </select>
+                </td>
+
+                <td>
+                    <select name="Uniformes[${index}].Talla" class="form-control">
+                        ${tallas}
+                    </select>
+                </td>
+
+                <td>
+                    <input type="number" name="Uniformes[${index}].Cantidad" class="form-control" value="1" />
+                </td>
+
+                <td>
+                    <input type="number" step="0.01" name="Uniformes[${index}].Costo" class="form-control" value="0" />
+                </td>
+
+                <td class="text-center">
+                    <input type="checkbox" name="Uniformes[${index}].CobrarEnPlanilla" value="true" />
+                </td>
+
+                <td>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">
+                        Eliminar
+                    </button>
+                </td>
+            </tr>
+            `;
+
+            document.querySelector("#tablaUniformes tbody").insertAdjacentHTML("beforeend", fila);
+            index++;
+        });
+
+        function eliminarFila(btn) {
+            btn.closest("tr").remove();
+        }
+
+        // BUSCAR COLABORADOR POR ID
+        function buscarColaborador() {
+            const id = document.getElementById("IdColaborador").value;
+
+            fetch('/Uniformes/VerificarColaborador?id=' + id)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.encontrado) {
+                        document.getElementById("NombreColaborador").value = data.nombre;
+                    } else {
+                        alert(data.mensaje);
+                        document.getElementById("NombreColaborador").value = "";
+                    }
+                });
+        }
+    </script>
+
+}

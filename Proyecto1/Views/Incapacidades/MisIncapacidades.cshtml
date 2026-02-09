@@ -1,0 +1,38 @@
+﻿@model List<Proyecto1.Models.IncapacidadColabVM>
+
+@{
+    ViewData["Title"] = "Mis Incapacidades";
+}
+
+<h2>Mis Incapacidades</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Tipo</th>
+            <th>Inicio</th>
+            <th>Fin</th>
+            <th>Días</th>
+            <th>Remunerada</th>
+            <th>Estado</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var i in Model)
+        {
+            <tr>
+                <td>@i.TipoIncapacidad</td>
+                <td>@i.FechaInicio.ToString("dd/MM/yyyy")</td>
+                <td>@i.FechaFin.ToString("dd/MM/yyyy")</td>
+                <td>@i.DiasIncapacidad</td>
+                <td>@(i.EsRemunerada ? "Sí" : "No")</td>
+                <td>@i.Estado</td>
+            </tr>
+        }
+    </tbody>
+</table>

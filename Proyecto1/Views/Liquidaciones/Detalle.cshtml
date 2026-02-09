@@ -1,0 +1,46 @@
+﻿@model List<Proyecto1.Models.LiquidacionDetalleVM>
+
+<h4 class="mb-3 fw-bold">
+    Detalle de Liquidación #@ViewBag.IdLiquidacion
+</h4>
+
+<table class="table table-striped">
+    <thead class="table-light">
+        <tr>
+            <th>Rubro</th>
+            <th class="text-end">Monto</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Any())
+        {
+            decimal total = 0;
+
+            foreach (var item in Model)
+            {
+                total += item.Monto;
+                <tr>
+                    <td>@item.Rubro</td>
+                    <td class="text-end">₡ @item.Monto.ToString("N2")</td>
+                </tr>
+            }
+
+            <tr class="fw-bold">
+                <td>Total</td>
+                <td class="text-end">₡ @total.ToString("N2")</td>
+            </tr>
+        }
+        else
+        {
+            <tr>
+                <td colspan="2" class="text-center text-muted">
+                    No existen rubros para esta liquidación.
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Index" class="btn btn-secondary mt-3">
+    Volver
+</a>

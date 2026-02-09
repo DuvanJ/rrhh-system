@@ -1,29 +1,25 @@
 ﻿@{
-    ViewData["Title"] = "Dashboard";
-    string usuario = ViewBag.Usuario as string ?? "Usuario";
-    string perfil = ViewBag.Perfil as string ?? "";
+    ViewData["Title"] = "Panel Principal";
+    var rol = Context.Session.GetString("Perfil");
 }
 
-<div class="container mt-4">
+<h3 class="mb-4 fw-bold">Panel Principal</h3>
 
-    <h2>Bienvenido, @usuario</h2>
-    <h5>Perfil: @perfil</h5>
-    <hr />
+<div class="row g-4">
 
-    @if (perfil == "Administrador")
+    @if (rol == "Administrador")
     {
-        <partial name="_AdminDashboard" />
+        @Html.Partial("_DashboardAdministrador")
     }
-    else if (perfil == "RRHH")
+
+    @if (rol == "RRHH")
     {
-        <partial name="_RRHHDashboard" />
+        @Html.Partial("_DashboardRRHH")
     }
-    else if (perfil == "Colaborador")
+
+    @if (rol == "Colaborador")
     {
-        <partial name="_ColaboradorDashboard" />
+        @Html.Partial("_DashboardColaborador")
     }
-    else
-    {
-        <p class="text-danger">No se ha identificado el perfil. Contacte al administrador.</p>
-    }
+
 </div>

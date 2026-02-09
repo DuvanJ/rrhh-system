@@ -1,18 +1,31 @@
 ﻿@model Proyecto1.Models.Colaborador
 
+@{
+    ViewData["Title"] = "Eliminar Colaborador";
+}
+
 <h2>Eliminar Colaborador</h2>
 
-<p>¿Seguro que desea eliminar este registro?</p>
+<div class="alert alert-danger">
+    ¿Está seguro que desea eliminar este colaborador?
+</div>
 
-<table class="table table-bordered">
-    <tr><th>Cédula</th><td>@Model.Cedula</td></tr>
-    <tr><th>Nombre</th><td>@Model.Nombre</td></tr>
-    <tr><th>Apellidos</th><td>@Model.Apellidos</td></tr>
-</table>
+<form asp-action="DeleteConfirmed" method="post">
+    @Html.AntiForgeryToken()
 
-<form method="post" asp-action="DeleteConfirmed">
     <input type="hidden" asp-for="IdColaborador" />
-    <button class="btn btn-danger">Eliminar</button>
-    <a href="/Colaboradores" class="btn btn-secondary">Cancelar</a>
-</form>
 
+    <dl class="row">
+        <dt class="col-sm-3">Nombre</dt>
+        <dd class="col-sm-9">@Model.Nombre @Model.Apellidos</dd>
+
+        <dt class="col-sm-3">Correo</dt>
+        <dd class="col-sm-9">@Model.Correo</dd>
+
+        <dt class="col-sm-3">Puesto</dt>
+        <dd class="col-sm-9">@Model.Puesto</dd>
+    </dl>
+
+    <button type="submit" class="btn btn-danger">Eliminar</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>

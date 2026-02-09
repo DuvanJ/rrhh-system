@@ -1,0 +1,60 @@
+﻿@model Proyecto1.Models.Asistencia
+
+<h3 class="fw-bold mb-4">Ajustar Asistencia</h3>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<form asp-action="Edit" method="post" class="card shadow-sm p-4">
+    <input type="hidden" asp-for="IdAsistencia" />
+
+    <div class="mb-3">
+        <label class="form-label">ID Colaborador</label>
+        <input class="form-control" value="@Model.IdColaborador" disabled />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Fecha</label>
+        <input class="form-control" value="@Model.Fecha.ToShortDateString()" disabled />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="HoraEntrada" class="form-label">Hora Entrada</label>
+        <input asp-for="HoraEntrada" type="time" class="form-control" />
+        <span asp-validation-for="HoraEntrada" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="HoraSalida" class="form-label">Hora Salida</label>
+        <input asp-for="HoraSalida" type="time" class="form-control" />
+        <span asp-validation-for="HoraSalida" class="text-danger"></span>
+    </div>
+
+    <!-- 🔴 MOTIVO OBLIGATORIO -->
+    <div class="mb-3">
+        <label asp-for="Motivo" class="form-label">Motivo del ajuste</label>
+        <textarea asp-for="Motivo"
+                  class="form-control"
+                  rows="3"
+                  placeholder="Indique el motivo del ajuste (obligatorio)"></textarea>
+        <span asp-validation-for="Motivo" class="text-danger"></span>
+    </div>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-success">
+            <i class="bi bi-save"></i> Guardar cambios
+        </button>
+
+        <a asp-action="Index" class="btn btn-secondary">
+            Cancelar
+        </a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+

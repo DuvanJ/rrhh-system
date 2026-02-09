@@ -14,16 +14,19 @@ namespace Proyecto1.Services
             _context = context;
         }
 
-        public async Task<Usuario?> ValidarLogin(string usuario, string contrasena)
+        public async Task<LoginUsuarioResult?> ValidarLogin(string usuario, string contrasena)
         {
             var pUsuario = new SqlParameter("@NombreUsuario", usuario);
             var pPass = new SqlParameter("@ContrasenaHash", contrasena);
 
-            var result = await _context.Usuarios
-                .FromSqlRaw("EXEC sp_LoginUsuario @NombreUsuario, @ContrasenaHash", pUsuario, pPass)
+            var result = await _context.LoginUsuarioResult
+                .FromSqlRaw("EXEC sp_LoginUsuario @NombreUsuario, @ContrasenaHash",
+                    pUsuario, pPass)
                 .ToListAsync();
 
             return result.FirstOrDefault();
         }
+
+
     }
 }

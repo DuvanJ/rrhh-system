@@ -9,13 +9,15 @@ namespace Proyecto1.Models
         public int IdUsuario { get; set; }
 
         [Required]
+        public int IdColaborador { get; set; }
+
+        [Required]
         public string NombreUsuario { get; set; } = string.Empty;
 
         [Required]
         public string Correo { get; set; } = string.Empty;
 
-        [NotMapped]
-        [Required]
+        
         public string ContrasenaHash { get; set; } = string.Empty;
 
         [Required]
@@ -23,7 +25,8 @@ namespace Proyecto1.Models
 
         public bool Estado { get; set; }
 
-        // ✔ ESTE SÍ lo devuelve el SP → NO se marca como NotMapped
+        // SOLO para mostrar (JOIN / SP)
+        [NotMapped]
         public string NombrePerfil { get; set; } = string.Empty;
     }
 }

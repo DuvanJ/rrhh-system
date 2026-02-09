@@ -1,0 +1,85 @@
+﻿@model Proyecto1.Models.EvaluacionVM
+
+<h2>Registrar Evaluación</h2>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<form asp-action="Create" method="post">
+
+    <div class="form-group">
+        <label>ID Colaborador</label>
+        <input asp-for="IdColaborador" id="IdColaborador" class="form-control" />
+        <button type="button" class="btn btn-info mt-2" onclick="buscarColaborador()">Buscar</button>
+    </div>
+
+    <div class="form-group">
+        <label>Nombre del colaborador</label>
+        <input type="text" id="NombreColaborador" class="form-control" readonly />
+    </div>
+
+    <div class="form-group mt-3">
+        <label>Fecha evaluación</label>
+        <input asp-for="FechaEvaluacion" type="date" class="form-control" />
+    </div>
+
+    <div class="form-group mt-3">
+        <label>Comentarios generales</label>
+        <textarea asp-for="ComentariosGenerales" class="form-control"></textarea>
+    </div>
+
+    <hr />
+
+    <h4>Criterios de evaluación</h4>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Criterio</th>
+                <th>Puntaje</th>
+                <th>Observación</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Detalles.Count; i++)
+            {
+                <tr>
+                    <td>
+                        @Model.Criterios[i].NombreCriterio
+                        <input type="hidden" asp-for="Detalles[@i].IdCriterio" />
+                    </td>
+                    <td>
+                        <input asp-for="Detalles[@i].Puntaje" type="number" min="0" max="100" class="form-control" />
+                    </td>
+                    <td>
+                        <input asp-for="Detalles[@i].Observacion" class="form-control" />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button type="submit" class="btn btn-primary">Guardar evaluación</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>
+
+@section Scripts {
+    <script>
+        function buscarColaborador() {
+            const id = document.getElementById("IdColaborador").value;
+
+            fetch('/Evaluacion/VerificarColaborador?id=' + id)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.encontrado) {
+                        document.getElementById("NombreColaborador").value = data.nombre;
+                    } else {
+                        alert(data.mensaje);
+                        document.getElementById("NombreColaborador").value = "";
+                    }
+                });
+        }
+    </script>
+}

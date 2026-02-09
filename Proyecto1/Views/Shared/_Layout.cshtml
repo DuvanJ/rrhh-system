@@ -3,41 +3,122 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Proyecto1</title>
+    <title>@ViewData["Title"] - RRHH System</title>
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <!-- Bootstrap -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+
+    <!-- Icons -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" />
+
+    <!-- SweetAlert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <link rel="stylesheet" href="~/css/site.css" />
+
+
+
 </head>
-<body>
 
+<body>
     @{
         var rol = Context.Session.GetString("Perfil");
     }
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <!-- ===================== NAVBAR ===================== -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow">
         <div class="container-fluid">
 
-            <a class="navbar-brand" href="/Home/Index">RRHH System</a>
+            <!-- LOGO -->
+            <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">
+                RRHH System
+            </a>
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#navbarNav" aria-controls="navbarNav"
-                    aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#menuPrincipal">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="collapse navbar-collapse" id="menuPrincipal">
 
+                <!-- MENÚ IZQUIERDO -->
                 <ul class="navbar-nav me-auto">
 
-                    @* ----------------- ADMINISTRADOR ---------------- *@
+                    <!-- ================= ADMINISTRADOR ================= -->
                     @if (rol == "Administrador")
                     {
+                        <!-- OPERACIONES -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                Operaciones
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">Planillas</a></li>
+                                <li><a class="dropdown-item" href="#">Horas Extras</a></li>
+                                <li><a class="dropdown-item" href="#">Aguinaldo</a></li>
+                                <li><a class="dropdown-item" href="#">Incapacidades</a></li>
+                                <li><a class="dropdown-item" href="#">Liquidación</a></li>
+                            </ul>
+                        </li>
+
+                        <!-- GESTIÓN -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                Gestión
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/Permisos">Permisos</a></li>
+                                <li><a class="dropdown-item" href="/Vacaciones">Vacaciones</a></li>
+                                <li><a class="dropdown-item" href="/Asistencia">Asistencia</a></li>
+                                <li><a class="dropdown-item" href="#">Entrega de Uniformes</a></li>
+                                <li><a class="dropdown-item" href="#">Evaluar Rendimiento</a></li>
+                            </ul>
+                        </li>
+
+                        <!-- MANTENIMIENTOS -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                Mantenimientos
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/Usuarios">Usuarios</a></li>
+                                <li><a class="dropdown-item" href="/Colaboradores">Colaboradores</a></li>
+                            </ul>
+                        </li>
+
+                        <!-- CONSULTAS -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                <i class="bi bi-search"></i> Consultas
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="/AsistenciaAuditoria">
+                                        <i class="bi bi-shield-lock me-2"></i>
+                                        Auditoría de Asistencia
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item" href="/HorasExtras/Consulta">
+                                        Horas Extras
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </li>
+
+
                         <li class="nav-item">
-                            <a class="nav-link" href="/Usuarios">Usuarios</a>
+                            <a class="nav-link" href="#">Reportes</a>
                         </li>
                     }
 
-                    @* ----------------- ADMINISTRADOR / RRHH ---------------- *@
-                    @if (rol == "Administrador" || rol == "RRHH")
+                    <!-- ================= RRHH ================= -->
+                    @if (rol == "RRHH")
                     {
                         <li class="nav-item">
                             <a class="nav-link" href="/Colaboradores">Colaboradores</a>
@@ -53,30 +134,53 @@
                         </li>
                     }
 
-                    @* ----------------- COLABORADOR ---------------- *@
+                    <!-- ================= COLABORADOR ================= -->
                     @if (rol == "Colaborador")
                     {
                         <li class="nav-item">
-                            <a class="nav-link" href="/Perfil">Mi Información</a>
+                            <a class="nav-link"
+                               asp-controller="Perfil"
+                               asp-action="Index">
+                                Mi Información
+                            </a>
                         </li>
+
                         <li class="nav-item">
-                            <a class="nav-link" href="/MiAsistencia">Mi asistencia</a>
+                            <a class="nav-link"
+                               asp-controller="Asistencia"
+                               asp-action="MiAsistencia">
+                                Mi Asistencia
+                            </a>
                         </li>
+
                         <li class="nav-item">
-                            <a class="nav-link" href="/MisPermisos">Mis permisos</a>
+                            <a class="nav-link"
+                               asp-controller="Permisos"
+                               asp-action="MisPermisos">
+                                Mis Permisos
+                            </a>
                         </li>
                     }
 
                 </ul>
 
+                <!-- MENÚ DERECHO -->
                 <ul class="navbar-nav ms-auto">
                     @if (!string.IsNullOrEmpty(rol))
                     {
-                        <li class="nav-item">
-                            <a class="nav-link text-warning">@rol</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-danger" href="/Login/Logout">Salir</a>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-warning"
+                               href="#" data-bs-toggle="dropdown">
+                                @rol
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item text-danger"
+                                       href="/Login/Logout">
+                                        Salir
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
                     }
                 </ul>
@@ -85,12 +189,51 @@
         </div>
     </nav>
 
+    <!-- ===================== ALERTAS ===================== -->
+    @if (TempData["Success"] != null)
+    {
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Correcto',
+                text: '@TempData["Success"]',
+                confirmButtonText: 'OK'
+            });
+        </script>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                html: '@TempData["Error"]',
+                confirmButtonText: 'OK'
+            });
+        </script>
+    }
+
+
+    @if (TempData["Warning"] != null)
+    {
+        <script>
+            Swal.fire({
+                icon: 'warning',
+                title: 'Atención',
+                text: '@TempData["Warning"]',
+                confirmButtonText: 'OK'
+            });
+        </script>
+    }
+
+    <!-- ===================== CONTENIDO ===================== -->
     <div class="container mt-4">
         @RenderBody()
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
     @RenderSection("Scripts", required: false)
+
 </body>
 </html>

@@ -1,17 +1,46 @@
-﻿@model List<Proyecto1.Models.Usuario>
+﻿@model IEnumerable<Proyecto1.Models.UsuarioListado>
+
+
+@{
+    ViewData["Title"] = "Usuarios";
+}
 
 <h2>Usuarios del Sistema</h2>
 
-<a class="btn btn-primary mb-3" href="/Usuarios/Crear">+ Crear Usuario</a>
+<a asp-action="Create" class="btn btn-success mb-3">Nuevo Usuario</a>
 
-<table class="table table-bordered">
-    <thead>
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-4">
+        <input type="text"
+               name="buscar"
+               value="@ViewBag.Buscar"
+               class="form-control"
+               placeholder="Buscar por nombre de usuario" />
+    </div>
+
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary">
+            Buscar
+        </button>
+    </div>
+
+    <div class="col-md-2">
+        <a asp-action="Index" class="btn btn-secondary">
+            Limpiar
+        </a>
+    </div>
+</form>
+
+
+
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
         <tr>
             <th>Usuario</th>
             <th>Correo</th>
             <th>Perfil</th>
             <th>Estado</th>
-            <th>Opciones</th>
+            <th style="width:180px">Acciones</th>
         </tr>
     </thead>
     <tbody>
@@ -31,20 +60,32 @@
                         <span class="badge bg-danger">Inactivo</span>
                     }
                 </td>
-
                 <td>
-                    <a class="btn btn-warning btn-sm" href="/Usuarios/Editar/@u.IdUsuario">Editar</a>
+                    <a asp-action="Edit" asp-route-id="@u.IdUsuario"
+                       class="btn btn-warning btn-sm">Editar</a>
 
-                    @if (u.Estado)
-                    {
-                        <a class="btn btn-danger btn-sm" href="/Usuarios/Desactivar/@u.IdUsuario">Desactivar</a>
-                    }
-                    else
-                    {
-                        <a class="btn btn-success btn-sm" href="/Usuarios/Activar/@u.IdUsuario">Activar</a>
-                    }
+                    <a asp-action="CambiarEstado" asp-route-id="@u.IdUsuario"
+                       class="btn btn-secondary btn-sm">
+                        Cambiar estado
+                    </a>
                 </td>
             </tr>
         }
     </tbody>
 </table>
+
+@section Scripts {
+    <script>
+        const sinResultados = @((ViewBag.SinResultados ?? false).ToString().ToLower());
+
+        if (sinResultados) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Sin resultados',
+                text: 'No se encontraron usuarios con ese criterio.',
+                confirmButtonText: 'OK'
+            });
+        }
+    </script>
+}
+

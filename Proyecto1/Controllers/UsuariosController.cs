@@ -1,133 +1,152 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using Proyecto1.DAL;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Proyecto1.Models;
+using Proyecto1.Services;
 
 namespace Proyecto1.Controllers
 {
     public class UsuariosController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly UsuarioService _service;
+        private readonly ColaboradoresService _colaboradorService; // ✅ DECLARAR
 
-        public UsuariosController(ApplicationDbContext context)
+        public UsuariosController(
+            UsuarioService service,
+            ColaboradoresService colaboradorService) // ✅ INYECTAR
         {
-            _context = context;
+            _service = service;
+            _colaboradorService = colaboradorService;
         }
 
-        // LISTAR
-        public async Task<IActionResult> Index()
-        {
-            var usuarios = await _context.Usuarios
-                .FromSqlRaw(@"SELECT 
-                                U.IdUsuario,
-                                U.NombreUsuario,
-                                U.Correo,
-                                U.IdPerfil,
-                                U.Estado,
-                                P.NombrePerfil
-                             FROM Usuarios U
-                             INNER JOIN Perfiles P ON U.IdPerfil = P.IdPerfil")
-                .ToListAsync();
 
-            return View(usuarios);
-        }
-
-        // CREAR (GET)
-        public IActionResult Crear()
+        public IActionResult Create()
         {
+            CargarPerfiles();
+            
             return View();
         }
 
-        // CREAR (POST)
         [HttpPost]
-        public async Task<IActionResult> Crear(Usuario usuario)
+        public async Task<IActionResult> Create(Usuario u)
         {
             if (!ModelState.IsValid)
-                return View(usuario);
+            {
+                TempData["Error"] = "Error: revise los datos ingresados.";
+                CargarPerfiles();
+                return View(u);
+            }
 
-            var sql = @"INSERT INTO Usuarios 
-                       (NombreUsuario, Correo, ContrasenaHash, IdPerfil, Estado)
-                       VALUES (@NombreUsuario, @Correo, @ContrasenaHash, @IdPerfil, 1)";
+            await _service.InsertarAsync(u);
+            TempData["Success"] = "Usuario creado correctamente.";
+            return RedirectToAction(nameof(Index));
 
-            var p1 = new SqlParameter("@NombreUsuario", usuario.NombreUsuario);
-            var p2 = new SqlParameter("@Correo", usuario.Correo);
-            var p3 = new SqlParameter("@ContrasenaHash", usuario.ContrasenaHash);
-            var p4 = new SqlParameter("@IdPerfil", usuario.IdPerfil);
-
-            await _context.Database.ExecuteSqlRawAsync(sql, p1, p2, p3, p4);
-
-            return RedirectToAction("Index");
         }
 
-        // EDITAR (GET)
-        public async Task<IActionResult> Editar(int id)
+        [HttpGet]
+        public async Task<IActionResult> ObtenerColaborador(int id)
         {
-            var sql = @"SELECT 
-                            U.IdUsuario,
-                            U.NombreUsuario,
-                            U.Correo,
-                            U.IdPerfil,
-                            U.Estado,
-                            P.NombrePerfil
-                        FROM Usuarios U
-                        INNER JOIN Perfiles P ON U.IdPerfil = P.IdPerfil
-                        WHERE IdUsuario = @Id";
+            var c = await _colaboradorService.ObtenerInfoAsync(id);
 
-            var p = new SqlParameter("@Id", id);
-
-            var usuario = await _context.Usuarios
-                .FromSqlRaw(sql, p)
-                .FirstOrDefaultAsync();
-
-            if (usuario == null)
+            if (c == null)
                 return NotFound();
 
-            return View(usuario);
+            return Json(new
+            {
+                nombreCompleto = $"{c.Nombre} {c.Apellidos}",
+                correo = c.Correo
+            });
         }
 
-        // EDITAR (POST)
+
+        private void CargarPerfiles()
+        {
+            ViewBag.Perfiles = new List<SelectListItem>
+            {
+                new SelectListItem { Value = "1", Text = "Administrador" },
+                new SelectListItem { Value = "2", Text = "RRHH" },
+                new SelectListItem { Value = "3", Text = "Colaborador" }
+            };
+        }
+
         [HttpPost]
-        public async Task<IActionResult> Editar(Usuario usuario)
+        public async Task<IActionResult> BuscarColaborador(Usuario model)
         {
-            var sql = @"UPDATE Usuarios SET
-                           NombreUsuario = @NombreUsuario,
-                           Correo = @Correo,
-                           IdPerfil = @IdPerfil,
-                           Estado = @Estado
-                        WHERE IdUsuario = @IdUsuario";
+            CargarPerfiles();
 
-            var p1 = new SqlParameter("@NombreUsuario", usuario.NombreUsuario);
-            var p2 = new SqlParameter("@Correo", usuario.Correo);
-            var p3 = new SqlParameter("@IdPerfil", usuario.IdPerfil);
-            var p4 = new SqlParameter("@Estado", usuario.Estado);
-            var p5 = new SqlParameter("@IdUsuario", usuario.IdUsuario);
+            var c = await _colaboradorService.ObtenerInfoAsync(model.IdColaborador);
 
-            await _context.Database.ExecuteSqlRawAsync(sql, p1, p2, p3, p4, p5);
+            if (c == null)
+            {
+                ModelState.AddModelError("", "Colaborador no encontrado.");
+                return View("Create", model);
+            }
 
-            return RedirectToAction("Index");
+            ViewBag.NombreColaborador = $"{c.Nombre} {c.Apellidos}";
+            ViewBag.CorreoColaborador = c.Correo;
+
+            model.Correo = c.Correo;
+
+            return View("Create", model);
         }
 
-        // DESACTIVAR
-        public async Task<IActionResult> Desactivar(int id)
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
         {
-            var sql = @"UPDATE Usuarios SET Estado = 0 WHERE IdUsuario = @Id";
-            var p = new SqlParameter("@Id", id);
+            var user = await _service.ObtenerPorIdAsync(id);
+            if (user == null)
+                return NotFound();
 
-            await _context.Database.ExecuteSqlRawAsync(sql, p);
-
-            return RedirectToAction("Index");
+            CargarPerfiles();
+            return View(user);
         }
 
-        // ACTIVAR
-        public async Task<IActionResult> Activar(int id)
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(Usuario u)
         {
-            var sql = @"UPDATE Usuarios SET Estado = 1 WHERE IdUsuario = @Id";
-            var p = new SqlParameter("@Id", id);
+            if (!ModelState.IsValid)
+            {
+                CargarPerfiles();
+                TempData["Error"] = "No se pudo actualizar el usuario.";
+                return View(u);
+            }
 
-            await _context.Database.ExecuteSqlRawAsync(sql, p);
-
-            return RedirectToAction("Index");
+            await _service.ActualizarAsync(u);
+            TempData["Success"] = "Usuario actualizado correctamente.";
+            return RedirectToAction(nameof(Index));
         }
+
+
+        public async Task<IActionResult> Index(string buscar)
+        {
+            var lista = await _service.ListarAsync();
+
+            if (!string.IsNullOrEmpty(buscar))
+            {
+                lista = lista
+                    .Where(u => u.NombreUsuario.Contains(buscar))
+                    .ToList();
+
+
+                if (!lista.Any())
+                    ViewBag.SinResultados = true;
+            }
+
+            ViewBag.Buscar = buscar;
+            return View(lista);
+        }
+
+        public async Task<IActionResult> CambiarEstado(int id)
+        {
+            await _service.CambiarEstadoAsync(id);
+
+            TempData["Success"] = "Estado del usuario actualizado.";
+            return RedirectToAction(nameof(Index));
+        }
+
+
+
+
     }
 }
+

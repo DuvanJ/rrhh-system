@@ -1,0 +1,36 @@
+﻿@model Proyecto1.Models.Permiso
+
+@{
+    ViewData["Title"] = "Solicitar Permiso";
+}
+
+<h2>Solicitar Permiso</h2>
+
+<form asp-action="Create" method="post" class="mt-3">
+
+    <div class="mb-3">
+        <label asp-for="TipoPermiso" class="form-label"></label>
+        <select asp-for="TipoPermiso" class="form-select" required>
+            <option value="">-- Seleccione --</option>
+            <option value="Con goce salarial">Con goce salarial</option>
+            <option value="Sin goce salarial">Sin goce salarial</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="FechaInicio" class="form-label"></label>
+        <input asp-for="FechaInicio" type="date" class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="FechaFin" class="form-label"></label>
+        <input asp-for="FechaFin" type="date" class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Observaciones" class="form-label"></label>
+        <textarea asp-for="Observaciones" class="form-control"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Enviar Solicitud</button>
+</form>

@@ -1,0 +1,81 @@
+﻿@model List<Proyecto1.Models.EvaluacionVM>
+
+@{
+    ViewData["Title"] = "Evaluaciones de Rendimiento";
+}
+
+<h3 class="fw-bold mb-4">Evaluaciones de Rendimiento</h3>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <!-- Botón Crear Evaluación -->
+    <a asp-action="Create" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i> Nueva Evaluación
+    </a>
+
+    <!-- Buscador pequeño -->
+    <form method="get" asp-action="Index" class="d-flex align-items-center">
+        <input type="number"
+               name="idColaborador"
+               class="form-control form-control-sm me-2"
+               placeholder="ID Colaborador"
+               value="@Context.Request.Query["idColaborador"]" />
+        <button type="submit" class="btn btn-primary btn-sm">Buscar</button>
+        <a asp-action="Index" class="btn btn-secondary btn-sm ms-2">Limpiar</a>
+    </form>
+</div>
+
+<!-- Mensajes -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Warning"] != null)
+{
+    <div class="alert alert-warning">@TempData["Warning"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<!-- Tabla de evaluaciones -->
+<table class="table table-bordered table-hover">
+    <thead class="table-light">
+        <tr>
+            <th>ID Evaluación</th>
+            <th>ID Colaborador</th>
+            <th>Colaborador</th>
+            <th>Fecha Evaluación</th>
+            <th>Puntaje Total</th>
+            <th>Comentarios Generales</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Any())
+        {
+            foreach (var e in Model)
+            {
+                <tr>
+                    <td>@e.IdEvaluacion</td>
+                    <td>@e.IdColaborador</td>
+                    <td>@e.NombreColaborador</td>
+                    <td>@e.FechaEvaluacion.ToShortDateString()</td>
+                    <td>@(e.PuntajeTotal.HasValue? e.PuntajeTotal.Value.ToString("N2") : "-")</td>
+                    <td>@e.ComentariosGenerales</td>
+                    <td class="text-center">
+                        <a asp-action="Detalle" asp-route-id="@e.IdColaborador" class="btn btn-info btn-sm">
+                            Ver Detalle
+                        </a>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="7" class="text-center text-muted">No hay evaluaciones para mostrar</td>
+            </tr>
+        }
+    </tbody>
+</table>

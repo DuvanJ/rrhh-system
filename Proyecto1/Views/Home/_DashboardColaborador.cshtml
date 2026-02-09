@@ -1,0 +1,43 @@
+﻿@{
+    ViewData["Title"] = "Mi Dashboard";
+}
+
+<h3 class="mb-4">Bienvenido a tu panel de gestión</h3>
+
+<div class="row g-4">
+
+    <div class="col-12">
+        <h4 class="fw-bold mb-3">Mi Gestión</h4>
+    </div>
+
+    @{
+        var colaborador = new[]
+        {
+        new { T = "Asistencia",    I = "bi-calendar-check",  C = "Asistencia",   A = "MiAsistencia" },
+        new { T = "Horas Extras",  I = "bi-clock-history",  C = "HorasExtras",  A = "MisHorasExtras" },
+        new { T = "Permisos",      I = "bi-journal-check",  C = "Permisos",     A = "MisPermisos" },
+        new { T = "Vacaciones",    I = "bi-sun",            C = "Vacaciones",   A = "MisVacaciones" },
+        new { T = "Incapacidades",  I = "bi-heart-pulse",    C = "Incapacidades", A = "MisIncapacidades" }
+        };
+    }
+
+    @foreach (var m in colaborador)
+    {
+        <div class="col-md-3 col-sm-6">
+            <a asp-controller="@m.C"
+               asp-action="@m.A"
+               class="text-decoration-none">
+                <div class="card shadow-sm h-100 dashboard-card">
+                    <div class="card-body text-center">
+                        <i class="bi @m.I fs-1 text-success"></i>
+                        <h6 class="mt-3 fw-semibold">@m.T</h6>
+                    </div>
+                </div>
+            </a>
+        </div>
+    }
+
+</div>
+
+
+

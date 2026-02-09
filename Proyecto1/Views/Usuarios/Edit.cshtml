@@ -1,0 +1,35 @@
+﻿@model Proyecto1.Models.Usuario
+
+<h2>Editar Usuario</h2>
+
+<form asp-action="Edit" method="post">
+
+    <!-- 🔴 OBLIGATORIOS -->
+    <input type="hidden" asp-for="IdUsuario" />
+    <input type="hidden" asp-for="Estado" />
+
+    <div class="mb-3">
+        <label class="form-label">Nombre de Usuario</label>
+        <input asp-for="NombreUsuario" class="form-control" />
+        <span asp-validation-for="NombreUsuario" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Correo</label>
+        <input asp-for="Correo" class="form-control" />
+        <span asp-validation-for="Correo" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Perfil</label>
+        <select asp-for="IdPerfil"
+                class="form-select"
+                asp-items="ViewBag.Perfiles">
+        </select>
+        <span asp-validation-for="IdPerfil" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Actualizar</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>
+

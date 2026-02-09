@@ -1,0 +1,80 @@
+﻿@model List<Proyecto1.Models.AsistenciaAuditoria>
+
+<h3 class="fw-bold mb-4">Auditoría de Ajustes de Asistencia</h3>
+
+<!-- 🔔 MENSAJES -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Warning"] != null)
+{
+    <div class="alert alert-warning">@TempData["Warning"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<!-- 🔍 BUSCAR -->
+<form method="get" asp-action="Index" class="row g-2 mb-3">
+    <div class="col-md-4">
+        <input type="number"
+               name="idColaborador"
+               class="form-control"
+               placeholder="Buscar por ID de colaborador" />
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-search"></i> Buscar
+        </button>
+    </div>
+</form>
+
+<!-- 📋 TABLA AUDITORÍA -->
+<table class="table table-bordered table-hover">
+    <thead class="table-light">
+        <tr>
+            <th>ID Colab.</th>
+            <th>Fecha</th>
+            <th>Entrada Anterior</th>
+            <th>Salida Anterior</th>
+            <th>Entrada Nueva</th>
+            <th>Salida Nueva</th>
+            <th>Motivo</th>
+            <th>Usuario</th>
+            <th>Fecha Modificación</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="9" class="text-center text-muted">
+                    No hay registros de auditoría.
+                </td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var a in Model)
+            {
+                <tr>
+                    <td>@a.IdColaborador</td>
+                    <td>@a.Fecha.ToShortDateString()</td>
+                    <td>@a.HoraEntradaAnterior?.ToString(@"hh\:mm")</td>
+                    <td>@a.HoraSalidaAnterior?.ToString(@"hh\:mm")</td>
+                    <td class="text-success fw-semibold">
+                        @a.HoraEntradaNueva?.ToString(@"hh\:mm")
+                    </td>
+                    <td class="text-success fw-semibold">
+                        @a.HoraSalidaNueva?.ToString(@"hh\:mm")
+                    </td>
+                    <td>@a.Motivo</td>
+                    <td>@a.UsuarioModifica</td>
+                    <td>@a.FechaModificacion.ToString("dd/MM/yyyy HH:mm")</td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

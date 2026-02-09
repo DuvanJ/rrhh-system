@@ -34,12 +34,8 @@ namespace Proyecto1.Services
 
         public async Task Insertar(Colaborador c)
         {
-            var sql = @"EXEC sp_InsertarColaborador
-                        @Cedula, @Nombre, @Apellidos,
-                        @Puesto, @Departamento, @FechaIngreso,
-                        @SalarioBase, @Correo";
-
-            await _context.Database.ExecuteSqlRawAsync(sql,
+            await _context.Database.ExecuteSqlRawAsync(
+                "EXEC sp_InsertarColaborador @Cedula, @Nombre, @Apellidos, @Puesto, @Departamento, @FechaIngreso, @SalarioBase, @Correo",
                 new SqlParameter("@Cedula", c.Cedula),
                 new SqlParameter("@Nombre", c.Nombre),
                 new SqlParameter("@Apellidos", c.Apellidos),
@@ -47,18 +43,15 @@ namespace Proyecto1.Services
                 new SqlParameter("@Departamento", c.Departamento),
                 new SqlParameter("@FechaIngreso", c.FechaIngreso),
                 new SqlParameter("@SalarioBase", c.SalarioBase),
-                new SqlParameter("@Correo", c.Correo ?? (object)DBNull.Value)
+                new SqlParameter("@Correo", (object?)c.Correo ?? DBNull.Value)
             );
         }
 
+
         public async Task Actualizar(Colaborador c)
         {
-            var sql = @"EXEC sp_ActualizarColaborador
-                        @IdColaborador, @Cedula, @Nombre,
-                        @Apellidos, @Puesto, @Departamento,
-                        @FechaIngreso, @SalarioBase, @Correo";
-
-            await _context.Database.ExecuteSqlRawAsync(sql,
+            await _context.Database.ExecuteSqlRawAsync(
+                "EXEC sp_ActualizarColaborador @IdColaborador, @Cedula, @Nombre, @Apellidos, @Puesto, @Departamento, @FechaIngreso, @SalarioBase, @Correo, @Estado",
                 new SqlParameter("@IdColaborador", c.IdColaborador),
                 new SqlParameter("@Cedula", c.Cedula),
                 new SqlParameter("@Nombre", c.Nombre),
@@ -67,15 +60,32 @@ namespace Proyecto1.Services
                 new SqlParameter("@Departamento", c.Departamento),
                 new SqlParameter("@FechaIngreso", c.FechaIngreso),
                 new SqlParameter("@SalarioBase", c.SalarioBase),
-                new SqlParameter("@Correo", c.Correo ?? (object)DBNull.Value)
+                new SqlParameter("@Correo", (object?)c.Correo ?? DBNull.Value),
+                new SqlParameter("@Estado", c.Estado)
             );
         }
 
+
+
         public async Task Eliminar(int id)
         {
+            Console.WriteLine("ELIMINANDO ID: " + id);
+
             await _context.Database.ExecuteSqlRawAsync(
                 "EXEC sp_EliminarColaborador @IdColaborador",
-                new SqlParameter("@IdColaborador", id));
+                new SqlParameter("@IdColaborador", id)
+            );
         }
+
+
+        public async Task<Colaborador?> ObtenerInfoAsync(int id)
+        {
+            return (await _context.Colaboradores
+                .FromSqlRaw("EXEC sp_ObtenerColaboradorPorID @IdColaborador",
+                    new SqlParameter("@IdColaborador", id))
+                .ToListAsync())
+                .FirstOrDefault();
+        }
+
     }
 }

@@ -1,0 +1,96 @@
+﻿@model List<Proyecto1.Models.UniformeHistorialVM>
+
+<h3 class="fw-bold mb-4">Historial de Entregas de Uniforme</h3>
+
+<!-- ➕ Botón Nueva Entrega -->
+<div class="mb-2">
+    <a asp-action="Create" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i> Nueva Entrega
+    </a>
+</div>
+
+<!-- Buscador compacto debajo del botón -->
+<div class="mb-3">
+    <form method="get" asp-action="Index" class="d-flex align-items-center">
+        <input type="number"
+               name="idColaborador"
+               class="form-control form-control-sm me-2"
+               placeholder="ID Colaborador"
+               style="width: 150px;"
+               value="@Context.Request.Query["idColaborador"]" />
+        <button type="submit" class="btn btn-primary btn-sm me-1">Buscar</button>
+        <a asp-action="Index" class="btn btn-secondary btn-sm">Limpiar</a>
+    </form>
+</div>
+
+<!-- Mensajes -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Warning"] != null)
+{
+    <div class="alert alert-warning">@TempData["Warning"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<!-- Tabla de historial -->
+<table class="table table-bordered table-hover">
+    <thead class="table-light">
+        <tr>
+            <th>ID</th>
+            <th>ID Colaborador</th>
+            <th>Colaborador</th>
+            <th>Tipo</th>
+            <th>Talla</th>
+            <th>Cantidad</th>
+            <th>Fecha</th>
+            <th>Costo</th>
+            <th>Cobro en planilla</th>
+            <th>Observaciones</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.IdEntrega</td>
+                    <td>@item.IdColaborador</td>
+                    <td>@item.NombreColaborador</td>
+                    <td>@item.NombreTipo</td>
+                    <td>@item.Talla</td>
+                    <td>@item.Cantidad</td>
+                    <td>@item.FechaEntrega.ToShortDateString()</td>
+                    <td>@item.Costo?.ToString("C")</td>
+                    <td>@(item.CobrarEnPlanilla ? "Sí" : "No")</td>
+                    <td>@item.Observaciones</td>
+                    <td class="text-center">
+                        <a asp-action="Edit" asp-route-id="@item.IdEntrega" class="btn btn-sm btn-warning">Editar</a>
+                        <form asp-action="Delete" asp-route-id="@item.IdEntrega" method="post" class="d-inline"
+                              onsubmit="return confirm('¿Desea eliminar esta entrega?');">
+                            <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="11" class="text-center text-muted">No hay registros para mostrar</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+
+
+
+

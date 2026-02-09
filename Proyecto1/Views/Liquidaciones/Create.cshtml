@@ -1,0 +1,127 @@
+﻿@{
+    ViewData["Title"] = "Generar Liquidación";
+}
+
+<h3 class="fw-bold mb-4">Generar Liquidación</h3>
+
+<!-- 🔎 FORMULARIO -->
+<form asp-action="Create" method="post" class="row g-3">
+
+    <!-- ID Colaborador -->
+    <div class="col-md-3">
+        <label for="idColaborador" class="form-label">ID Colaborador</label>
+        <input type="number"
+               name="idColaborador"
+               id="idColaborador"
+               class="form-control"
+               placeholder="Ingrese ID" />
+    </div>
+
+    <!-- Nombre Colaborador (solo lectura) -->
+    <div class="col-md-5">
+        <label class="form-label">Nombre Colaborador</label>
+        <input type="text"
+               id="nombreColaborador"
+               class="form-control"
+               readonly
+               placeholder="Se llenará automáticamente al buscar" />
+    </div>
+
+    <!-- Botón buscar -->
+    <div class="col-md-2 align-self-end">
+        <button type="button" class="btn btn-info w-100" id="btnBuscarColaborador">
+            Buscar
+        </button>
+    </div>
+
+    <!-- Tipo de salida -->
+    <div class="col-md-4">
+        <label for="idTipoSalida" class="form-label">Tipo de salida</label>
+        <select name="idTipoSalida" id="idTipoSalida" class="form-select">
+            <option value="">Seleccione...</option>
+            @foreach (var tipo in ViewBag.TiposSalida)
+            {
+                <option value="@tipo.IdTipoSalida">@tipo.Nombre</option>
+            }
+        </select>
+    </div>
+
+    <!-- Fecha de salida -->
+    <div class="col-md-4">
+        <label for="fechaSalida" class="form-label">Fecha de salida</label>
+        <input type="date"
+               name="fechaSalida"
+               id="fechaSalida"
+               class="form-control"
+               value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+    </div>
+
+    <!-- Botón generar -->
+    <div class="col-md-4 align-self-end">
+        <button type="submit" class="btn btn-primary w-100">
+            Generar Liquidación
+        </button>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        // ================= BUSCAR COLABORADOR =================
+        document.getElementById("btnBuscarColaborador").addEventListener("click", function () {
+            var id = document.getElementById("idColaborador").value;
+            if (!id) {
+                alert("Ingrese un ID de colaborador para buscar.");
+                return;
+            }
+
+            fetch(`/Liquidaciones/BuscarColaborador?id=${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.nombre) {
+                        document.getElementById("nombreColaborador").value = data.nombre;
+                    } else {
+                        document.getElementById("nombreColaborador").value = "";
+                        alert("No se encontró un colaborador activo con ese ID.");
+                    }
+                })
+                .catch(() => alert("Ocurrió un error al buscar el colaborador."));
+        });
+
+        // ================= MENSAJES TEMPORAL =================
+        // Se usan SweetAlert y Html.Raw + JsonSerializer para mantener acentos y saltos
+        @if (TempData["Success"] != null)
+        {
+                <text>
+                    var mensajeSuccess = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(TempData["Success"]));
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Éxito',
+                        text: mensajeSuccess
+                    });
+                </text>
+        }
+        @if (TempData["Warning"] != null)
+        {
+                <text>
+                    var mensajeWarning = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(TempData["Warning"]));
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Atención',
+                        text: mensajeWarning
+                    });
+                </text>
+        }
+        @if (TempData["Error"] != null)
+        {
+                <text>
+                    var mensajeError = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(TempData["Error"]));
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: mensajeError
+                    });
+                </text>
+        }
+    </script>
+}
+

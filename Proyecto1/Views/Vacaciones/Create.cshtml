@@ -1,0 +1,49 @@
+﻿@model Proyecto1.Models.Vacacion
+
+@{
+    ViewData["Title"] = "Solicitar Vacaciones";
+}
+
+<h2>Solicitar Vacaciones</h2>
+
+<!-- 🔹 Mostrar días disponibles -->
+<div class="alert alert-info">
+    <strong>Días disponibles:</strong> @ViewBag.DiasDisponibles
+</div>
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+
+    <!-- 🔴 Mensajes de validación generales -->
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <!-- Fecha Inicio -->
+    <div class="form-group mb-3">
+        <label asp-for="FechaInicio" class="form-label"></label>
+        <input asp-for="FechaInicio" type="date" class="form-control" />
+        <span asp-validation-for="FechaInicio" class="text-danger"></span>
+    </div>
+
+    <!-- Fecha Fin -->
+    <div class="form-group mb-3">
+        <label asp-for="FechaFin" class="form-label"></label>
+        <input asp-for="FechaFin" type="date" class="form-control" />
+        <span asp-validation-for="FechaFin" class="text-danger"></span>
+    </div>
+
+    <!-- Botones -->
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">
+            Enviar solicitud
+        </button>
+
+        <a asp-action="MisVacaciones" class="btn btn-secondary ms-2">
+            Cancelar
+        </a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

@@ -1,0 +1,115 @@
+﻿@model IEnumerable<Proyecto1.Models.Planilla>
+
+@{
+    ViewData["Title"] = "Gestión de Planillas";
+}
+
+<h3 class="fw-bold mb-4">Gestión de Planillas</h3>
+
+<!-- Mensajes -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<!-- Generar planilla -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Generar Nueva Planilla</h5>
+
+        <form asp-action="Generar" method="post" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Mes</label>
+                <select name="mes" class="form-select" required>
+                    <option value="">-- Seleccione --</option>
+                    @for (int m = 1; m <= 12; m++)
+                    {
+                        <option value="@m">@System.Globalization.CultureInfo.GetCultureInfo("es-ES").DateTimeFormat.GetMonthName(m)</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Año</label>
+                <input type="number" name="año" class="form-control" value="@DateTime.Now.Year" required />
+            </div>
+
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-calculator"></i> Generar Planilla
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Listado de planillas -->
+<table class="table table-striped table-bordered shadow-sm">
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Mes</th>
+            <th>Año</th>
+            <th>Fecha Generación</th>
+            <th>Estado</th>
+            <th style="width:180px">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="6" class="text-center text-muted">No hay planillas registradas.</td>
+            </tr>
+        }
+        else
+        {
+            foreach (var p in Model)
+            {
+                <tr>
+                    <td>@p.IdPlanilla</td>
+                    <td>@System.Globalization.CultureInfo.GetCultureInfo("es-ES").DateTimeFormat.GetMonthName(p.Mes)</td>
+                    <td>@p.Año</td>
+                    <td>@p.FechaGeneracion.ToShortDateString()</td>
+                    <td>
+                        @if (p.Estado == 1)
+                        {
+                            <span class="badge bg-success">Generada</span>
+                        }
+                        else if (p.Estado == 2)
+                        {
+                            <span class="badge bg-danger">Anulada</span>
+                        }
+                        else if (p.Estado == 3)
+                        {
+                            <span class="badge bg-warning text-dark">Regenerada</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Desconocido</span>
+                        }
+                    </td>
+                    <td>
+                        <a asp-action="Detalle" asp-route-id="@p.IdPlanilla" class="btn btn-sm btn-info">
+                            <i class="bi bi-eye"></i>
+                        </a>
+
+                        @if (p.Estado == 1)
+                        {
+                            <form asp-action="Anular" method="post" class="d-inline">
+                                <input type="hidden" name="idPlanilla" value="@p.IdPlanilla" />
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Desea anular esta planilla?');">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

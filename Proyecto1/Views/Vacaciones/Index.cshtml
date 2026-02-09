@@ -1,0 +1,80 @@
+﻿@model List<Proyecto1.Models.VacacionAdminVM>
+
+
+<h3 class="fw-bold mb-4">Gestión de Vacaciones</h3>
+
+<form method="get" asp-action="Index" class="row g-3 mb-4">
+    <div class="col-md-4">
+        <input type="number"
+               name="idColaborador"
+               class="form-control"
+               placeholder="Buscar por ID de colaborador" />
+    </div>
+
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">
+            Buscar
+        </button>
+    </div>
+
+    <div class="col-md-2">
+        <a asp-action="Index" class="btn btn-secondary w-100">
+            Limpiar
+        </a>
+    </div>
+</form>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>ID Colaborador</th>
+            <th>Colaborador</th>
+            <th>Fecha Solicitud</th>
+            <th>Desde</th>
+            <th>Hasta</th>
+            <th>Días</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var v in Model)
+        {
+            <tr>
+                <td>@v.IdColaborador</td>
+                <td>@v.NombreColaborador</td>
+                <td>@v.FechaSolicitud.ToString("dd/MM/yyyy")</td>
+                <td>@v.FechaInicio.ToString("dd/MM/yyyy")</td>
+                <td>@v.FechaFin.ToString("dd/MM/yyyy")</td>
+                <td>@v.DiasSolicitados</td>
+                <td>
+                    <span class="badge
+                            @(v.Estado == "Pendiente" ? "bg-warning" :
+                                                    v.Estado == "Aprobada" ? "bg-success" : "bg-danger")">
+                    @v.Estado
+                </span>
+            </td>
+            <td>
+                @if (v.Estado == "Pendiente")
+                    {
+                        <form asp-action="CambiarEstado" method="post" class="d-inline">
+                            <input type="hidden" name="id" value="@v.IdVacacion" />
+                            <input type="hidden" name="estado" value="Aprobada" />
+                            <button type="submit" class="btn btn-success btn-sm">
+                                Aprobar
+                            </button>
+                        </form>
+
+                        <form asp-action="CambiarEstado" method="post" class="d-inline">
+                            <input type="hidden" name="id" value="@v.IdVacacion" />
+                            <input type="hidden" name="estado" value="Rechazada" />
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                Rechazar
+                            </button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

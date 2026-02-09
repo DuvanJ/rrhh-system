@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Proyecto1.Services;
 
+
 namespace Proyecto1.Controllers
 {
     public class LoginController : Controller
@@ -23,18 +24,19 @@ namespace Proyecto1.Controllers
         {
             var user = await _loginService.ValidarLogin(usuario, contrasena);
 
-            if (user != null)
+            if (user == null)
             {
-                HttpContext.Session.SetString("Usuario", user.NombreUsuario);
-                HttpContext.Session.SetString("Perfil", user.NombrePerfil);
-                HttpContext.Session.SetInt32("IdUsuario", user.IdUsuario);
-
-                return RedirectToAction("Index", "Home");
+                ViewBag.Error = "Usuario o contraseña incorrectos";
+                return View();
             }
 
-            ViewBag.Error = "Credenciales incorrectas";
-            return View();
+            HttpContext.Session.SetString("Usuario", user.NombreUsuario);
+            HttpContext.Session.SetString("Perfil", user.NombrePerfil);
+            HttpContext.Session.SetInt32("IdColaborador", user.IdColaborador);
+
+            return RedirectToAction("Index", "Home");
         }
+
 
         public IActionResult Logout()
         {

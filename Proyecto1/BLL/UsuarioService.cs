@@ -14,60 +14,53 @@ namespace Proyecto1.Services
             _context = context;
         }
 
-        // LISTAR
-        public async Task<List<Usuario>> ListarAsync()
+        public async Task<List<UsuarioListado>> ListarAsync()
         {
-            return await _context.Usuarios
-                .FromSqlRaw("EXEC sp_Usuarios_Listar")
+            return await _context.UsuariosListado
+                .FromSqlRaw("EXEC sp_ObtenerUsuarios")
                 .ToListAsync();
         }
 
-        // OBTENER POR ID
         public async Task<Usuario?> ObtenerPorIdAsync(int id)
         {
-            var param = new SqlParameter("@IdUsuario", id);
-
-            var data = await _context.Usuarios
-                .FromSqlRaw("SELECT * FROM Usuarios WHERE IdUsuario = @IdUsuario", param)
-                .ToListAsync();
-
-            return data.FirstOrDefault();
+            return (await _context.Usuarios
+                .FromSqlRaw("EXEC sp_Usuarios_ObtenerPorId @IdUsuario",
+                    new SqlParameter("@IdUsuario", id))
+                .ToListAsync())
+                .FirstOrDefault();
         }
 
-        // INSERTAR
         public async Task InsertarAsync(Usuario u)
         {
-            var p1 = new SqlParameter("@NombreUsuario", u.NombreUsuario);
-            var p2 = new SqlParameter("@Correo", u.Correo);
-            var p3 = new SqlParameter("@ContrasenaHash", u.ContrasenaHash);
-            var p4 = new SqlParameter("@IdPerfil", u.IdPerfil);
-
             await _context.Database.ExecuteSqlRawAsync(
-                "EXEC sp_Usuarios_Insertar @NombreUsuario, @Correo, @ContrasenaHash, @IdPerfil",
-                p1, p2, p3, p4);
+                "EXEC sp_InsertarUsuario @NombreUsuario, @Correo, @ContrasenaHash, @IdPerfil, @IdColaborador",
+                new SqlParameter("@NombreUsuario", u.NombreUsuario),
+                new SqlParameter("@Correo", u.Correo ?? ""),
+                new SqlParameter("@ContrasenaHash", u.ContrasenaHash),
+                new SqlParameter("@IdPerfil", u.IdPerfil),
+                new SqlParameter("@IdColaborador", u.IdColaborador)
+            );
         }
 
-        // ACTUALIZAR
         public async Task ActualizarAsync(Usuario u)
         {
-            var p0 = new SqlParameter("@IdUsuario", u.IdUsuario);
-            var p1 = new SqlParameter("@NombreUsuario", u.NombreUsuario);
-            var p2 = new SqlParameter("@Correo", u.Correo);
-            var p3 = new SqlParameter("@IdPerfil", u.IdPerfil);
-            var p4 = new SqlParameter("@Estado", u.Estado);
-
             await _context.Database.ExecuteSqlRawAsync(
                 "EXEC sp_Usuarios_Actualizar @IdUsuario, @NombreUsuario, @Correo, @IdPerfil, @Estado",
-                p0, p1, p2, p3, p4);
+                new SqlParameter("@IdUsuario", u.IdUsuario),
+                new SqlParameter("@NombreUsuario", u.NombreUsuario),
+                new SqlParameter("@Correo", u.Correo ?? ""),
+                new SqlParameter("@IdPerfil", u.IdPerfil),
+                new SqlParameter("@Estado", u.Estado)
+            );
         }
 
-        // CAMBIAR ESTADO
         public async Task CambiarEstadoAsync(int id)
         {
-            var p = new SqlParameter("@IdUsuario", id);
-
             await _context.Database.ExecuteSqlRawAsync(
-                "EXEC sp_Usuarios_CambiarEstado @IdUsuario", p);
+                "EXEC sp_Usuarios_CambiarEstado @IdUsuario",
+                new SqlParameter("@IdUsuario", id)
+            );
         }
     }
+
 }

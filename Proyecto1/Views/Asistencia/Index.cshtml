@@ -1,0 +1,75 @@
+﻿@model List<Proyecto1.Models.Asistencia>
+
+<h3 class="fw-bold mb-4">Control de Asistencia</h3>
+
+<form method="get" asp-action="Index" class="row g-2 mb-3">
+    <div class="col-md-4">
+        <input type="number"
+               name="idColaborador"
+               class="form-control"
+               placeholder="Buscar por ID de colaborador"
+               required />
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-search"></i> Buscar
+        </button>
+    </div>
+</form>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Warning"] != null)
+{
+    <div class="alert alert-warning">@TempData["Warning"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<table class="table table-bordered table-hover">
+    <thead class="table-light">
+        <tr>
+            <th>ID</th>
+            <th>Colaborador</th>
+            <th>Fecha</th>
+            <th>Entrada</th>
+            <th>Salida</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="6" class="text-center text-muted">
+                    No hay registros para mostrar
+                </td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var a in Model)
+            {
+                <tr>
+                    <td>@a.IdColaborador</td>
+                    <td>@a.NombreColaborador</td>
+                    <td>@a.Fecha.ToShortDateString()</td>
+                    <td>@a.HoraEntrada?.ToString(@"hh\:mm")</td>
+                    <td>@a.HoraSalida?.ToString(@"hh\:mm")</td>
+                    <td>
+                        <a asp-action="Edit"
+                           asp-route-id="@a.IdAsistencia"
+                           class="btn btn-sm btn-warning">
+                            Ajustar
+                        </a>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+

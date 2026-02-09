@@ -1,0 +1,44 @@
+﻿@model List<Proyecto1.Models.HoraExtra>
+
+<h3 class="fw-bold mb-4">Mis Horas Extras</h3>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<!-- 🔹 BOTÓN NUEVA SOLICITUD -->
+<div class="mb-3">
+    <a asp-controller="HorasExtras"
+       asp-action="Create"
+       class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Nueva solicitud
+    </a>
+</div>
+
+<table class="table table-striped">
+    <thead class="table-light">
+        <tr>
+            <th>Fecha</th>
+            <th>Horas</th>
+            <th>Motivo</th>
+            <th>Estado</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var h in Model)
+        {
+            <tr>
+                <td>@h.Fecha.ToShortDateString()</td>
+                <td>@h.CantidadHoras</td>
+                <td>@h.Motivo</td>
+                <td>
+                    <span class="badge bg-@(h.Estado == "Pendiente" ? "warning" :
+                                                                     h.Estado == "Aprobada" ? "success" : "danger")">
+                    @h.Estado
+                </span>
+            </td>
+        </tr>
+                }
+    </tbody>
+</table>

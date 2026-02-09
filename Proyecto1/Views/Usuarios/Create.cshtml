@@ -1,0 +1,113 @@
+﻿@model Proyecto1.Models.Usuario
+
+
+<h2>Nuevo Usuario</h2>
+
+<form asp-action="Create" method="post">
+
+    <!-- ID COLABORADOR + BOTÓN -->
+    <div class="mb-3">
+        <label class="form-label">ID Colaborador</label>
+        <div class="input-group">
+            <input asp-for="IdColaborador" class="form-control" id="IdColaborador" />
+            <button type="button" class="btn btn-primary" id="btnBuscar">
+                Buscar
+            </button>
+        </div>
+    </div>
+
+    <!-- MENSAJE DEL SISTEMA -->
+    <div class="mb-3">
+        <span id="msgColaborador" class="fw-semibold"></span>
+    </div>
+
+    <!-- DATOS DEL COLABORADOR -->
+    <div class="mb-3">
+        <label class="form-label">Nombre del Colaborador</label>
+        <input class="form-control" id="NombreColaborador" readonly />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Correo</label>
+        <input asp-for="Correo" class="form-control" id="Correo" readonly />
+    </div>
+
+    <hr />
+
+    <!-- DATOS DEL USUARIO -->
+    <div class="mb-3">
+        <label class="form-label">Nombre de Usuario</label>
+        <input asp-for="NombreUsuario" class="form-control" />
+        <span asp-validation-for="NombreUsuario" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Contraseña</label>
+        <input asp-for="ContrasenaHash" type="password" class="form-control" />
+        <span asp-validation-for="ContrasenaHash" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Perfil</label>
+        <select asp-for="IdPerfil" class="form-select" asp-items="ViewBag.Perfiles">
+            <option value="">-- Seleccione --</option>
+        </select>
+        <span asp-validation-for="IdPerfil" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-success">Guardar</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>
+
+@section Scripts {
+    <script>
+        document.getElementById("btnBuscar").addEventListener("click", function () {
+
+            let id = document.getElementById("IdColaborador").value;
+
+            // limpiar campos
+            document.getElementById("NombreColaborador").value = "";
+            document.getElementById("Correo").value = "";
+
+            if (!id) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Atención',
+                    text: 'Debe ingresar un ID de colaborador',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            fetch(`/Usuarios/ObtenerColaborador?id=${id}`)
+                .then(res => {
+                    if (!res.ok) throw new Error();
+                    return res.json();
+                })
+                .then(data => {
+                    document.getElementById("NombreColaborador").value = data.nombreCompleto;
+                    document.getElementById("Correo").value = data.correo;
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Correcto',
+                        text: 'Colaborador encontrado',
+                        confirmButtonText: 'OK'
+                    });
+                })
+                .catch(() => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'No encontrado',
+                        text: 'El colaborador no existe',
+                        confirmButtonText: 'OK'
+                    });
+                });
+        });
+    </script>
+}
+
+
+
+
+

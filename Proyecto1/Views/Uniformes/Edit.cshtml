@@ -1,0 +1,94 @@
+﻿@model Proyecto1.Models.EntregaUniformeVM
+
+@{
+    ViewData["Title"] = "Editar entrega de uniforme";
+}
+
+<h2>Editar entrega de uniforme</h2>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<form asp-action="Edit" method="post">
+
+    <div class="form-group">
+        <label>ID Colaborador</label>
+        <input asp-for="IdColaborador" class="form-control" readonly />
+    </div>
+
+    <div class="form-group">
+        <label>Fecha de entrega</label>
+        <input asp-for="FechaEntrega" type="date" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label>Observaciones</label>
+        <textarea asp-for="Observaciones" class="form-control"></textarea>
+    </div>
+
+    <hr />
+
+    <h4>Uniformes</h4>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Tipo uniforme</th>
+                <th>Talla</th>
+                <th>Cantidad</th>
+                <th>Costo</th>
+                <th>Cobrar</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Uniformes.Count; i++)
+            {
+                <tr>
+                    <td>
+                        <select asp-for="Uniformes[i].IdTipoUniforme"
+                                class="form-control"
+                                asp-items="@(new SelectList(Model.TiposUniforme, "IdTipoUniforme", "NombreTipo"))">
+                        </select>
+
+                        <input type="hidden" asp-for="Uniformes[i].IdEntrega" />
+                    </td>
+
+                    <td>
+                        <select asp-for="Uniformes[i].Talla" class="form-control">
+                            @foreach (var talla in Model.Tallas)
+                            {
+                                <option value="@talla">@talla</option>
+                            }
+                        </select>
+                    </td>
+
+                    <td>
+                        <input asp-for="Uniformes[i].Cantidad" class="form-control" />
+                    </td>
+
+                    <td>
+                        <input asp-for="Uniformes[i].Costo" class="form-control" />
+                    </td>
+
+                    <td class="text-center">
+                        <input asp-for="Uniformes[i].CobrarEnPlanilla" type="checkbox" />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <br />
+
+    <button type="submit" class="btn btn-primary">
+        Guardar cambios
+    </button>
+
+    <a asp-action="Index" class="btn btn-secondary">
+        Cancelar
+    </a>
+
+</form>
+

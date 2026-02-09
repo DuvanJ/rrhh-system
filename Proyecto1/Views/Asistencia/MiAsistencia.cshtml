@@ -1,0 +1,66 @@
+﻿@model List<Proyecto1.Models.Asistencia>
+
+<h3 class="fw-bold mb-4">Mi Asistencia</h3>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="card shadow-sm p-4 text-center mb-4">
+    <p class="fw-semibold mb-3">Registrar asistencia</p>
+
+    <form asp-action="Registrar" asp-controller="Asistencia" method="post" class="d-inline">
+        <input type="hidden" name="tipo" value="Entrada" />
+        <button type="submit" class="btn btn-success btn-lg me-2">
+            <i class="bi bi-box-arrow-in-right"></i> Entrada
+        </button>
+    </form>
+
+    <form asp-action="Registrar" asp-controller="Asistencia" method="post" class="d-inline">
+        <input type="hidden" name="tipo" value="Salida" />
+        <button type="submit" class="btn btn-danger btn-lg">
+            <i class="bi bi-box-arrow-left"></i> Salida
+        </button>
+    </form>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h6 class="fw-bold mb-3">Historial</h6>
+
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Entrada</th>
+                    <th>Salida</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var a in Model)
+                {
+                    <tr>
+                        <td>@a.Fecha.ToString("dd/MM/yyyy")</td>
+                        <td>
+                            @(a.HoraEntrada.HasValue
+                                                    ? a.HoraEntrada.Value.ToString(@"hh\:mm")
+                                                    : "-")
+                                                      </td>
+                                                      <td>
+                            @(a.HoraSalida.HasValue
+                                                    ? a.HoraSalida.Value.ToString(@"hh\:mm")
+                                                    : "-")
+                    </td>
+                </tr>
+                                }
+            </tbody>
+
+        </table>
+    </div>
+</div>
+

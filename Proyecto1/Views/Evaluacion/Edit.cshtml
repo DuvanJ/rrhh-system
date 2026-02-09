@@ -1,0 +1,115 @@
+﻿@model Proyecto1.Models.EvaluacionVM
+
+@{
+    ViewData["Title"] = "Editar Evaluación de Rendimiento";
+}
+
+<h2>Editar Evaluación de Rendimiento</h2>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<form asp-action="Edit" method="post">
+
+    <!-- ID Evaluación (oculto) -->
+    <input asp-for="IdEvaluacion" type="hidden" />
+    <input asp-for="IdColaborador" type="hidden" />
+
+    <!-- Datos del colaborador -->
+    <div class="form-group mb-3">
+        <label>Colaborador</label>
+        <input type="text"
+               class="form-control"
+               value="@Model.NombreColaborador"
+               readonly />
+    </div>
+
+    <div class="form-group mb-3">
+        <label>Fecha de evaluación</label>
+        <input asp-for="FechaEvaluacion"
+               type="date"
+               class="form-control"
+               readonly />
+    </div>
+
+    <!-- Comentarios generales -->
+    <div class="form-group mb-4">
+        <label>Comentarios Generales</label>
+        <textarea asp-for="ComentariosGenerales"
+                  class="form-control"
+                  rows="3"></textarea>
+        <span asp-validation-for="ComentariosGenerales"
+              class="text-danger"></span>
+    </div>
+
+    <hr />
+
+    <h4>Criterios de Evaluación</h4>
+
+    <table class="table table-bordered">
+        <thead class="table-light">
+            <tr>
+                <th style="width:35%">Criterio</th>
+                <th style="width:20%">Puntaje (0-100)</th>
+                <th>Observación</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Detalles.Count; i++)
+            {
+                <tr>
+                    <td>
+                        @{
+                            var criterio = Model.Criterios
+                            .FirstOrDefault(c => c.IdCriterio == Model.Detalles[i].IdCriterio);
+                        }
+
+                        @criterio?.NombreCriterio
+
+                        <input type="hidden"
+                               asp-for="Detalles[@i].IdCriterio" />
+                    </td>
+
+
+                    <td>
+                        <input asp-for="Detalles[@i].Puntaje"
+                               type="number"
+                               min="0"
+                               max="100"
+                               class="form-control" />
+                        <span asp-validation-for="Detalles[@i].Puntaje"
+                              class="text-danger"></span>
+                    </td>
+
+                    <td>
+                        <input asp-for="Detalles[@i].Observacion"
+                               class="form-control" />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <br />
+
+    <button type="submit" class="btn btn-primary">
+        Guardar cambios
+    </button>
+
+    <a asp-action="Index" class="btn btn-secondary">
+        Cancelar
+    </a>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

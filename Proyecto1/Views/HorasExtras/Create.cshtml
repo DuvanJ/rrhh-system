@@ -1,0 +1,37 @@
+﻿@model Proyecto1.Models.HoraExtra
+
+<h3 class="fw-bold mb-4">Solicitar Horas Extras</h3>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+        {
+            <div>@error.ErrorMessage</div>
+        }
+    </div>
+}
+
+
+<form asp-action="Create" method="post" class="card p-4 shadow-sm">
+
+    <div class="mb-3">
+        <label>Fecha</label>
+        <input asp-for="Fecha" type="date" class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+        <label>Cantidad de horas</label>
+        <input asp-for="CantidadHoras" type="number" step="0.5" min="0.5"
+               class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+        <label>Motivo</label>
+        <textarea asp-for="Motivo" class="form-control" required></textarea>
+    </div>
+
+    <button class="btn btn-success">Enviar solicitud</button>
+    <a asp-action="MisHorasExtras" class="btn btn-secondary">Cancelar</a>
+</form>
+

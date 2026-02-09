@@ -1,0 +1,48 @@
+﻿@model IEnumerable<Proyecto1.Models.VacacionColabVM>
+
+<h2 class="mb-3">Mis Vacaciones</h2>
+
+<!-- 🔹 Botón Solicitar Vacaciones -->
+<a asp-action="Create" class="btn btn-success mb-3">
+    Solicitar Vacaciones
+</a>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<table class="table table-bordered">
+    <thead class="table-light">
+        <tr>
+            <th>Inicio</th>
+            <th>Fin</th>
+            <th>Días</th>
+            <th>Estado</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            foreach (var v in Model)
+            {
+                <tr>
+                    <td>@v.FechaInicio.ToShortDateString()</td>
+                    <td>@v.FechaFin.ToShortDateString()</td>
+                    <td>@v.DiasSolicitados</td>
+                    <td>@v.Estado</td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="4" class="text-center">
+                    No hay solicitudes de vacaciones registradas.
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+

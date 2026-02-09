@@ -1,0 +1,179 @@
+﻿@model Proyecto1.Models.Incapacidad
+
+@{
+    ViewData["Title"] = "Registrar Incapacidad";
+}
+
+<h3 class="fw-bold mb-4">Registrar Incapacidad</h3>
+
+<!-- ================= BUSCAR COLABORADOR ================= -->
+<form asp-action="BuscarColaborador" method="post" class="mb-4">
+
+    <div class="mb-3">
+        <label class="form-label">ID Colaborador</label>
+        <div class="input-group">
+            <input asp-for="IdColaborador"
+                   class="form-control"
+                   placeholder="Ej: 8" />
+            <button type="submit" class="btn btn-primary">
+                Buscar
+            </button>
+        </div>
+        <span asp-validation-for="IdColaborador" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Nombre del Colaborador</label>
+        <input class="form-control"
+               value="@ViewBag.NombreColaborador"
+               readonly />
+    </div>
+
+</form>
+
+<hr />
+
+<!-- ================= REGISTRAR INCAPACIDAD ================= -->
+<form asp-action="Create" method="post" class="card shadow-sm p-4">
+    @Html.AntiForgeryToken()
+
+    <!-- MENSAJES DE ERROR -->
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <!-- ID oculto -->
+    <input type="hidden" asp-for="IdColaborador" />
+
+    <!-- TIPO -->
+    <div class="mb-3">
+        <label class="form-label">Tipo de Incapacidad</label>
+        <select asp-for="TipoIncapacidad"
+                class="form-select"
+                id="TipoIncapacidad">
+            <option value="">-- Seleccione --</option>
+            <option value="CCSS-EC">CCSS - Enfermedad Común / Accidente no laboral</option>
+            <option value="INS-RT">INS - Riesgo del Trabajo</option>
+            <option value="CCSS-MAT">CCSS - Licencia por Maternidad</option>
+            <option value="CCSS-CUID">CCSS - Cuidados Especiales</option>
+            <option value="INS-SOA">INS - Accidente de Tránsito (SOA)</option>
+        </select>
+        <span asp-validation-for="TipoIncapacidad" class="text-danger"></span>
+    </div>
+
+    <!-- FECHAS -->
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Fecha Inicio</label>
+            <input asp-for="FechaInicio"
+                   id="FechaInicio"
+                   type="date"
+                   class="form-control" />
+            <span asp-validation-for="FechaInicio" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Fecha Fin</label>
+            <input asp-for="FechaFin"
+                   id="FechaFin"
+                   type="date"
+                   class="form-control" />
+            <span asp-validation-for="FechaFin" class="text-danger"></span>
+        </div>
+    </div>
+
+    <!-- MOTIVO -->
+    <div class="mb-3">
+        <label class="form-label">Motivo / Observación</label>
+        <textarea asp-for="Motivo"
+                  class="form-control"
+                  rows="3"
+                  placeholder="Detalle breve de la incapacidad"></textarea>
+    </div>
+
+    <!-- ENTIDAD -->
+    <div class="mb-3">
+        <label class="form-label">Entidad Responsable</label>
+        <input class="form-control"
+               id="EntidadInfo"
+               value="Se determina automáticamente"
+               readonly />
+    </div>
+
+    <!-- REMUNERADA -->
+    <div class="mb-3">
+        <label class="form-label">Incapacidad Remunerada</label>
+        <input class="form-control"
+               id="RemuneradaInfo"
+               value="Se ajusta automáticamente según el tipo"
+               readonly />
+    </div>
+
+    <!-- VALOR REAL QUE SE ENVÍA -->
+    <input type="hidden" asp-for="EsRemunerada" id="EsRemunerada" />
+
+    <div class="d-flex justify-content-end">
+        <button type="submit" class="btn btn-success">
+            <i class="bi bi-save"></i> Guardar
+        </button>
+        <a asp-action="Index" class="btn btn-secondary ms-2">Cancelar</a>
+    </div>
+
+</form>
+
+@section Scripts {
+    <script>
+        const tipo = document.getElementById("TipoIncapacidad");
+        const entidad = document.getElementById("EntidadInfo");
+        const remuneradaTxt = document.getElementById("RemuneradaInfo");
+        const remuneradaHidden = document.getElementById("EsRemunerada");
+
+        tipo.addEventListener("change", () => {
+
+            const v = tipo.value;
+
+            entidad.value = "Se determina automáticamente";
+            remuneradaTxt.value = "Se ajusta automáticamente según el tipo";
+            remuneradaHidden.value = "";
+
+            if (v.startsWith("CCSS")) {
+                entidad.value = "Caja Costarricense de Seguro Social (CCSS)";
+
+                if (v === "CCSS-MAT") {
+                    remuneradaTxt.value = "Sí (100% - CCSS 50% / Patrono 50%)";
+                    remuneradaHidden.value = true;
+                } else {
+                    remuneradaTxt.value = "No (Subsidio CCSS según días)";
+                    remuneradaHidden.value = false;
+                }
+            }
+
+            if (v.startsWith("INS")) {
+                entidad.value = "Instituto Nacional de Seguros (INS)";
+                remuneradaTxt.value = "Sí (Cubierta desde el primer día)";
+                remuneradaHidden.value = true;
+            }
+        });
+
+        // VALIDACIÓN CLIENTE FECHAS
+        document.querySelector("form[asp-action='Create']")
+            .addEventListener("submit", function (e) {
+
+                const inicio = document.getElementById("FechaInicio").value;
+                const fin = document.getElementById("FechaFin").value;
+
+                if (inicio && fin && fin < inicio) {
+                    e.preventDefault();
+                    alert("La fecha final no puede ser menor que la fecha inicial.");
+                }
+            });
+    </script>
+}

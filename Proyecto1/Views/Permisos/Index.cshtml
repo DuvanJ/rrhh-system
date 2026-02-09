@@ -1,0 +1,84 @@
+﻿@model IEnumerable<Proyecto1.Models.Permiso>
+@{
+    ViewData["Title"] = "Gestión de Permisos";
+}
+
+<h2 class="mb-4">Gestión de Permisos</h2>
+
+<form method="get" asp-action="Index" class="row g-3 mb-4">
+    <div class="col-md-4">
+        <input type="number" name="idColaborador" class="form-control" placeholder="Buscar por ID de colaborador" />
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">Buscar</button>
+    </div>
+    <div class="col-md-2">
+        <a asp-action="Index" class="btn btn-secondary w-100">Limpiar</a>
+    </div>
+</form>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Warning"] != null)
+{
+    <div class="alert alert-warning">@TempData["Warning"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID Colaborador</th>
+            <th>Colaborador</th>
+            <th>Tipo</th>
+            <th>Fecha solicitud</th>
+            <th>Desde</th>
+            <th>Hasta</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.IdColaborador</td>
+                <td>@item.NombreColaborador</td>
+                <td>@item.TipoPermiso</td>
+                <td>@item.FechaSolicitud.ToString("dd/MM/yyyy")</td>
+                <td>@item.FechaInicio.ToString("dd/MM/yyyy")</td>
+                <td>@item.FechaFin.ToString("dd/MM/yyyy")</td>
+                <td>
+                    <span class="badge @(item.Estado == "Pendiente" ? "bg-warning" :
+                                                                    item.Estado == "Aprobado" ? "bg-success" : "bg-danger")">
+                    @item.Estado
+                </span>
+            </td>
+            <td class="text-center">
+                @if (item.Estado == "Pendiente")
+                    {
+                        <form asp-action="CambiarEstado" method="post" class="d-inline">
+                            <input type="hidden" name="id" value="@item.IdPermiso" />
+                            <input type="hidden" name="estado" value="Aprobado" />
+                            <button class="btn btn-success btn-sm">Aprobar</button>
+                        </form>
+                        <form asp-action="CambiarEstado" method="post" class="d-inline">
+                            <input type="hidden" name="id" value="@item.IdPermiso" />
+                            <input type="hidden" name="estado" value="Rechazado" />
+                            <button class="btn btn-danger btn-sm">Rechazar</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <span class="text-muted">Procesado</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

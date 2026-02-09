@@ -1,0 +1,41 @@
+﻿@model IEnumerable<Proyecto1.Models.PermisoColaboradorVM>
+
+@{
+    ViewData["Title"] = "Mis Permisos";
+}
+
+<h2 class="mb-3">Mis Permisos</h2>
+
+<a asp-action="Create" class="btn btn-primary mb-3">
+    <i class="bi bi-plus-square"></i> Solicitar Permiso
+</a>
+
+<table class="table table-striped mt-3">
+    <thead>
+        <tr>
+            <th>Tipo</th>
+            <th>Desde</th>
+            <th>Hasta</th>
+            <th>Estado</th>
+            <th>Observaciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.TipoPermiso</td>
+                <td>@item.FechaInicio.ToString("dd/MM/yyyy")</td>
+                <td>@item.FechaFin.ToString("dd/MM/yyyy")</td>
+                <td>
+                    <span class="badge
+                            @(item.Estado == "Pendiente" ? "bg-warning" :
+                                                    item.Estado == "Aprobado" ? "bg-success" : "bg-danger")">
+                    @item.Estado
+                </span>
+            </td>
+            <td>@item.Observaciones</td>
+        </tr>
+                }
+    </tbody>
+</table>
