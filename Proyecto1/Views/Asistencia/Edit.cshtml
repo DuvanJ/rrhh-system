@@ -1,60 +1,276 @@
 ﻿@model Proyecto1.Models.Asistencia
 
-<h3 class="fw-bold mb-4">Ajustar Asistencia</h3>
+@{
+    ViewData["Title"] = "Ajustar Asistencia";
 
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
+    var estadoActual = "";
+    var badgeClass = "";
+
+    if (Model.HoraSalida == null)
+    {
+        estadoActual = "Sin salida";
+        badgeClass = "bg-danger";
+    }
+    else if (Model.HoraEntrada > new TimeSpan(8, 0, 0))
+    {
+        estadoActual = "Tardia";
+        badgeClass = "bg-warning";
+    }
+    else
+    {
+        estadoActual = "Puntual";
+        badgeClass = "bg-success";
+    }
 }
 
-<form asp-action="Edit" method="post" class="card shadow-sm p-4">
-    <input type="hidden" asp-for="IdAsistencia" />
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-pencil-square"></i>Ajustar Asistencia
+    </h3>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
 
-    <div class="mb-3">
-        <label class="form-label">ID Colaborador</label>
-        <input class="form-control" value="@Model.IdColaborador" disabled />
+<div class="row justify-content-center">
+    <div class="col-xl-7 col-lg-9">
+
+        @* Tarjeta de identidad del registro *@
+        <div class="card mb-3">
+            <div class="card-body py-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="avatar-circle avatar-blue"
+                         style="width:48px;height:48px;font-size:1rem;flex-shrink:0;">
+                        <i class="bi bi-calendar-check" style="font-size:1.1rem;"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:1rem;font-weight:700;color:var(--navy);">
+                            Colaborador ID: @Model.IdColaborador
+                        </div>
+                        <div style="font-size:0.82rem;color:var(--text-3);">
+                            Fecha: @Model.Fecha.ToString("dd/MM/yyyy")
+                            &nbsp;·&nbsp;
+                            ID Registro: #@Model.IdAsistencia
+                        </div>
+                    </div>
+                    <div class="ms-auto">
+                        <span class="badge @badgeClass badge-dot">@estadoActual</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* Formulario *@
+        <div class="card">
+            <div class="card-header">
+                <span class="card-header-title">
+                    <i class="bi bi-pencil"></i>Datos del ajuste
+                </span>
+            </div>
+            <div class="card-body">
+
+                <form asp-action="Edit" method="post" id="formAjuste" novalidate>
+
+                    <input type="hidden" asp-for="IdAsistencia" />
+
+                    @* Horas *@
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Hora de entrada <span class="required">*</span>
+                            </label>
+                            <input asp-for="HoraEntrada"
+                                   id="entrada"
+                                   type="time"
+                                   class="form-control" />
+                            <span class="form-text">Hora original registrada</span>
+                            <span asp-validation-for="HoraEntrada" class="form-error d-block"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Hora de salida <span class="required">*</span>
+                            </label>
+                            <input asp-for="HoraSalida"
+                                   id="salida"
+                                   type="time"
+                                   class="form-control" />
+                            <span id="msgHoras" class="form-text" style="display:none;"></span>
+                            <span asp-validation-for="HoraSalida" class="form-error d-block"></span>
+                        </div>
+                    </div>
+
+                    @* Motivo *@
+                    <div class="mb-4">
+                        <label class="form-label">
+                            Motivo del ajuste <span class="required">*</span>
+                        </label>
+                        <textarea asp-for="Motivo"
+                                  id="motivo"
+                                  class="form-control"
+                                  rows="3"
+                                  placeholder="Indique el motivo del ajuste de forma detallada..."></textarea>
+                        <div class="d-flex justify-content-between mt-1">
+                            <span asp-validation-for="Motivo" class="form-error"></span>
+                            <span id="contadorMotivo"
+                                  class="form-text ms-auto">0 / 200</span>
+                        </div>
+                    </div>
+
+                    @* Alerta de advertencia *@
+                    <div class="alert alert-warning d-flex align-items-start gap-2 mb-4">
+                        <i class="bi bi-exclamation-triangle-fill flex-shrink-0"
+                           style="font-size:1rem;margin-top:2px;"></i>
+                        <div style="font-size:0.82rem;">
+                            Este ajuste quedara registrado en la auditoria del sistema
+                            junto con el usuario que realiza el cambio y el motivo indicado.
+                        </div>
+                    </div>
+
+                    <hr class="section-divider" />
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i>Cancelar
+                        </a>
+                        <button type="button"
+                                id="btnGuardar"
+                                class="btn btn-warning"
+                                onclick="confirmarAjuste()"
+                                disabled>
+                            <i class="bi bi-save"></i>Guardar ajuste
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
     </div>
+</div>
 
-    <div class="mb-3">
-        <label class="form-label">Fecha</label>
-        <input class="form-control" value="@Model.Fecha.ToShortDateString()" disabled />
-    </div>
+@section Styles {
+    <style>
+        .required {
+            color: var(--red);
+            margin-left: 2px;
+        }
 
-    <div class="mb-3">
-        <label asp-for="HoraEntrada" class="form-label">Hora Entrada</label>
-        <input asp-for="HoraEntrada" type="time" class="form-control" />
-        <span asp-validation-for="HoraEntrada" class="text-danger"></span>
-    </div>
+        .field-validation-error {
+            color: var(--red);
+            font-size: 0.78rem;
+            margin-top: 4px;
+        }
 
-    <div class="mb-3">
-        <label asp-for="HoraSalida" class="form-label">Hora Salida</label>
-        <input asp-for="HoraSalida" type="time" class="form-control" />
-        <span asp-validation-for="HoraSalida" class="text-danger"></span>
-    </div>
+        .input-validation-error {
+            border-color: var(--red) !important;
+        }
 
-    <!-- 🔴 MOTIVO OBLIGATORIO -->
-    <div class="mb-3">
-        <label asp-for="Motivo" class="form-label">Motivo del ajuste</label>
-        <textarea asp-for="Motivo"
-                  class="form-control"
-                  rows="3"
-                  placeholder="Indique el motivo del ajuste (obligatorio)"></textarea>
-        <span asp-validation-for="Motivo" class="text-danger"></span>
-    </div>
-
-    <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-success">
-            <i class="bi bi-save"></i> Guardar cambios
-        </button>
-
-        <a asp-action="Index" class="btn btn-secondary">
-            Cancelar
-        </a>
-    </div>
-</form>
+        textarea.form-control {
+            resize: vertical;
+            min-height: 90px;
+        }
+    </style>
+}
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            var entrada    = document.getElementById('entrada');
+            var salida     = document.getElementById('salida');
+            var motivo     = document.getElementById('motivo');
+            var btnGuardar = document.getElementById('btnGuardar');
+            var msgHoras   = document.getElementById('msgHoras');
+            var contador   = document.getElementById('contadorMotivo');
+
+            // Valores originales
+            var original = {
+                entrada: (entrada.value || '').substring(0, 5),
+                salida:  (salida.value  || '').substring(0, 5)
+            };
+
+            function hayCambios() {
+                return (
+                    original.entrada !== (entrada.value || '').substring(0, 5) ||
+                    original.salida  !== (salida.value  || '').substring(0, 5)
+                );
+            }
+
+            function horasValidas() {
+                if (!entrada.value || !salida.value) return false;
+                return entrada.value < salida.value;
+            }
+
+            function motivoValido() {
+                return motivo.value.trim().length >= 5;
+            }
+
+            function validarHoras() {
+                if (salida.value && entrada.value && !horasValidas()) {
+                    salida.style.borderColor  = 'var(--red)';
+                    msgHoras.style.display    = 'block';
+                    msgHoras.style.color      = 'var(--red)';
+                    msgHoras.textContent      = 'La salida debe ser posterior a la entrada';
+                } else if (salida.value && horasValidas()) {
+                    salida.style.borderColor  = 'var(--green)';
+                    msgHoras.style.display    = 'block';
+                    msgHoras.style.color      = 'var(--green)';
+                    msgHoras.textContent      = 'Horas validas';
+                } else {
+                    salida.style.borderColor  = '';
+                    msgHoras.style.display    = 'none';
+                }
+            }
+
+            function actualizarBoton() {
+                btnGuardar.disabled = !(hayCambios() && horasValidas() && motivoValido());
+            }
+
+            // Contador de caracteres en motivo
+            motivo.addEventListener('input', function () {
+                var len = motivo.value.length;
+                contador.textContent = len + ' / 200';
+                if (len > 200) {
+                    motivo.value    = motivo.value.substring(0, 200);
+                    contador.style.color = 'var(--red)';
+                } else {
+                    contador.style.color = 'var(--text-3)';
+                }
+                actualizarBoton();
+            });
+
+            entrada.addEventListener('input', function () {
+                validarHoras();
+                actualizarBoton();
+            });
+
+            salida.addEventListener('input', function () {
+                validarHoras();
+                actualizarBoton();
+            });
+
+            setTimeout(actualizarBoton, 50);
+        });
+
+        function confirmarAjuste() {
+            var motivo = document.getElementById('motivo').value.trim();
+
+            if (!motivo) {
+                Alert.warning('Debe ingresar el motivo del ajuste.');
+                return;
+            }
+
+            Alert.confirm(
+                'Se registrara el ajuste de asistencia con el motivo indicado. Esta accion queda registrada en auditoria. Desea continuar?',
+                function () {
+                    document.getElementById('formAjuste').submit();
+                },
+                'warning'
+            );
+        }
+
+    </script>
 }
-
-

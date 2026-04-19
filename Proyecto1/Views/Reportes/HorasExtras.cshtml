@@ -1,0 +1,262 @@
+﻿@model List<HoraExtraAdminVM>
+
+@{
+    ViewData["Title"] = "Reporte de Horas Extras";
+
+    var colaboradorQ = Context.Request.Query["colaborador"].ToString();
+    var fechaInicioQ = Context.Request.Query["fechaInicio"].ToString();
+    var fechaFinQ = Context.Request.Query["fechaFin"].ToString();
+    var estadoQ = Context.Request.Query["estado"].ToString();
+
+    var totalRegistros = (int)(ViewBag.TotalRegistros ?? 0);
+    var totalHoras = ViewBag.TotalHoras?.ToString() ?? "0";
+}
+
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-clock-history"></i>Reporte de Horas Extras
+    </h3>
+    <a asp-controller="Reportes" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
+
+@* ================================================
+   FILTROS
+   ================================================ *@
+<div class="filter-card mb-4">
+    <form method="get" asp-action="HorasExtras">
+        <div class="filter-row flex-wrap">
+
+            <div class="filter-group" style="max-width:220px;">
+                <span class="filter-label">Colaborador</span>
+                <input type="text"
+                       name="colaborador"
+                       value="@colaboradorQ"
+                       class="form-control"
+                       placeholder="Nombre..." />
+            </div>
+
+            <div class="filter-group" style="max-width:160px;">
+                <span class="filter-label">Fecha inicio</span>
+                <input type="date"
+                       name="fechaInicio"
+                       value="@fechaInicioQ"
+                       class="form-control" />
+            </div>
+
+            <div class="filter-group" style="max-width:160px;">
+                <span class="filter-label">Fecha fin</span>
+                <input type="date"
+                       name="fechaFin"
+                       value="@fechaFinQ"
+                       class="form-control" />
+            </div>
+
+            <div class="filter-group" style="max-width:150px;">
+                <span class="filter-label">Estado</span>
+                <select name="estado" class="form-select">
+                    <option value="">Todos</option>
+                    @if (estadoQ == "Pendiente")
+                    {
+                        <option value="Pendiente" selected="selected">Pendiente</option>
+                        <option value="Aprobada">Aprobada</option>
+                        <option value="Rechazada">Rechazada</option>
+                    }
+                    else if (estadoQ == "Aprobada")
+                    {
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Aprobada" selected="selected">Aprobada</option>
+                        <option value="Rechazada">Rechazada</option>
+                    }
+                    else if (estadoQ == "Rechazada")
+                    {
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Aprobada">Aprobada</option>
+                        <option value="Rechazada" selected="selected">Rechazada</option>
+                    }
+                    else
+                    {
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Aprobada">Aprobada</option>
+                        <option value="Rechazada">Rechazada</option>
+                    }
+                </select>
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i>Filtrar
+                </button>
+                <a asp-action="HorasExtras" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i>Limpiar
+                </a>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+@* ================================================
+   KPI CARDS
+   ================================================ *@
+<div class="row g-3 mb-4">
+
+    <div class="col-md-6">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total registros</div>
+                <div class="kpi-value">@totalRegistros</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-list-check"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total horas extras</div>
+                <div class="kpi-value" style="color:var(--blue)">@totalHoras</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-clock-history"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@* ================================================
+   BOTON EXCEL
+   ================================================ *@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted" style="font-size:0.82rem;">
+        @(Model?.Count ?? 0) registro(s) encontrado(s)
+    </span>
+    <a asp-action="ExportarHorasExtrasExcel"
+       asp-route-colaborador="@colaboradorQ"
+       asp-route-fechaInicio="@fechaInicioQ"
+       asp-route-fechaFin="@fechaFinQ"
+       asp-route-estado="@estadoQ"
+       class="btn btn-success">
+        <i class="bi bi-file-earmark-excel"></i>Exportar Excel
+    </a>
+</div>
+
+@* ================================================
+   TABLA
+   ================================================ *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>Listado de horas extras
+        </span>
+        <span class="badge badge-info">@(Model?.Count ?? 0) registros</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaHorasExtras" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th>Colaborador</th>
+                        <th class="text-center">Fecha</th>
+                        <th class="text-center">Horas</th>
+                        <th>Motivo</th>
+                        <th class="text-center">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            var iniciales = item.NombreColaborador?
+                            .Split(' ')
+                            .Where(s => !string.IsNullOrEmpty(s))
+                            .Take(2)
+                            .Select(s => s[0].ToString())
+                            .Aggregate("", (acc, c) => acc + c)
+                            .ToUpper() ?? "??";
+
+                            string badgeClass = item.Estado switch
+                            {
+                                "Aprobada" => "bg-success",
+                                "Pendiente" => "bg-warning",
+                                _ => "bg-danger"
+                            };
+
+                            string avatarColor = item.Estado switch
+                            {
+                                "Aprobada" => "green",
+                                "Pendiente" => "amber",
+                                _ => "red"
+                            };
+
+                            <tr>
+                                <td>
+                                    <div class="table-avatar">
+                                        <div class="avatar-circle avatar-@avatarColor">
+                                            @iniciales
+                                        </div>
+                                        <div class="avatar-name">@item.NombreColaborador</div>
+                                    </div>
+                                </td>
+                                <td class="text-center td-muted">
+                                    @item.Fecha.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center">
+                                    <span class="td-mono"
+                                          style="font-weight:700;color:var(--blue)">
+                                        @item.CantidadHoras h
+                                    </span>
+                                </td>
+                                <td class="td-muted" style="max-width:200px;">
+                                    @(item.Motivo?.Length > 60
+                                                                ? item.Motivo.Substring(0, 60) + "..."
+                                                                : item.Motivo)
+                        </td>
+                        <td class="text-center">
+                            <span class="badge @badgeClass badge-dot">
+                                @item.Estado
+                            </span>
+                        </td>
+                    </tr>
+                                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5">
+                                <div class="table-empty">
+                                    <i class="bi bi-clock-history"></i>
+                                    <p>No se encontraron registros de horas extras</p>
+                                    <span class="text-muted" style="font-size:0.82rem;">
+                                        Ajuste los filtros e intente de nuevo
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            if (@((Model != null && Model.Any()).ToString().ToLower())) {
+                var config = Object.assign({}, DataTableConfig, {
+                    order: [[1, 'desc']]
+                });
+                $('#tablaHorasExtras').DataTable(config);
+            }
+        });
+    </script>
+}

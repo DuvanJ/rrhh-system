@@ -1,0 +1,270 @@
+﻿@model Proyecto1.Models.EvaluacionVM
+
+@{
+    ViewData["Title"] = "Eliminar Evaluacion";
+
+    var iniciales = Model.NombreColaborador?
+        .Split(' ')
+        .Where(s => !string.IsNullOrEmpty(s))
+        .Take(2)
+        .Select(s => s[0].ToString())
+        .Aggregate("", (acc, c) => acc + c)
+        .ToUpper() ?? "??";
+
+    string desempeno;
+    string badgeClass;
+    string avatarColor;
+
+    if (Model.PuntajeTotal >= 90)
+    {
+        desempeno = "Excelente";
+        badgeClass = "bg-success";
+        avatarColor = "green";
+    }
+    else if (Model.PuntajeTotal >= 70)
+    {
+        desempeno = "Bueno";
+        badgeClass = "bg-info";
+        avatarColor = "blue";
+    }
+    else if (Model.PuntajeTotal >= 50)
+    {
+        desempeno = "Regular";
+        badgeClass = "bg-warning";
+        avatarColor = "amber";
+    }
+    else
+    {
+        desempeno = "Deficiente";
+        badgeClass = "bg-danger";
+        avatarColor = "red";
+    }
+}
+
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-trash"></i>Eliminar Evaluacion
+    </h3>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-xl-6 col-lg-8">
+
+        @* Alerta de advertencia *@
+        <div class="alert alert-danger d-flex align-items-start gap-3 mb-4">
+            <i class="bi bi-exclamation-triangle-fill flex-shrink-0"
+               style="font-size:1.2rem;margin-top:2px;"></i>
+            <div>
+                <div style="font-weight:600;margin-bottom:2px;">Accion irreversible</div>
+                <div style="font-size:0.875rem;">
+                    Esta evaluacion sera eliminada permanentemente del sistema.
+                    Los datos no podran ser recuperados.
+                </div>
+            </div>
+        </div>
+
+        @* Card del colaborador *@
+        <div class="card mb-4">
+            <div class="card-header">
+                <span class="card-header-title">
+                    <i class="bi bi-clipboard-check"></i>Evaluacion a eliminar
+                </span>
+            </div>
+            <div class="card-body">
+
+                @* Perfil *@
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="avatar-circle avatar-@avatarColor"
+                         style="width:56px;height:56px;font-size:1.1rem;flex-shrink:0;">
+                        @iniciales
+                    </div>
+                    <div>
+                        <div style="font-size:1rem;font-weight:700;color:var(--navy);">
+                            @Model.NombreColaborador
+                        </div>
+                        <div style="font-size:0.82rem;color:var(--text-3);">
+                            ID Colaborador: @Model.IdColaborador
+                        </div>
+                    </div>
+                    <div class="ms-auto">
+                        <span class="badge @badgeClass badge-dot">@desempeno</span>
+                    </div>
+                </div>
+
+                @* Datos *@
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+                        <div class="detail-field">
+                            <span class="detail-label">
+                                <i class="bi bi-calendar-event"></i>Fecha de evaluacion
+                            </span>
+                            <span class="detail-value td-mono">
+                                @Model.FechaEvaluacion.ToString("dd/MM/yyyy")
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="detail-field">
+                            <span class="detail-label">
+                                <i class="bi bi-bar-chart"></i>Puntaje total
+                            </span>
+                            <span class="detail-value">
+                                @if (Model.PuntajeTotal.HasValue)
+                                {
+                                    <div class="puntaje-bar">
+                                        <span class="puntaje-valor">
+                                            @Model.PuntajeTotal.Value.ToString("N1")
+                                        </span>
+                                        <div class="puntaje-track">
+                                            <div class="puntaje-fill @avatarColor"
+                                                 style="width:@Model.PuntajeTotal%"></div>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="td-muted">Sin puntaje</span>
+                                }
+                            </span>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.ComentariosGenerales))
+                    {
+                        <div class="col-12">
+                            <div class="detail-field">
+                                <span class="detail-label">
+                                    <i class="bi bi-chat-text"></i>Comentarios generales
+                                </span>
+                                <span class="detail-value" style="font-size:0.875rem;">
+                                    @Model.ComentariosGenerales
+                                </span>
+                            </div>
+                        </div>
+                    }
+
+                </div>
+
+            </div>
+
+            <div class="card-footer d-flex justify-content-end gap-2"
+                 style="background:transparent;border-top:1px solid var(--border);padding:16px 20px;">
+
+                <form asp-action="Delete" method="post" id="formEliminar">
+                    <input type="hidden" asp-for="IdEvaluacion" />
+                    <div class="d-flex gap-2">
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i>Cancelar
+                        </a>
+                        <button type="button"
+                                class="btn btn-danger"
+                                onclick="confirmarEliminar('@Model.NombreColaborador')">
+                            <i class="bi bi-trash"></i>Confirmar eliminacion
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .detail-field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 12px 14px;
+            background: var(--slate-ll);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            height: 100%;
+        }
+
+        .detail-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-3);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+            .detail-label i {
+                font-size: 0.75rem;
+            }
+
+        .detail-value {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .puntaje-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .puntaje-valor {
+            font-family: 'Consolas', monospace;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--text);
+            min-width: 32px;
+        }
+
+        .puntaje-track {
+            flex: 1;
+            max-width: 80px;
+            height: 6px;
+            background: var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .puntaje-fill {
+            height: 100%;
+            border-radius: 10px;
+        }
+
+            .puntaje-fill.green {
+                background: var(--green);
+            }
+
+            .puntaje-fill.blue {
+                background: var(--blue);
+            }
+
+            .puntaje-fill.amber {
+                background: var(--amber);
+            }
+
+            .puntaje-fill.red {
+                background: var(--red);
+            }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        function confirmarEliminar(nombre) {
+            Alert.confirm(
+                'Se eliminara permanentemente la evaluacion de ' + nombre + '. Esta accion no se puede revertir. Desea continuar?',
+                function () {
+                    document.getElementById('formEliminar').submit();
+                },
+                'warning'
+            );
+        }
+    </script>
+}

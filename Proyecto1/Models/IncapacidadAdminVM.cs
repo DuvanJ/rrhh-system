@@ -7,7 +7,9 @@
 
         public string NombreColaborador { get; set; } = string.Empty;
 
+        public string Codigo { get; set; } = string.Empty;
         public string TipoIncapacidad { get; set; } = string.Empty;
+        public string Entidad { get; set; } = string.Empty;
 
         public DateTime FechaInicio { get; set; }
         public DateTime FechaFin { get; set; }

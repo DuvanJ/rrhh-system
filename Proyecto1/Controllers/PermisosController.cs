@@ -9,37 +9,38 @@ namespace Proyecto1.Controllers
     {
         private readonly PermisosService _service;
         private readonly EmailService _emailService;
+        private readonly ColaboradoresService _colaboradoresService;
         private readonly IConfiguration _config;
 
-        public PermisosController(PermisosService service, EmailService emailService, IConfiguration config)
+        public PermisosController(
+            PermisosService service,
+            EmailService emailService,
+            ColaboradoresService colaboradoresService,
+            IConfiguration config)
         {
             _service = service;
             _emailService = emailService;
+            _colaboradoresService = colaboradoresService;
             _config = config;
         }
 
         // =================================
         // Vista principal (Admin)
         // =================================
-        // 📌 Vista principal (Admin / RRHH)
         public async Task<IActionResult> Index(int? idColaborador)
         {
-            // 1️⃣ Cargar todos los permisos
             var lista = await _service.ListarAsync();
 
-            // 2️⃣ Filtrar por ID de colaborador si se proporciona
             if (idColaborador.HasValue)
             {
-                // ✅ Verificar si el colaborador existe
                 bool existe = await _service.ColaboradorExisteAsync(idColaborador.Value);
 
                 if (!existe)
                 {
                     TempData["Error"] = $"No existe ningún colaborador con ID {idColaborador.Value}.";
-                    return View(lista); // ✔ Mostrar toda la lista
+                    return View(lista);
                 }
 
-                // ✅ Filtrar permisos por colaborador
                 var filtrada = lista
                     .Where(p => p.IdColaborador == idColaborador.Value)
                     .ToList();
@@ -47,14 +48,13 @@ namespace Proyecto1.Controllers
                 if (!filtrada.Any())
                 {
                     TempData["Warning"] = $"El colaborador con ID {idColaborador.Value} no tiene permisos registrados.";
-                    return View(lista); // ✔ Mostrar toda la lista
+                    return View(lista);
                 }
 
                 TempData["Success"] = "Permisos encontrados correctamente.";
-                return View(filtrada); // ✔ Mostrar solo los permisos filtrados
+                return View(filtrada);
             }
 
-            // 3️⃣ Si no hay ID, mostrar toda la lista
             return View(lista);
         }
 
@@ -65,18 +65,20 @@ namespace Proyecto1.Controllers
         [HttpPost]
         public async Task<IActionResult> CambiarEstado(int id, string estado)
         {
-            await _service.CambiarEstadoAsync(id, estado);
-
-            var detalle = _service.ObtenerDetalle(id);
-
-            if (detalle == null)
+            try
             {
-                TempData["Error"] = "No se pudieron obtener los datos del permiso.";
-                return RedirectToAction(nameof(Index));
-            }
+                await _service.CambiarEstadoAsync(id, estado);
 
-            string asunto = "Estado de su solicitud de permiso";
-            string mensaje = $@"
+                var detalle = _service.ObtenerDetalle(id);
+
+                if (detalle == null)
+                {
+                    TempData["Error"] = "No se pudieron obtener los datos del permiso.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                string asunto = "Estado de su solicitud de permiso";
+                string mensaje = $@"
 Hola {detalle.NombreColaborador},
 
 Su solicitud de permiso del {detalle.FechaInicio:dd/MM/yyyy} al {detalle.FechaFin:dd/MM/yyyy}
@@ -88,24 +90,57 @@ Atentamente,
 Departamento de RRHH
 ";
 
-            // Enviar correo al colaborador
-            if (!string.IsNullOrWhiteSpace(detalle.CorreoColaborador))
-            {
-                try
+                // 🔴 OBTENER CORREO: primero del SP, si no, de Colaboradores
+                string correoColaborador = !string.IsNullOrWhiteSpace(detalle.CorreoColaborador)
+                    ? detalle.CorreoColaborador
+                    : null;
+
+                if (string.IsNullOrWhiteSpace(correoColaborador) && detalle.IdColaborador > 0)
                 {
-                    await _emailService.EnviarAsync(detalle.CorreoColaborador, asunto, mensaje);
+                    var colaborador = await _colaboradoresService.ObtenerPorId(detalle.IdColaborador);
+                    correoColaborador = colaborador?.Correo;
                 }
-                catch
+
+                // Enviar correo al colaborador
+                if (!string.IsNullOrWhiteSpace(correoColaborador))
                 {
-                    TempData["Warning"] = "El permiso fue procesado, pero no se pudo enviar el correo al colaborador.";
+                    try
+                    {
+                        await _emailService.EnviarAsync(correoColaborador, asunto, mensaje);
+                    }
+                    catch
+                    {
+                        TempData["Warning"] = "El permiso fue procesado, pero no se pudo enviar el correo al colaborador.";
+                    }
                 }
+                else
+                {
+                    TempData["Warning"] = "El permiso fue procesado, pero el colaborador no tiene correo registrado.";
+                }
+
+                // 🔴 ENVIAR CORREO A RRHH - VALIDAR QUE NO SEA NULO
+                string correoRRHH = _config["SendGrid:CorreoRRHH"];
+
+                if (!string.IsNullOrWhiteSpace(correoRRHH))
+                {
+                    try
+                    {
+                        await _emailService.EnviarAsync(correoRRHH, $"Permiso {estado}", mensaje);
+                    }
+                    catch
+                    {
+                        // Log silenciosamente
+                    }
+                }
+
+                TempData["Success"] = $"Permiso {estado.ToLower()} correctamente.";
+                return RedirectToAction(nameof(Index));
             }
-
-            // Enviar correo a RRHH siempre
-            await _emailService.EnviarAsync(_config["SendGrid:CorreoRRHH"], $"Permiso {estado}", mensaje);
-
-            TempData["Success"] = $"Permiso {estado.ToLower()} correctamente.";
-            return RedirectToAction(nameof(Index));
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error al procesar el permiso: {ex.Message}";
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         // =================================
@@ -142,6 +177,9 @@ Departamento de RRHH
 
             model.IdColaborador = idColaborador.Value;
 
+            // Determinar si es con goce o no
+            model.EsConGoce = model.TipoPermiso == "Con goce salarial";
+
             await _service.RegistrarAsync(model);
 
             TempData["Success"] = "Solicitud de permiso enviada correctamente";
@@ -149,4 +187,3 @@ Departamento de RRHH
         }
     }
 }
-

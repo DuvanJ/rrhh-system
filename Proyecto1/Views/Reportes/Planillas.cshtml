@@ -1,0 +1,262 @@
+﻿@model List<Proyecto1.Models.Planilla>
+
+@{
+    ViewData["Title"] = "Reporte de Planillas";
+    var cultura = System.Globalization.CultureInfo.GetCultureInfo("es-ES");
+
+    var totalGeneral = Model.Sum(x => x.Detalles.Sum(d => d.SalarioNeto));
+    var generadas = Model.Count(x => x.Estado == 1);
+    var anuladas = Model.Count(x => x.Estado == 2);
+    var mesVB = ViewBag.Mes as int?;
+    var anioVB = ViewBag.Anio as int?;
+}
+
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-receipt-cutoff"></i>Reporte de Planillas
+    </h3>
+    <a asp-controller="Reportes" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
+
+@* ================================================
+   FILTROS
+   ================================================ *@
+<div class="filter-card mb-4">
+    <form method="get">
+        <div class="filter-row flex-wrap">
+
+            <div class="filter-group" style="max-width:160px;">
+                <span class="filter-label">Mes</span>
+                <select name="mes" class="form-select">
+                    <option value="">Todos</option>
+                    @for (int m = 1; m <= 12; m++)
+                    {
+                        @if (mesVB == m)
+                        {
+                            <option value="@m" selected="selected">
+                                @cultura.DateTimeFormat.GetMonthName(m)
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="@m">
+                                @cultura.DateTimeFormat.GetMonthName(m)
+                            </option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="filter-group" style="max-width:120px;">
+                <span class="filter-label">Año</span>
+                <input type="number"
+                       name="anio"
+                       class="form-control"
+                       placeholder="@DateTime.Now.Year"
+                       value="@anioVB" />
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i>Filtrar
+                </button>
+                <a asp-action="Planillas" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i>Limpiar
+                </a>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+@* ================================================
+   KPI CARDS
+   ================================================ *@
+<div class="row g-3 mb-4">
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total planillas</div>
+                <div class="kpi-value">@Model.Count</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-receipt-cutoff"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Generadas</div>
+                <div class="kpi-value" style="color:var(--green)">@generadas</div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Anuladas</div>
+                <div class="kpi-value" style="color:var(--red)">@anuladas</div>
+            </div>
+            <div class="kpi-icon red">
+                <i class="bi bi-x-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total neto general</div>
+                <div class="kpi-value" style="font-size:1.0rem;color:var(--green)">
+                    ₡ @totalGeneral.ToString("N2")
+                </div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-currency-dollar"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@* ================================================
+   BOTON EXCEL
+   ================================================ *@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted" style="font-size:0.82rem;">
+        @Model.Count planilla(s) encontrada(s)
+    </span>
+    <a asp-action="ExportarPlanillasExcel"
+       asp-route-mes="@mesVB"
+       asp-route-anio="@anioVB"
+       class="btn btn-success">
+        <i class="bi bi-file-earmark-excel"></i>Exportar Excel
+    </a>
+</div>
+
+@* ================================================
+   TABLA
+   ================================================ *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>Listado de planillas
+        </span>
+        <span class="badge badge-info">@Model.Count registros</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaPlanillas" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th class="text-center">ID</th>
+                        <th>Periodo</th>
+                        <th class="text-center">Fecha generacion</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-end">Total neto</th>
+                        <th class="text-end pe-3">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            var nombreMes = cultura.DateTimeFormat.GetMonthName(item.Mes);
+
+                            string estadoBadge = item.Estado switch
+                            {
+                                1 => "bg-success",
+                                2 => "bg-danger",
+                                3 => "bg-warning",
+                                _ => "bg-secondary"
+                            };
+
+                            string estadoTexto = item.Estado switch
+                            {
+                                1 => "Generada",
+                                2 => "Anulada",
+                                3 => "Regenerada",
+                                _ => "Desconocido"
+                            };
+
+                            var netoTotal = item.Detalles.Sum(d => d.SalarioNeto);
+
+                            <tr>
+                                <td class="text-center td-mono">@item.IdPlanilla</td>
+                                <td style="font-weight:500;">
+                                    @nombreMes @item.Año
+                                </td>
+                                <td class="text-center td-muted">
+                                    @item.FechaGeneracion.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge @estadoBadge badge-dot">
+                                        @estadoTexto
+                                    </span>
+                                </td>
+                                <td class="text-end td-mono"
+                                    style="font-weight:700;color:var(--green)">
+                                    ₡ @netoTotal.ToString("N2")
+                                </td>
+                                <td>
+                                    <div class="td-actions">
+                                        <a asp-action="PlanillaResumen"
+                                           asp-route-idPlanilla="@item.IdPlanilla"
+                                           class="btn btn-primary btn-sm">
+                                            <i class="bi bi-bar-chart"></i>Resumen
+                                        </a>
+                                        <a asp-action="PlanillaDetallada"
+                                           asp-route-idPlanilla="@item.IdPlanilla"
+                                           class="btn btn-secondary btn-sm">
+                                            <i class="bi bi-table"></i>Detalle
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6">
+                                <div class="table-empty">
+                                    <i class="bi bi-receipt-cutoff"></i>
+                                    <p>No se encontraron planillas</p>
+                                    <span class="text-muted" style="font-size:0.82rem;">
+                                        Ajuste los filtros e intente de nuevo
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            if (@Model.Any().ToString().ToLower()) {
+                var config = Object.assign({}, DataTableConfig, {
+                    order: [[0, 'desc']]
+                });
+                $('#tablaPlanillas').DataTable(config);
+            }
+        });
+    </script>
+}

@@ -1,75 +1,320 @@
-﻿@model List<Proyecto1.Models.Asistencia>
+﻿@model List<Proyecto1.Models.AsistenciaReporteVM>
 
-<h3 class="fw-bold mb-4">Control de Asistencia</h3>
+@{
+    ViewData["Title"] = "Historico de Asistencia";
+    var rol = Context.Session.GetString("Perfil");
+    int total = ViewBag.Total ?? 0;
+    int puntuales = ViewBag.Puntuales ?? 0;
+    int tardias = ViewBag.Tardias ?? 0;
+}
 
-<form method="get" asp-action="Index" class="row g-2 mb-3">
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-calendar-check"></i>Historico de Asistencia
+    </h3>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-house"></i>Inicio
+    </a>
+</div>
+
+@* ================================================
+   KPI CARDS
+   ================================================ *@
+<div class="row g-3 mb-4">
+
     <div class="col-md-4">
-        <input type="number"
-               name="idColaborador"
-               class="form-control"
-               placeholder="Buscar por ID de colaborador"
-               required />
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Registros totales</div>
+                <div class="kpi-value">@total</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-list-check"></i>
+            </div>
+        </div>
     </div>
-    <div class="col-md-2">
-        <button type="submit" class="btn btn-primary">
-            <i class="bi bi-search"></i> Buscar
-        </button>
+
+    <div class="col-md-4">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Puntuales</div>
+                <div class="kpi-value" style="color:var(--green)">@puntuales</div>
+                @if (total > 0)
+                {
+                    <div class="kpi-trend up">
+                        &#9650; @((puntuales * 100 / total))% del total
+                    </div>
+                }
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+        </div>
     </div>
-</form>
 
-@if (TempData["Success"] != null)
+    <div class="col-md-4">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Tardias</div>
+                <div class="kpi-value" style="color:var(--amber)">@tardias</div>
+                @if (total > 0)
+                {
+                    <div class="kpi-trend down">
+                        &#9660; @((tardias * 100 / total))% del total
+                    </div>
+                }
+            </div>
+            <div class="kpi-icon amber">
+                <i class="bi bi-clock-fill"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@* ================================================
+   FILTROS
+   ================================================ *@
+<div class="filter-card mb-4">
+    <form id="formAsistencia" method="get" asp-action="Index">
+        <div class="filter-row">
+
+            <div class="filter-group" style="max-width:130px;">
+                <span class="filter-label">ID Colaborador</span>
+                <input type="number"
+                       id="filtroCol"
+                       name="idColaborador"
+                       value="@ViewBag.IdColaborador"
+                       class="form-control"
+                       placeholder="Ej: 12" />
+            </div>
+
+            <div class="filter-group" style="max-width:180px;">
+                <span class="filter-label">Desde</span>
+                <input type="date"
+                       id="filtroInicio"
+                       name="fechaInicio"
+                       value="@ViewBag.FechaInicio"
+                       class="form-control" />
+            </div>
+
+            <div class="filter-group" style="max-width:180px;">
+                <span class="filter-label">Hasta</span>
+                <input type="date"
+                       id="filtroFin"
+                       name="fechaFin"
+                       value="@ViewBag.FechaFin"
+                       class="form-control" />
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i>Buscar
+                </button>
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        onclick="limpiarFiltros()">
+                    <i class="bi bi-x-circle"></i>Limpiar
+                </button>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+@* ================================================
+   ESTADO VACIO
+   ================================================ *@
+@if (!Model.Any())
 {
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
-@if (TempData["Warning"] != null)
-{
-    <div class="alert alert-warning">@TempData["Warning"]</div>
-}
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
+    <div class="card">
+        <div class="table-empty">
+            <i class="bi bi-calendar-check"></i>
+            <p>No hay registros de asistencia para mostrar</p>
+            <span class="text-muted" style="font-size:0.82rem;">
+                Use los filtros para consultar por colaborador o rango de fechas
+            </span>
+        </div>
+    </div>
 }
 
-<table class="table table-bordered table-hover">
-    <thead class="table-light">
-        <tr>
-            <th>ID</th>
-            <th>Colaborador</th>
-            <th>Fecha</th>
-            <th>Entrada</th>
-            <th>Salida</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (!Model.Any())
-        {
-            <tr>
-                <td colspan="6" class="text-center text-muted">
-                    No hay registros para mostrar
-                </td>
-            </tr>
-        }
-        else
-        {
-            @foreach (var a in Model)
-            {
-                <tr>
-                    <td>@a.IdColaborador</td>
-                    <td>@a.NombreColaborador</td>
-                    <td>@a.Fecha.ToShortDateString()</td>
-                    <td>@a.HoraEntrada?.ToString(@"hh\:mm")</td>
-                    <td>@a.HoraSalida?.ToString(@"hh\:mm")</td>
-                    <td>
-                        <a asp-action="Edit"
-                           asp-route-id="@a.IdAsistencia"
-                           class="btn btn-sm btn-warning">
-                            Ajustar
-                        </a>
-                    </td>
-                </tr>
+@* ================================================
+   TABLA
+   ================================================ *@
+@if (Model.Any())
+{
+    <div class="card">
+        <div class="card-header">
+            <span class="card-header-title">
+                <i class="bi bi-table"></i>Registros de asistencia
+            </span>
+            <span class="badge badge-info">@total registros</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table id="tablaAsistencia" class="tabla-sistema w-100">
+                    <thead>
+                        <tr>
+                            <th>ID Colaborador</th>
+                            <th>Colaborador</th>
+                            <th>Fecha</th>
+                            <th class="text-center">Entrada</th>
+                            <th class="text-center">Salida</th>
+                            <th class="text-center">Estado</th>
+                            @if (rol == "Administrador" || rol == "RRHH")
+                            {
+                                <th class="text-end pe-3">Acciones</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var a in Model)
+                        {
+                            string estado = a.Estado switch
+                            {
+                                "Presente" => "Puntual",
+                                "Tardanza" => "Tardia",
+                                _ => "Sin salida"
+                            };
+
+                            string badgeClass = a.Estado switch
+                            {
+                                "Presente" => "bg-success",
+                                "Tardanza" => "bg-warning",
+                                _ => "bg-danger"
+                            };
+
+                            <tr>
+                                <td class="td-mono">@a.IdColaborador</td>
+                                <td>
+                                    <div class="table-avatar">
+                                        <div class="avatar-circle avatar-green">
+                                            @if (!string.IsNullOrEmpty(a.NombreColaborador))
+                                            {
+                                                @(string.Join("",
+                                                                                    a.NombreColaborador
+                                                                                    .Split(' ')
+                                                                                    .Where(s => !string.IsNullOrEmpty(s))
+                                                                                    .Take(2)
+                                                                                    .Select(s => s[0].ToString()))
+                                                                                    .ToUpper())
+                                                                        }
+                                            else
+                                            {
+                                                <text>#@a.IdColaborador</text>
+                                            }
+                                    </div>
+                                    <div class="avatar-name">
+                                        @(!string.IsNullOrEmpty(a.NombreColaborador)
+                                                                            ? a.NombreColaborador
+                                                                            : "Colaborador #" + a.IdColaborador)
+                                </div>
+                            </div>
+                        </td>
+                        <td class="td-muted">@a.Fecha.ToString("dd/MM/yyyy")</td>
+                        <td class="text-center">
+                            @if (a.HoraEntrada.HasValue)
+                                    {
+                                        <span class="td-mono"
+                                              style="color: @(a.HoraEntrada > new TimeSpan(8, 0, 0) ? "var(--amber)" : "var(--green)")">
+                                            @a.HoraEntrada.Value.ToString(@"hh\:mm")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="td-muted">—</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (a.HoraSalida.HasValue)
+                                    {
+                                        <span class="td-mono">
+                                            @a.HoraSalida.Value.ToString(@"hh\:mm")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="td-muted">—</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge @badgeClass badge-dot">@estado</span>
+                                </td>
+                                @if (rol == "Administrador" || rol == "RRHH")
+                                {
+                                    <td>
+                                        <div class="td-actions">
+                                            <a asp-action="Edit"
+                                               asp-route-id="@a.IdAsistencia"
+                                               class="btn btn-warning btn-sm">
+                                                <i class="bi bi-pencil"></i>Editar
+                                            </a>
+                                        </div>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+
+        $(document).ready(function () {
+            if (@Model.Any().ToString().ToLower()) {
+                var config = Object.assign({}, DataTableConfig, {
+                    order: [[2, 'desc']],
+                    pageLength: 8
+                });
+                $('#tablaAsistencia').DataTable(config);
             }
-        }
-    </tbody>
-</table>
+        });
 
+        var KEY = 'filtros_asistencia';
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var form   = document.getElementById('formAsistencia');
+            var col    = document.getElementById('filtroCol');
+            var inicio = document.getElementById('filtroInicio');
+            var fin    = document.getElementById('filtroFin');
+
+            var urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('idColaborador') || urlParams.has('fechaInicio') || urlParams.has('fechaFin')) {
+                localStorage.setItem(KEY, JSON.stringify({
+                    col:    urlParams.get('idColaborador') || '',
+                    inicio: urlParams.get('fechaInicio')   || '',
+                    fin:    urlParams.get('fechaFin')       || ''
+                }));
+            } else {
+                var data = localStorage.getItem(KEY);
+                if (data) {
+                    var f = JSON.parse(data);
+                    if (!col.value)    col.value    = f.col;
+                    if (!inicio.value) inicio.value = f.inicio;
+                    if (!fin.value)    fin.value    = f.fin;
+                }
+            }
+
+            form.addEventListener('submit', function () {
+                localStorage.setItem(KEY, JSON.stringify({
+                    col:    col.value,
+                    inicio: inicio.value,
+                    fin:    fin.value
+                }));
+            });
+        });
+
+        function limpiarFiltros() {
+            localStorage.removeItem(KEY);
+            window.location.href = '/Asistencia';
+        }
+
+    </script>
+}

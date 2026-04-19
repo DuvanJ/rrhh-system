@@ -40,8 +40,6 @@ namespace Proyecto1.Services
                 .ToListAsync();
         }
 
-
-
         // 📌 Obtener asistencia por ID (para editar)
         public async Task<Asistencia?> ObtenerPorIdAsync(int id)
         {
@@ -53,7 +51,6 @@ namespace Proyecto1.Services
 
             return result.FirstOrDefault();
         }
-
 
         // 📌 Ajustar asistencia
         public async Task ActualizarAsync(Asistencia a)
@@ -68,13 +65,28 @@ namespace Proyecto1.Services
             );
         }
 
-
         // 📌 Listado general (reportes / RRHH)
         public async Task<List<Asistencia>> ListarAsync()
         {
-            return await _context.Asistencia
+            var asistencias = await _context.Asistencia
                 .FromSqlRaw("EXEC sp_Asistencia_Listar")
                 .ToListAsync();
+
+            // 🔹 Obtener todos los colaboradores de una sola vez
+            var idColaboradores = asistencias.Select(a => a.IdColaborador).Distinct().ToList();
+            var colaboradores = await _context.Colaboradores
+                .Where(c => idColaboradores.Contains(c.IdColaborador))
+                .ToDictionaryAsync(c => c.IdColaborador, c => c.Nombre);
+
+            // 🔹 Asignar nombres
+            foreach (var a in asistencias)
+            {
+                a.NombreColaborador = colaboradores.ContainsKey(a.IdColaborador)
+                    ? colaboradores[a.IdColaborador]
+                    : $"Colaborador #{a.IdColaborador}";
+            }
+
+            return asistencias;
         }
 
         //verificar existencia del colaborador
@@ -86,9 +98,9 @@ namespace Proyecto1.Services
 
         //Ajustar Asistencia
         public async Task AjustarAsistenciaAsync(
-        Asistencia nueva,
-        string usuario,
-        string motivo)
+            Asistencia nueva,
+            string usuario,
+            string motivo)
         {
             // 1️⃣ Auditoría
             await _context.Database.ExecuteSqlRawAsync(
@@ -109,7 +121,29 @@ namespace Proyecto1.Services
             );
         }
 
+        public async Task<List<AsistenciaReporteVM>> ListarReporteAsync()
+        {
+            return await _context.Set<AsistenciaReporteVM>()
+                .FromSqlRaw("EXEC sp_Asistencia_Listar")
+                .AsNoTracking()
+                .ToListAsync();
+        }
 
+        // ================= AUDITORIA =================
+        public async Task<List<AsistenciaAuditoria>> ListarAuditoriaAsync()
+        {
+            return await _context.AsistenciaAuditoria
+                .FromSqlRaw("SELECT * FROM AsistenciaAuditoria ORDER BY FechaModificacion DESC")
+                .ToListAsync();
+        }
 
+        public async Task<List<AsistenciaAuditoria>> ObtenerAuditoriaPorColaboradorAsync(int idColaborador)
+        {
+            return await _context.AsistenciaAuditoria
+                .FromSqlRaw(
+                    "SELECT * FROM AsistenciaAuditoria WHERE IdColaborador = @Id ORDER BY FechaModificacion DESC",
+                    new SqlParameter("@Id", idColaborador))
+                .ToListAsync();
+        }
     }
 }

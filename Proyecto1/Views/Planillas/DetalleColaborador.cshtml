@@ -2,149 +2,635 @@
 
 @{
     ViewData["Title"] = "Detalle del Colaborador";
+    var iniciales = Model.NombreColaborador?
+        .Split(' ')
+        .Where(s => !string.IsNullOrEmpty(s))
+        .Take(2)
+        .Select(s => s[0].ToString())
+        .Aggregate("", (acc, c) => acc + c)
+        .ToUpper() ?? "??";
 }
 
-<h3 class="fw-bold mb-4">
-    <i class="bi bi-person-badge"></i> Detalle del Colaborador
-</h3>
-
-<!-- ================= RESUMEN CARDS ================= -->
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card shadow-sm border-0 text-white bg-primary">
-            <div class="card-body">
-                <h6>Salario Base</h6>
-                <h4>₡ @Model.SalarioBase.ToString("N2")</h4>
-            </div>
-        </div>
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-person-badge"></i>Detalle del Colaborador
+    </h3>
+    <div class="d-flex gap-2">
+        <a asp-action="ExportarPdfColaborador"
+           asp-route-idPlanilla="@Model.IdPlanilla"
+           asp-route-idColaborador="@Model.IdColaborador"
+           class="btn btn-danger">
+            <i class="bi bi-file-earmark-pdf"></i>Descargar colilla PDF
+        </a>
+        <a asp-action="Detalle"
+           asp-route-id="@Model.IdPlanilla"
+           class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i>Volver
+        </a>
     </div>
+</div>
 
-    <div class="col-md-3">
-        <div class="card shadow-sm border-0 text-white bg-success">
-            <div class="card-body">
-                <h6>Salario Neto</h6>
-                <h4>₡ @Model.SalarioNeto.ToString("N2")</h4>
+@* Perfil del colaborador *@
+<div class="card mb-4">
+    <div class="card-body py-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="avatar-circle avatar-blue"
+                 style="width:52px;height:52px;font-size:1.1rem;flex-shrink:0;">
+                @iniciales
             </div>
-        </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="card shadow-sm border-0 text-white bg-warning">
-            <div class="card-body">
-                <h6>Deducciones</h6>
-                <h4>₡ @Model.Deducciones.ToString("N2")</h4>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="card shadow-sm border-0 text-white bg-info">
-            <div class="card-body">
-                <h6>Horas Extras</h6>
-                <h4>@Model.HorasExtras.ToString("N2")</h4>
+            <div>
+                <div style="font-size:1rem;font-weight:700;color:var(--navy);">
+                    @Model.NombreColaborador
+                </div>
+                <div style="font-size:0.82rem;color:var(--text-3);">
+                    ID Colaborador: @Model.IdColaborador
+                    &nbsp;·&nbsp;
+                    Planilla #@Model.IdPlanilla
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- ================= TABS ================= -->
-<ul class="nav nav-tabs mb-3" id="detalleTabs" role="tablist">
-    <li class="nav-item">
-        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#planilla">Planilla</button>
-    </li>
-    <li class="nav-item">
-        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#asistencia">Asistencia</button>
-    </li>
-    <li class="nav-item">
-        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#permisos">Permisos</button>
-    </li>
-    <li class="nav-item">
-        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#incapacidades">Incapacidades</button>
-    </li>
-    <li class="nav-item">
-        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#vacaciones">Vacaciones</button>
-    </li>
-</ul>
+@* KPI Cards de resumen *@
+<div class="row g-3 mb-4">
 
-<div class="tab-content">
-
-    <!-- ================= TAB PLANILLA ================= -->
-    <div class="tab-pane fade show active" id="planilla">
-        <table class="table table-bordered shadow-sm">
-            <tr><th>Colaborador</th><td>@Model.NombreColaborador</td></tr>
-            <tr><th>Días Laborados</th><td>@Model.DiasLaborados</td></tr>
-            <tr><th>Horas Ordinarias</th><td>@Model.HorasOrdinarias</td></tr>
-            <tr><th>Horas Extras</th><td>@Model.HorasExtras</td></tr>
-            <tr><th>Monto Horas Extras</th><td>₡ @Model.MontoHorasExtras.ToString("N2")</td></tr>
-            <tr class="fw-bold text-primary"><th>Salario Bruto</th><td>₡ @Model.SalarioBruto.ToString("N2")</td></tr>
-            <tr class="fw-bold text-success"><th>Salario Neto</th><td>₡ @Model.SalarioNeto.ToString("N2")</td></tr>
-        </table>
-    </div>
-
-    <!-- ================= TAB ASISTENCIA ================= -->
-    <div class="tab-pane fade" id="asistencia">
-        <table class="table table-striped table-bordered shadow-sm">
-            <thead class="table-dark">
-                <tr>
-                    <th>Fecha</th>
-                    <th>Entrada</th>
-                    <th>Salida</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var a in Model.Asistencias)
-                {
-                    <tr>
-                        <td>@a.Fecha.ToString("dd/MM/yyyy")</td>
-                        <td>@a.HoraEntrada</td>
-                        <td>@a.HoraSalida</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-
-    <!-- ================= TAB PERMISOS ================= -->
-    <div class="tab-pane fade" id="permisos">
-        <table class="table table-striped table-bordered shadow-sm">
-            <thead class="table-dark">
-                <tr>
-                    <th>Tipo</th>
-                    <th>Inicio</th>
-                    <th>Fin</th>
-                    <th>Observaciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var p in Model.Permisos)
-                {
-                    <tr>
-                        <td>@p.TipoPermiso</td>
-                        <td>@p.FechaInicio.ToString("dd/MM/yyyy")</td>
-                        <td>@p.FechaFin.ToString("dd/MM/yyyy")</td>
-                        <td>@p.Observaciones</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-
-    <!-- ================= TAB INCAPACIDADES ================= -->
-    <div class="tab-pane fade" id="incapacidades">
-        <div class="alert alert-info">
-            Módulo de incapacidades pendiente de implementar.
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Salario base</div>
+                <div class="kpi-value" style="font-size:1.1rem;">
+                    ₡ @Model.SalarioBase.ToString("N2")
+                </div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-cash-coin"></i>
+            </div>
         </div>
     </div>
 
-    <!-- ================= TAB VACACIONES ================= -->
-    <div class="tab-pane fade" id="vacaciones">
-        <div class="alert alert-info">
-            Módulo de vacaciones pendiente de implementar.
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Salario bruto</div>
+                <div class="kpi-value" style="font-size:1.1rem;">
+                    ₡ @Model.SalarioBruto.ToString("N2")
+                </div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-cash-stack"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total deducciones</div>
+                <div class="kpi-value" style="font-size:1.1rem;color:var(--red)">
+                    ₡ @Model.Deducciones.ToString("N2")
+                </div>
+                <div style="font-size:0.72rem;color:var(--text-3);margin-top:4px;">
+                    CCSS, renta y otros rebajos
+                </div>
+            </div>
+            <div class="kpi-icon red">
+                <i class="bi bi-dash-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Salario neto</div>
+                <div class="kpi-value" style="font-size:1.1rem;color:var(--green)">
+                    ₡ @Model.SalarioNeto.ToString("N2")
+                </div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-currency-dollar"></i>
+            </div>
         </div>
     </div>
 
 </div>
 
-<a asp-action="Detalle" asp-route-id="@Model.IdPlanilla" class="btn btn-secondary mt-3">
-    <i class="bi bi-arrow-left"></i> Volver a Planilla
-</a>
+@* Tabs *@
+<div class="card">
+    <div class="card-header" style="padding-bottom:0;">
+        <ul class="nav nav-tabs card-header-tabs" id="tabsPlanilla">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab"
+                        data-bs-target="#planilla">
+                    <i class="bi bi-receipt-cutoff me-1"></i>Planilla
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab"
+                        data-bs-target="#deducciones">
+                    <i class="bi bi-dash-circle me-1"></i>Deducciones
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab"
+                        data-bs-target="#asistencia">
+                    <i class="bi bi-calendar-check me-1"></i>Asistencia
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab"
+                        data-bs-target="#permisos">
+                    <i class="bi bi-calendar-event me-1"></i>Permisos
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab"
+                        data-bs-target="#vacaciones">
+                    <i class="bi bi-sun me-1"></i>Vacaciones
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab"
+                        data-bs-target="#incapacidades">
+                    <i class="bi bi-heart-pulse me-1"></i>Incapacidades
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab"
+                        data-bs-target="#uniformes">
+                    <i class="bi bi-bag-check me-1"></i>Uniformes
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <div class="tab-content p-4">
+
+        @* ---- PLANILLA ---- *@
+        <div class="tab-pane fade show active" id="planilla">
+            <table class="tabla-sistema w-100">
+                <tbody>
+                    <tr>
+                        <td style="width:40%;font-weight:600;color:var(--text-2);">
+                            Colaborador
+                        </td>
+                        <td>@Model.NombreColaborador</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:600;color:var(--text-2);">
+                            Dias laborados
+                        </td>
+                        <td class="td-mono">@Model.DiasLaborados</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:600;color:var(--text-2);">
+                            Horas ordinarias
+                        </td>
+                        <td class="td-mono">@Model.HorasOrdinarias.ToString("N2")</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:600;color:var(--text-2);">
+                            Horas extras
+                        </td>
+                        <td class="td-mono">@Model.HorasExtras.ToString("N2")</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:600;color:var(--text-2);">
+                            Monto horas extras
+                        </td>
+                        <td class="td-mono" style="color:var(--green);font-weight:600;">
+                            ₡ @Model.MontoHorasExtras.ToString("N2")
+                        </td>
+                    </tr>
+                    <tr style="background:var(--amber-l);">
+                        <td style="font-weight:600;color:var(--amber-t);">
+                            <i class="bi bi-calendar-heart me-1"></i>
+                            Horas en feriado
+                        </td>
+                        <td class="td-mono" style="color:var(--amber-t);font-weight:600;">
+                            @Model.HorasFeriado.ToString("N2")
+                        </td>
+                    </tr>
+                    <tr style="background:var(--amber-l);">
+                        <td style="font-weight:600;color:var(--amber-t);">
+                            <i class="bi bi-calendar-heart me-1"></i>
+                            Pago feriado (doble)
+                        </td>
+                        <td class="td-mono" style="color:var(--amber-t);font-weight:600;">
+                            ₡ @Model.MontoFeriado.ToString("N2")
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:600;color:var(--text-2);">
+                            Rebajo asistencia
+                        </td>
+                        <td class="td-mono" style="color:var(--red);font-weight:600;">
+                            ₡ @Model.MontoRebajoAsistencia.ToString("N2")
+                        </td>
+                    </tr>
+                    <tr style="background:var(--slate-l);">
+                        <td style="font-weight:700;color:var(--navy);">Salario bruto</td>
+                        <td class="td-mono" style="font-weight:700;color:var(--navy);">
+                            ₡ @Model.SalarioBruto.ToString("N2")
+                        </td>
+                    </tr>
+                    <tr style="background:var(--green-l);">
+                        <td style="font-weight:700;color:var(--green-t);">Salario neto</td>
+                        <td class="td-mono"
+                            style="font-weight:700;font-size:1.1rem;color:var(--green-t);">
+                            ₡ @Model.SalarioNeto.ToString("N2")
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+
+        @* ---- DEDUCCIONES ---- *@
+        <div class="tab-pane fade" id="deducciones">
+
+            @* CCSS *@
+            <div class="mb-4">
+                <h5 class="mb-3" style="font-weight:600;color:var(--text);">
+                    <i class="bi bi-heart-pulse me-2"></i>Aporte CCSS
+                </h5>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3">
+                        <div class="detail-field text-center">
+                            <span class="detail-label">Seguro salud (5.5%)</span>
+                            <span class="td-mono" style="font-size:1.1rem;font-weight:700;color:var(--red);">
+                                ₡ @Model.DeduccionSalud.ToString("N2")
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="detail-field text-center">
+                            <span class="detail-label">IVM (4.17%)</span>
+                            <span class="td-mono" style="font-size:1.1rem;font-weight:700;color:var(--red);">
+                                ₡ @Model.DeduccionIVM.ToString("N2")
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="detail-field text-center">
+                            <span class="detail-label">Banco Popular (1%)</span>
+                            <span class="td-mono" style="font-size:1.1rem;font-weight:700;color:var(--red);">
+                                ₡ @Model.DeduccionBancoPopular.ToString("N2")
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="detail-field text-center">
+                            <span class="detail-label">Total CCSS</span>
+                            <span class="td-mono" style="font-size:1.1rem;font-weight:700;color:var(--red);">
+                                ₡ @Model.TotalDeduccionCCSS.ToString("N2")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="alert alert-warning d-flex align-items-center gap-2" style="margin-bottom:0;">
+                    <i class="bi bi-info-circle-fill flex-shrink-0"></i>
+                    <div>
+                        <strong>Subtotal CCSS + Banco Popular:</strong>
+                        ₡ @((Model.TotalDeduccionCCSS + Model.DeduccionBancoPopular).ToString("N2"))
+                    </div>
+                </div>
+            </div>
+
+            @* RENTA *@
+            <div class="mb-4">
+                <h5 class="mb-3" style="font-weight:600;color:var(--text);">
+                    <i class="bi bi-percent me-2"></i>Impuesto sobre la Renta
+                </h5>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="detail-field text-center">
+                            <span class="detail-label">Monto a descontar</span>
+                            <span class="td-mono" style="font-size:1.2rem;font-weight:700;color:var(--red);">
+                                ₡ @Model.DeduccionRenta.ToString("N2")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* TOTAL GENERAL *@
+            <div class="alert alert-danger d-flex align-items-center gap-2">
+                <i class="bi bi-dash-circle-fill flex-shrink-0" style="font-size:1.3rem;"></i>
+                <div>
+                    <strong style="font-size:1.05rem;">Total general de deducciones:</strong>
+                    <div style="font-size:1.2rem;font-weight:700;margin-top:4px;">
+                        ₡ @Model.Deducciones.ToString("N2")
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+
+        @* ---- ASISTENCIA ---- *@
+        <div class="tab-pane fade" id="asistencia">
+            @if (Model.Asistencias != null && Model.Asistencias.Any())
+            {
+                <table class="tabla-sistema w-100">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th class="text-center">Entrada</th>
+                            <th class="text-center">Salida</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var a in Model.Asistencias)
+                        {
+                            <tr>
+                                <td class="td-mono">@a.Fecha.ToString("dd/MM/yyyy")</td>
+                                <td class="text-center td-mono"
+                                    style="color:var(--green)">
+                                    @(a.HoraEntrada?.ToString(@"hh\:mm") ?? "—")
+                                </td>
+                                <td class="text-center td-mono">
+                                    @(a.HoraSalida?.ToString(@"hh\:mm") ?? "—")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="table-empty">
+                    <i class="bi bi-calendar-x"></i>
+                    <p>No hay registros de asistencia</p>
+                </div>
+            }
+        </div>
+
+        @* ---- PERMISOS ---- *@
+        <div class="tab-pane fade" id="permisos">
+            @if (Model.Permisos != null && Model.Permisos.Any())
+            {
+                <table class="tabla-sistema w-100 mb-4">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th class="text-center">Desde</th>
+                            <th class="text-center">Hasta</th>
+                            <th class="text-center">Condicion</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in Model.Permisos)
+                        {
+                            <tr>
+                                <td>@p.TipoPermiso</td>
+                                <td class="text-center td-mono">
+                                    @p.FechaInicio.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center td-mono">
+                                    @p.FechaFin.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center">
+                                    @if (p.EsConGoce)
+                                    {
+                                        <span class="badge bg-success badge-dot">Con goce</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger badge-dot">Sin goce</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="detail-field">
+                            <span class="detail-label">Dias con goce</span>
+                            <span class="td-mono"
+                                  style="font-weight:700;color:var(--green);">
+                                @Model.TotalDiasConGoce dias
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="detail-field">
+                            <span class="detail-label">Dias sin goce</span>
+                            <span class="td-mono"
+                                  style="font-weight:700;color:var(--amber);">
+                                @Model.TotalDiasSinGoce dias
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="detail-field">
+                            <span class="detail-label">Rebajo por sin goce</span>
+                            <span class="td-mono"
+                                  style="font-weight:700;color:var(--red);">
+                                ₡ @Model.MontoRebajoSinGoce.ToString("N2")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="table-empty">
+                    <i class="bi bi-calendar-event"></i>
+                    <p>No hay permisos en este periodo</p>
+                </div>
+            }
+        </div>
+
+        @* ---- VACACIONES ---- *@
+        <div class="tab-pane fade" id="vacaciones">
+            @if (Model.Vacaciones != null && Model.Vacaciones.Any())
+            {
+                <table class="tabla-sistema w-100 mb-4">
+                    <thead>
+                        <tr>
+                            <th class="text-center">Desde</th>
+                            <th class="text-center">Hasta</th>
+                            <th class="text-center">Dias solicitados</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var v in Model.Vacaciones)
+                        {
+                            <tr>
+                                <td class="text-center td-mono">
+                                    @v.FechaInicio.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center td-mono">
+                                    @v.FechaFin.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center td-mono"
+                                    style="font-weight:700;color:var(--blue)">
+                                    @v.DiasSolicitados
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                @if (Model.DiasVacaciones > 0)
+                {
+                    <div class="detail-field" style="max-width:250px;">
+                        <span class="detail-label">Total dias en el mes</span>
+                        <span class="td-mono"
+                              style="font-weight:700;color:var(--blue);">
+                            @Model.DiasVacaciones dias
+                        </span>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="table-empty">
+                    <i class="bi bi-sun"></i>
+                    <p>No hay vacaciones en este periodo</p>
+                </div>
+            }
+        </div>
+
+        @* ---- INCAPACIDADES ---- *@
+        <div class="tab-pane fade" id="incapacidades">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="detail-field">
+                        <span class="detail-label">
+                            <i class="bi bi-calendar-range"></i>Dias incapacidad
+                        </span>
+                        <span class="td-mono"
+                              style="font-weight:700;color:var(--amber);">
+                            @Model.DiasIncapacidad dias
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="detail-field">
+                        <span class="detail-label">
+                            <i class="bi bi-dash-circle"></i>Rebajo incapacidad
+                        </span>
+                        <span class="td-mono"
+                              style="font-weight:700;color:var(--red);">
+                            ₡ @Model.MontoRebajoIncapacidad.ToString("N2")
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="detail-field">
+                        <span class="detail-label">
+                            <i class="bi bi-building"></i>Monto patrono
+                        </span>
+                        <span class="td-mono" style="font-weight:700;">
+                            ₡ @Model.MontoIncapacidadPatrono.ToString("N2")
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="detail-field">
+                        <span class="detail-label">
+                            <i class="bi bi-heart-pulse"></i>Monto CCSS
+                        </span>
+                        <span class="td-mono" style="font-weight:700;">
+                            ₡ @Model.MontoIncapacidadCCSS.ToString("N2")
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="detail-field">
+                        <span class="detail-label">
+                            <i class="bi bi-shield-check"></i>Monto INS
+                        </span>
+                        <span class="td-mono" style="font-weight:700;">
+                            ₡ @Model.MontoIncapacidadINS.ToString("N2")
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* ---- UNIFORMES ---- *@
+        <div class="tab-pane fade" id="uniformes">
+            @if (Model.MontoUniformes > 0)
+            {
+                <div class="detail-field" style="max-width:280px;">
+                    <span class="detail-label">
+                        <i class="bi bi-bag-check"></i>Rebajo por uniformes
+                    </span>
+                    <span class="td-mono"
+                          style="font-size:1.3rem;font-weight:700;color:var(--red);">
+                        ₡ @Model.MontoUniformes.ToString("N2")
+                    </span>
+                </div>
+            }
+            else
+            {
+                <div class="table-empty">
+                    <i class="bi bi-bag-check"></i>
+                    <p>No hay rebajos por uniformes en este periodo</p>
+                </div>
+            }
+        </div>
+
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .nav-tabs .nav-link {
+            color: var(--text-3);
+            border: none;
+            font-weight: 500;
+            font-size: 0.875rem;
+            padding: 10px 14px;
+        }
+
+            .nav-tabs .nav-link:hover {
+                color: var(--text);
+                background: var(--slate-l);
+                border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+            }
+
+            .nav-tabs .nav-link.active {
+                color: var(--blue);
+                background: transparent;
+                border-bottom: 3px solid var(--blue) !important;
+                border-radius: 0;
+            }
+
+        .nav-tabs {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .detail-field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 12px 14px;
+            background: var(--slate-ll);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            height: 100%;
+        }
+
+        .detail-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-3);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+            .detail-label i {
+                font-size: 0.75rem;
+            }
+    </style>
+}

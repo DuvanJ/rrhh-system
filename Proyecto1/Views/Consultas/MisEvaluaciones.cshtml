@@ -1,0 +1,142 @@
+﻿@model List<EvaluacionVM>
+
+@{
+    ViewData["Title"] = "Mis Evaluaciones";
+}
+
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <div>
+        <h3 class="page-title">
+            <i class="bi bi-clipboard-check"></i>Mis Evaluaciones
+        </h3>
+        <small class="text-muted">
+            Historial de evaluaciones de desempeño &middot; @DateTime.Now.ToString("dd MMMM yyyy")
+        </small>
+    </div>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
+
+@* ================================================
+   ESTADO VACIO
+   ================================================ *@
+@if (!Model.Any())
+{
+    <div class="card">
+        <div class="table-empty">
+            <i class="bi bi-clipboard-check"></i>
+            <p>No tienes evaluaciones registradas</p>
+            <span class="text-muted" style="font-size:0.82rem;">
+                Las evaluaciones se mostrarán aquí cuando sean completadas
+            </span>
+        </div>
+    </div>
+}
+
+@* ================================================
+   LISTADO DE EVALUACIONES
+   ================================================ *@
+@if (Model.Any())
+{
+    <div class="row g-3 mb-5">
+        @foreach (var evaluacion in Model.OrderByDescending(e => e.FechaEvaluacion))
+        {
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <span class="card-header-title">
+                            <i class="bi bi-calendar-event"></i>Evaluación del @evaluacion.FechaEvaluacion.ToString("dd/MM/yyyy")
+                        </span>
+                    </div>
+                    <div class="card-body">
+
+                        <!-- Puntaje Total -->
+                        <div style="margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <span style="color: var(--text-2); font-size: 0.9rem; font-weight: 600;">Puntaje Total</span>
+                                <span style="font-size: 1.5rem; font-weight: 700; color: var(--blue);">@evaluacion.PuntajeTotal?.ToString("F1")</span>
+                            </div>
+                            <div style="background: #f1f5f9; border-radius: var(--radius); height: 6px; overflow: hidden;">
+                                @{
+                                    decimal porcentaje = evaluacion.PuntajeTotal.HasValue ? (evaluacion.PuntajeTotal.Value / 100) * 100 : 0;
+                                    string colorBarra = porcentaje >= 80 ? "var(--green)" :
+                                    porcentaje >= 60 ? "var(--blue)" :
+                                    porcentaje >= 40 ? "var(--amber)" : "var(--red)";
+                                }
+                                <div style="background: @colorBarra; height: 100%; width: @(porcentaje)%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Comentarios -->
+                        @if (!string.IsNullOrEmpty(evaluacion.ComentariosGenerales))
+                        {
+                            <div style="background: #f8fafc; padding: 12px; border-radius: var(--radius); border-left: 3px solid var(--blue); margin-bottom: 16px;">
+                                <p style="font-size: 0.85rem; color: var(--text-2); margin: 0;">
+                                    <strong>Comentarios:</strong>
+                                </p>
+                                <p style="font-size: 0.85rem; color: var(--text); margin: 6px 0 0 0;">
+                                    @evaluacion.ComentariosGenerales
+                                </p>
+                            </div>
+                        }
+
+                        <!-- Criterios Evaluados -->
+                        @if (evaluacion.Detalles?.Any() == true)
+                        {
+                            <div style="margin-top: 16px;">
+                                <p style="font-size: 0.85rem; font-weight: 600; color: var(--text-2); margin-bottom: 10px;">
+                                    Criterios Evaluados:
+                                </p>
+                                <div style="display: flex; flex-direction: column; gap: 8px;">
+                                    @foreach (var detalle in evaluacion.Detalles.OrderByDescending(d => d.Puntaje))
+                                    {
+                                        <div style="background: #f1f5f9; padding: 10px; border-radius: var(--radius); display: flex; justify-content: space-between; align-items: center;">
+                                            <div style="flex: 1;">
+                                                <p style="margin: 0; font-size: 0.85rem; font-weight: 500; color: var(--text);">
+                                                    @detalle.NombreCriterio
+                                                </p>
+                                                @if (!string.IsNullOrEmpty(detalle.Observacion))
+                                                {
+                                                    <p style="margin: 4px 0 0 0; font-size: 0.8rem; color: var(--text-3);">
+                                                        @detalle.Observacion
+                                                    </p>
+                                                }
+                                            </div>
+                                            <div style="text-align: right;">
+                                                <span style="display: block; font-size: 1.1rem; font-weight: 700; color: var(--blue);">
+                                                    @detalle.Puntaje?.ToString("F1")
+                                                </span>
+                                                <span style="display: block; font-size: 0.75rem; color: var(--text-3);">/100</span>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Badge de Estado -->
+                        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                            <span class="badge bg-success badge-dot">Completada</span>
+                            <span style="font-size: 0.8rem; color: var(--text-3);">
+                                ID: @evaluacion.IdEvaluacion
+                            </span>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<!-- Información adicional -->
+<div style="background: #eff6ff; border-left: 4px solid var(--blue); padding: 16px; border-radius: var(--radius-lg);">
+    <p style="color: var(--blue-t); font-size: 0.9rem; margin: 0;">
+        <i class="bi bi-info-circle" style="margin-right: 8px;"></i>
+        Estas evaluaciones reflejan tu desempeño laboral. Si tienes preguntas sobre tus resultados, contacta al Departamento de Recursos Humanos.
+    </p>
+</div>

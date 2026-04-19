@@ -97,5 +97,15 @@ namespace Proyecto1.BLL
 
 
 
+        public async Task PagarMasivoAsync(int anio)
+        {
+            await _context.Database.ExecuteSqlRawAsync(
+                "EXEC sp_Aguinaldo_PagarMasivo @Año",
+                new SqlParameter("@Año", anio)
+            );
+        }
+
+
+
     }
 }

@@ -1,66 +1,401 @@
 ﻿@model List<Proyecto1.Models.Asistencia>
 
-<h3 class="fw-bold mb-4">Mi Asistencia</h3>
+@{
+    ViewData["Title"] = "Mi Asistencia";
 
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
+    var hoy = DateTime.Today;
+    var registroHoy = Model?.FirstOrDefault(a => a.Fecha.Date == hoy);
+    var entradaHoy = registroHoy?.HoraEntrada;
+    var salidaHoy = registroHoy?.HoraSalida;
+
+    var totalMes = Model?.Count(a => a.Fecha.Month == hoy.Month && a.Fecha.Year == hoy.Year) ?? 0;
+    var completosMes = Model?.Count(a =>
+        a.Fecha.Month == hoy.Month &&
+        a.Fecha.Year == hoy.Year &&
+        a.HoraEntrada.HasValue &&
+        a.HoraSalida.HasValue) ?? 0;
 }
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
 
-<div class="card shadow-sm p-4 text-center mb-4">
-    <p class="fw-semibold mb-3">Registrar asistencia</p>
-
-    <form asp-action="Registrar" asp-controller="Asistencia" method="post" class="d-inline">
-        <input type="hidden" name="tipo" value="Entrada" />
-        <button type="submit" class="btn btn-success btn-lg me-2">
-            <i class="bi bi-box-arrow-in-right"></i> Entrada
-        </button>
-    </form>
-
-    <form asp-action="Registrar" asp-controller="Asistencia" method="post" class="d-inline">
-        <input type="hidden" name="tipo" value="Salida" />
-        <button type="submit" class="btn btn-danger btn-lg">
-            <i class="bi bi-box-arrow-left"></i> Salida
-        </button>
-    </form>
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-person-check-fill"></i>Mi Asistencia
+    </h3>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-house"></i>Inicio
+    </a>
 </div>
 
-<div class="card shadow-sm">
-    <div class="card-body">
-        <h6 class="fw-bold mb-3">Historial</h6>
+@* ================================================
+   KPI CARDS
+   ================================================ *@
+<div class="row g-3 mb-4">
 
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Fecha</th>
-                    <th>Entrada</th>
-                    <th>Salida</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var a in Model)
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Entrada hoy</div>
+                <div class="kpi-value" style="font-size:1.6rem;">
+                    @(entradaHoy.HasValue
+                                        ? entradaHoy.Value.ToString(@"hh\:mm")
+                                        : "--:--")
+                </div>
+                @if (entradaHoy.HasValue)
                 {
-                    <tr>
-                        <td>@a.Fecha.ToString("dd/MM/yyyy")</td>
-                        <td>
-                            @(a.HoraEntrada.HasValue
-                                                    ? a.HoraEntrada.Value.ToString(@"hh\:mm")
-                                                    : "-")
-                                                      </td>
-                                                      <td>
-                            @(a.HoraSalida.HasValue
-                                                    ? a.HoraSalida.Value.ToString(@"hh\:mm")
-                                                    : "-")
-                    </td>
-                </tr>
-                                }
-            </tbody>
+                    <div class="kpi-trend up">
+                        <span>Registrada</span>
+                    </div>
+                }
+            </div>
+            <div class="kpi-icon @(entradaHoy.HasValue ? "green" : "slate")">
+                <i class="bi bi-box-arrow-in-right"></i>
+            </div>
+        </div>
+    </div>
 
-        </table>
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Salida hoy</div>
+                <div class="kpi-value" style="font-size:1.6rem;">
+                    @(salidaHoy.HasValue
+                                        ? salidaHoy.Value.ToString(@"hh\:mm")
+                                        : "--:--")
+                </div>
+                @if (salidaHoy.HasValue)
+                {
+                    <div class="kpi-trend up">
+                        <span>Registrada</span>
+                    </div>
+                }
+            </div>
+            <div class="kpi-icon @(salidaHoy.HasValue ? "blue" : "slate")">
+                <i class="bi bi-box-arrow-left"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Estado hoy</div>
+                <div style="margin-top:8px;">
+                    @if (registroHoy == null)
+                    {
+                        <span class="badge bg-secondary badge-dot">Sin registro</span>
+                    }
+                    else if (registroHoy.HoraSalida == null)
+                    {
+                        <span class="badge bg-warning badge-dot">Pendiente salida</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success badge-dot">Dia completo</span>
+                    }
+                </div>
+            </div>
+            <div class="kpi-icon @(registroHoy == null ? "slate" : registroHoy.HoraSalida == null ? "amber" : "green")">
+                <i class="bi bi-activity"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Dias completos este mes</div>
+                <div class="kpi-value" style="color:var(--green)">@completosMes</div>
+                <div class="kpi-trend up" style="font-size:0.72rem;">
+                    de @totalMes dias registrados
+                </div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@* ================================================
+   PANEL DE REGISTRO
+   ================================================ *@
+<div class="card mb-4">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-fingerprint"></i>Registrar asistencia de hoy
+        </span>
+        <span class="td-muted" style="font-size:0.82rem;">
+            @DateTime.Now.ToString("dd/MM/yyyy")
+        </span>
+    </div>
+    <div class="card-body">
+
+        <div class="registro-panel">
+
+            <div class="registro-reloj">
+                <div class="registro-reloj-hora" id="relojHora">--:--:--</div>
+                <div class="registro-reloj-fecha">
+                    @DateTime.Now.ToString("dddd dd/MM/yyyy")
+                </div>
+            </div>
+
+            <div class="registro-botones">
+
+                <form id="formEntrada"
+                      asp-action="Registrar"
+                      asp-controller="Asistencia"
+                      method="post">
+                    <input type="hidden" name="tipo" value="Entrada" />
+                    <button type="button"
+                            id="btnEntrada"
+                            class="btn btn-success btn-registro">
+                        <i class="bi bi-box-arrow-in-right"></i>
+                        <span>Marcar entrada</span>
+                        @if (entradaHoy.HasValue)
+                        {
+                            <small>Ultima: @entradaHoy.Value.ToString(@"hh\:mm")</small>
+                        }
+                    </button>
+                </form>
+
+                <form id="formSalida"
+                      asp-action="Registrar"
+                      asp-controller="Asistencia"
+                      method="post">
+                    <input type="hidden" name="tipo" value="Salida" />
+                    <button type="button"
+                            id="btnSalida"
+                            class="btn btn-danger btn-registro">
+                        <i class="bi bi-box-arrow-left"></i>
+                        <span>Marcar salida</span>
+                        @if (salidaHoy.HasValue)
+                        {
+                            <small>Ultima: @salidaHoy.Value.ToString(@"hh\:mm")</small>
+                        }
+                    </button>
+                </form>
+
+            </div>
+
+        </div>
+
     </div>
 </div>
 
+@* ================================================
+   HISTORIAL
+   ================================================ *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>Historial de registros
+        </span>
+        <span class="badge badge-info">@(Model?.Count ?? 0) registros</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaAsistencia" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th class="text-center">Entrada</th>
+                        <th class="text-center">Salida</th>
+                        <th class="text-center">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var a in Model)
+                        {
+                            var esHoy = a.Fecha.Date == hoy;
+
+                            <tr class="@(esHoy ? "fila-hoy" : "")">
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        @if (esHoy)
+                                        {
+                                            <span class="badge bg-info"
+                                                  style="font-size:0.65rem;">HOY</span>
+                                        }
+                                        <span class="td-mono">
+                                            @a.Fecha.ToString("dd/MM/yyyy")
+                                        </span>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    @if (a.HoraEntrada.HasValue)
+                                    {
+                                        <span class="td-mono" style="color:var(--green)">
+                                            @a.HoraEntrada.Value.ToString(@"hh\:mm")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="td-muted">—</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (a.HoraSalida.HasValue)
+                                    {
+                                        <span class="td-mono">
+                                            @a.HoraSalida.Value.ToString(@"hh\:mm")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="td-muted">—</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (!a.HoraEntrada.HasValue && !a.HoraSalida.HasValue)
+                                    {
+                                        <span class="badge bg-secondary badge-dot">Sin registro</span>
+                                    }
+                                    else if (!a.HoraSalida.HasValue)
+                                    {
+                                        <span class="badge bg-warning badge-dot">Pendiente salida</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success badge-dot">Completo</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4">
+                                <div class="table-empty">
+                                    <i class="bi bi-calendar-x"></i>
+                                    <p>No hay registros de asistencia aun</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .registro-panel {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .registro-reloj {
+            text-align: center;
+        }
+
+        .registro-reloj-hora {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: var(--navy);
+            font-family: 'Consolas', monospace;
+            line-height: 1;
+            letter-spacing: 2px;
+        }
+
+        .registro-reloj-fecha {
+            font-size: 0.82rem;
+            color: var(--text-3);
+            margin-top: 6px;
+            text-transform: capitalize;
+        }
+
+        .registro-botones {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .btn-registro {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 16px 28px;
+            font-size: 0.9rem;
+            min-width: 160px;
+            border-radius: var(--radius-lg);
+        }
+
+            .btn-registro i {
+                font-size: 1.6rem;
+                margin-bottom: 2px;
+            }
+
+            .btn-registro small {
+                font-size: 0.78rem;
+                opacity: 0.85;
+                font-family: 'Consolas', monospace;
+            }
+
+        .fila-hoy {
+            background: #f0f7ff !important;
+        }
+
+            .fila-hoy:hover {
+                background: #e8f2ff !important;
+            }
+    </style>
+}
+
+@section Scripts {
+    <script>
+
+        function actualizarReloj() {
+            var ahora = new Date();
+            var h  = String(ahora.getHours()).padStart(2, '0');
+            var m  = String(ahora.getMinutes()).padStart(2, '0');
+            var s  = String(ahora.getSeconds()).padStart(2, '0');
+            var el = document.getElementById('relojHora');
+            if (el) el.textContent = h + ':' + m + ':' + s;
+        }
+
+        actualizarReloj();
+        setInterval(actualizarReloj, 1000);
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            var formEntrada = document.getElementById('formEntrada');
+            var formSalida  = document.getElementById('formSalida');
+
+            document.getElementById('btnEntrada').addEventListener('click', function () {
+                Alert.confirm(
+                    'Se registrara su entrada a las ' + document.getElementById('relojHora').textContent + '. Desea continuar?',
+                    function () { formEntrada.submit(); },
+                    'question'
+                );
+            });
+
+            document.getElementById('btnSalida').addEventListener('click', function () {
+                Alert.confirm(
+                    'Se registrara su salida a las ' + document.getElementById('relojHora').textContent + '. Desea continuar?',
+                    function () { formSalida.submit(); },
+                    'question'
+                );
+            });
+
+        });
+
+        $(document).ready(function () {
+            if (@((Model != null && Model.Any()).ToString().ToLower())) {
+                var config = Object.assign({}, DataTableConfig, { order: [[0, 'desc']] });
+                $('#tablaAsistencia').DataTable(config);
+            }
+        });
+
+    </script>
+}

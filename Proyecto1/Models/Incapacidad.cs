@@ -1,7 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Proyecto1.Models
 {
+
     public class Incapacidad
     {
         [Key]
@@ -10,22 +14,17 @@ namespace Proyecto1.Models
         [Required]
         public int IdColaborador { get; set; }
 
-        // CCSS-EC, INS-RT, CCSS-MAT, etc.
         [Required]
-        [StringLength(50)]
-        public string TipoIncapacidad { get; set; } = string.Empty;
+        public int IdTipoIncapacidad { get; set; }
 
-        [Required]
-        [DataType(DataType.Date)]
+        [Required, DataType(DataType.Date)]
         public DateTime FechaInicio { get; set; }
 
-        [Required]
-        [DataType(DataType.Date)]
+        [Required, DataType(DataType.Date)]
         public DateTime FechaFin { get; set; }
 
         public int DiasIncapacidad { get; set; }
 
-        // true solo para casos especiales (ej: maternidad)
         public bool EsRemunerada { get; set; }
 
         [StringLength(200)]
@@ -36,11 +35,7 @@ namespace Proyecto1.Models
 
         public DateTime FechaRegistro { get; set; } = DateTime.Now;
 
-        [StringLength(20)]
+        [Required, StringLength(20)]
         public string Estado { get; set; } = "Activa";
-
-        [StringLength(10)]
-        public string Entidad { get; set; } = string.Empty;
-
     }
 }

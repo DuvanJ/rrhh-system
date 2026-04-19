@@ -1,159 +1,340 @@
 ﻿@model Proyecto1.Models.EntregaUniformeVM
 
 @{
-    ViewData["Title"] = "Registrar entrega de uniforme";
+    ViewData["Title"] = "Registrar Entrega de Uniforme";
 }
 
-<h2>Registrar entrega de uniforme</h2>
-
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
-
-<form asp-action="Create" method="post">
-
-    
-    <!-- BUSCAR COLABORADOR POR ID -->
-    <div class="form-group">
-        <label>ID Colaborador</label>
-        <input asp-for="IdColaborador" id="IdColaborador" class="form-control" />
-        <button type="button" class="btn btn-info mt-2" onclick="buscarColaborador()">
-            Buscar
-        </button>
-    </div>
-
-    <div class="form-group">
-        <label>Nombre</label>
-        <input type="text" id="NombreColaborador" class="form-control" readonly />
-    </div>
-
-    <div class="form-group mt-3">
-        <label>Fecha de entrega</label>
-        <input asp-for="FechaEntrega" type="date" class="form-control" />
-    </div>
-
-    <div class="form-group mt-3">
-        <label>Observaciones</label>
-        <textarea asp-for="Observaciones" class="form-control"></textarea>
-    </div>
-
-    <hr />
-
-    <h4>Uniformes</h4>
-
-    <table class="table table-bordered" id="tablaUniformes">
-        <thead class="table-light">
-            <tr>
-                <th>Tipo uniforme</th>
-                <th>Talla</th>
-                <th>Cantidad</th>
-                <th>Costo</th>
-                <th>Cobrar</th>
-                <th>Acción</th>
-            </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
-
-    <button type="button" class="btn btn-success" id="btnAgregar">
-        + Agregar uniforme
-    </button>
-
-    <br /><br />
-
-    <button type="submit" class="btn btn-primary">
-        Guardar entrega
-    </button>
-
-    <a asp-action="Index" class="btn btn-secondary">
-        Cancelar
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-bag-plus"></i>Registrar Entrega de Uniforme
+    </h3>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
     </a>
-    ```
+</div>
+
+<form asp-action="Create" method="post" id="formEntrega" novalidate>
+
+    <div class="row justify-content-center">
+        <div class="col-xl-10 col-lg-12">
+
+            @* ================================================
+               PASO 1 — Buscar colaborador
+               ================================================ *@
+            <div class="card mb-4">
+                <div class="card-header">
+                    <span class="card-header-title">
+                        <i class="bi bi-search"></i>Paso 1 — Colaborador
+                    </span>
+                </div>
+                <div class="card-body">
+
+                    <div class="row g-3">
+
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                ID Colaborador <span class="required">*</span>
+                            </label>
+                            <div class="input-group">
+                                <input asp-for="IdColaborador"
+                                       id="inputIdColaborador"
+                                       class="form-control"
+                                       placeholder="Ej: 12"
+                                       type="number"
+                                       min="1" />
+                                <button type="button"
+                                        class="btn btn-primary"
+                                        onclick="buscarColaborador()">
+                                    <i class="bi bi-search"></i>Buscar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Nombre del colaborador</label>
+                            <input type="text"
+                                   id="inputNombreColaborador"
+                                   class="form-control"
+                                   placeholder="Se carga al buscar..."
+                                   readonly
+                                   style="background:var(--slate-ll);" />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                Fecha de entrega <span class="required">*</span>
+                            </label>
+                            <input asp-for="FechaEntrega"
+                                   type="date"
+                                   class="form-control"
+                                   value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                        </div>
+
+                    </div>
+
+                    <div id="panelColaborador"
+                         class="colaborador-found mt-3"
+                         style="display:none;">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="avatar-circle avatar-blue"
+                                 id="avatarColaborador"
+                                 style="width:40px;height:40px;font-size:0.9rem;flex-shrink:0;">
+                                --
+                            </div>
+                            <div id="labelNombrePanel"
+                                 style="font-weight:600;font-size:0.9rem;color:var(--text);">
+                            </div>
+                            <span class="badge bg-success badge-dot ms-auto">
+                                Encontrado
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <label class="form-label">Observaciones</label>
+                        <textarea asp-for="Observaciones"
+                                  id="inputObservaciones"
+                                  class="form-control"
+                                  rows="2"
+                                  placeholder="Observaciones generales de la entrega..."
+                                  style="resize:vertical;"></textarea>
+                        <div class="d-flex justify-content-end mt-1">
+                            <span id="contadorObs" class="form-text">0 / 300</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            @* ================================================
+               PASO 2 — Uniformes a entregar
+               ================================================ *@
+            <div class="card mb-4">
+                <div class="card-header">
+                    <span class="card-header-title">
+                        <i class="bi bi-bag-check"></i>Paso 2 — Uniformes a entregar
+                    </span>
+                    <button type="button"
+                            class="btn btn-success btn-sm"
+                            id="btnAgregar">
+                        <i class="bi bi-plus-circle"></i>Agregar uniforme
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="tabla-sistema w-100" id="tablaUniformes">
+                            <thead>
+                                <tr>
+                                    <th>Tipo uniforme</th>
+                                    <th class="text-center" style="width:110px;">Talla</th>
+                                    <th class="text-center" style="width:100px;">Cantidad</th>
+                                    <th class="text-end" style="width:140px;">Costo (₡)</th>
+                                    <th class="text-center" style="width:120px;">Cobrar en planilla</th>
+                                    <th class="text-center" style="width:80px;">Accion</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyUniformes">
+                                <tr id="filaVacia">
+                                    <td colspan="6">
+                                        <div class="table-empty" style="padding:32px 20px;">
+                                            <i class="bi bi-bag-x"></i>
+                                            <p>No hay uniformes agregados</p>
+                                            <span class="text-muted" style="font-size:0.82rem;">
+                                                Use el boton "Agregar uniforme" para comenzar
+                                            </span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="section-divider" />
+
+            <div class="d-flex justify-content-end gap-2">
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i>Cancelar
+                </a>
+                <button type="button"
+                        class="btn btn-success"
+                        onclick="confirmarGuardar()">
+                    <i class="bi bi-check-circle"></i>Guardar entrega
+                </button>
+            </div>
+
+        </div>
+    </div>
 
 </form>
 
+@section Styles {
+    <style>
+        .required {
+            color: var(--red);
+            margin-left: 2px;
+        }
+
+        .colaborador-found {
+            background: var(--green-l);
+            border: 1px solid #bbf7d0;
+            border-radius: var(--radius);
+            padding: 12px 16px;
+        }
+
+        #tablaUniformes tbody tr td input.form-control,
+        #tablaUniformes tbody tr td select.form-select {
+            font-size: 0.875rem;
+            padding: 6px 10px;
+        }
+    </style>
+}
+
 @section Scripts {
-
     <script>
-        let index = 0;
 
-        const tipos = `
-            @foreach (var t in Model.TiposUniforme ?? new List<Proyecto1.Models.TipoUniforme>())
-            {
-                    <text><option value="@t.IdTipoUniforme">@t.NombreTipo</option></text>
-            }
-        `;
+        var indexUniforme = 0;
 
-        const tallas = `
-            <option>XS</option>
-            <option>S</option>
-            <option>M</option>
-            <option>L</option>
-            <option>XL</option>
-            <option>XXL</option>
-        `;
+        var tipos = '';
+        @foreach (var t in Model.TiposUniforme ?? new List<Proyecto1.Models.TipoUniforme>())
+        {
+                <text>tipos += '<option value="@t.IdTipoUniforme">@t.NombreTipo</option>';</text>
+        }
 
-        document.getElementById("btnAgregar").addEventListener("click", function () {
+        var tallas = '<option>XS</option><option>S</option><option selected>M</option><option>L</option><option>XL</option><option>XXL</option>';
 
-            let fila = `
-            <tr>
-                <td>
-                    <select name="Uniformes[${index}].IdTipoUniforme" class="form-control">
-                        ${tipos}
-                    </select>
-                </td>
+        // Agregar fila de uniforme
+        document.getElementById('btnAgregar').addEventListener('click', function () {
+            var filaVacia = document.getElementById('filaVacia');
+            if (filaVacia) filaVacia.remove();
 
-                <td>
-                    <select name="Uniformes[${index}].Talla" class="form-control">
-                        ${tallas}
-                    </select>
-                </td>
+            var fila = '<tr>' +
+                '<td>' +
+                    '<select name="Uniformes[' + indexUniforme + '].IdTipoUniforme" class="form-select">' +
+                        tipos +
+                    '</select>' +
+                '</td>' +
+                '<td>' +
+                    '<select name="Uniformes[' + indexUniforme + '].Talla" class="form-select">' +
+                        tallas +
+                    '</select>' +
+                '</td>' +
+                '<td>' +
+                    '<input type="number" name="Uniformes[' + indexUniforme + '].Cantidad" ' +
+                        'class="form-control text-center" value="1" min="1" />' +
+                '</td>' +
+                '<td>' +
+                    '<div class="input-group">' +
+                        '<span class="input-group-text" style="font-size:0.82rem;padding:4px 8px;">₡</span>' +
+                        '<input type="number" step="0.01" name="Uniformes[' + indexUniforme + '].Costo" ' +
+                            'class="form-control" value="0" min="0" />' +
+                    '</div>' +
+                '</td>' +
+                '<td class="text-center">' +
+                    '<input type="checkbox" name="Uniformes[' + indexUniforme + '].CobrarEnPlanilla" ' +
+                        'value="true" class="form-check-input" style="width:18px;height:18px;" />' +
+                '</td>' +
+                '<td class="text-center">' +
+                    '<button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">' +
+                        '<i class="bi bi-trash"></i>' +
+                    '</button>' +
+                '</td>' +
+            '</tr>';
 
-                <td>
-                    <input type="number" name="Uniformes[${index}].Cantidad" class="form-control" value="1" />
-                </td>
-
-                <td>
-                    <input type="number" step="0.01" name="Uniformes[${index}].Costo" class="form-control" value="0" />
-                </td>
-
-                <td class="text-center">
-                    <input type="checkbox" name="Uniformes[${index}].CobrarEnPlanilla" value="true" />
-                </td>
-
-                <td>
-                    <button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">
-                        Eliminar
-                    </button>
-                </td>
-            </tr>
-            `;
-
-            document.querySelector("#tablaUniformes tbody").insertAdjacentHTML("beforeend", fila);
-            index++;
+            document.querySelector('#tbodyUniformes').insertAdjacentHTML('beforeend', fila);
+            indexUniforme++;
         });
 
         function eliminarFila(btn) {
-            btn.closest("tr").remove();
+            btn.closest('tr').remove();
+            if (document.querySelectorAll('#tbodyUniformes tr').length === 0) {
+                document.querySelector('#tbodyUniformes').insertAdjacentHTML('beforeend',
+                    '<tr id="filaVacia"><td colspan="6">' +
+                    '<div class="table-empty" style="padding:32px 20px;">' +
+                    '<i class="bi bi-bag-x"></i><p>No hay uniformes agregados</p>' +
+                    '</div></td></tr>'
+                );
+            }
         }
 
-        // BUSCAR COLABORADOR POR ID
+        // Buscar colaborador
         function buscarColaborador() {
-            const id = document.getElementById("IdColaborador").value;
+            var id = document.getElementById('inputIdColaborador').value.trim();
+
+            document.getElementById('inputNombreColaborador').value = '';
+            document.getElementById('panelColaborador').style.display = 'none';
+
+            if (!id) {
+                Alert.warning('Debe ingresar un ID de colaborador.');
+                return;
+            }
 
             fetch('/Uniformes/VerificarColaborador?id=' + id)
-                .then(res => res.json())
-                .then(data => {
+                .then(function (res) { return res.json(); })
+                .then(function (data) {
                     if (data.encontrado) {
-                        document.getElementById("NombreColaborador").value = data.nombre;
+                        document.getElementById('inputNombreColaborador').value = data.nombre;
+
+                        var iniciales = data.nombre
+                            .split(' ')
+                            .slice(0, 2)
+                            .map(function (n) { return n[0]; })
+                            .join('')
+                            .toUpperCase();
+
+                        document.getElementById('avatarColaborador').textContent  = iniciales;
+                        document.getElementById('labelNombrePanel').textContent   = data.nombre;
+                        document.getElementById('panelColaborador').style.display = 'block';
+
+                        Alert.success('Colaborador encontrado: ' + data.nombre);
                     } else {
-                        alert(data.mensaje);
-                        document.getElementById("NombreColaborador").value = "";
+                        Alert.error(data.mensaje || 'El colaborador no existe.');
                     }
+                })
+                .catch(function () {
+                    Alert.error('Error al buscar el colaborador.');
                 });
         }
-    </script>
 
+        // Contador observaciones
+        var obs      = document.getElementById('inputObservaciones');
+        var contador = document.getElementById('contadorObs');
+
+        obs.addEventListener('input', function () {
+            var len = obs.value.length;
+            contador.textContent = len + ' / 300';
+            contador.style.color = len > 300 ? 'var(--red)' : 'var(--text-3)';
+            if (len > 300) obs.value = obs.value.substring(0, 300);
+        });
+
+        // Confirmar guardar
+        function confirmarGuardar() {
+            var id     = document.getElementById('inputIdColaborador').value.trim();
+            var nombre = document.getElementById('inputNombreColaborador').value.trim();
+            var filas  = document.querySelectorAll('#tbodyUniformes tr:not(#filaVacia)').length;
+
+            if (!id || !nombre) {
+                Alert.warning('Debe buscar y seleccionar un colaborador.');
+                return;
+            }
+
+            if (filas === 0) {
+                Alert.warning('Debe agregar al menos un uniforme a la entrega.');
+                return;
+            }
+
+            Alert.confirm(
+                'Se registrara la entrega de ' + filas + ' uniforme(s) para ' + nombre + '. Desea continuar?',
+                function () {
+                    document.getElementById('formEntrega').submit();
+                },
+                'question'
+            );
+        }
+
+    </script>
 }

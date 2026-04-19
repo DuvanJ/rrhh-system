@@ -1,0 +1,147 @@
+﻿@model Colaborador
+
+@{
+    ViewData["Title"] = "Mi Información";
+}
+
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <div>
+        <h3 class="page-title">
+            <i class="bi bi-person-badge"></i>Mi Información Personal
+        </h3>
+        <small class="text-muted">
+            Tus datos en el sistema &middot; @DateTime.Now.ToString("dd MMMM yyyy")
+        </small>
+    </div>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
+
+@* ================================================
+   INFORMACIÓN PERSONAL
+   ================================================ *@
+<div class="card mb-4">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-file-person"></i>Datos Personales
+        </span>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div>
+                    <label class="form-label">Cédula de Identidad</label>
+                    <div style="background: #f8fafc; padding: 12px; border-radius: var(--radius); border: 1px solid var(--border);">
+                        <p style="margin: 0; font-weight: 600; color: var(--text); font-size: 1rem;">@Model.Cedula</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div>
+                    <label class="form-label">Nombre Completo</label>
+                    <div style="background: #f8fafc; padding: 12px; border-radius: var(--radius); border: 1px solid var(--border);">
+                        <p style="margin: 0; font-weight: 600; color: var(--text); font-size: 1rem;">@Model.Nombre @Model.Apellidos</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div>
+                    <label class="form-label">Correo Electrónico</label>
+                    <div style="background: #f8fafc; padding: 12px; border-radius: var(--radius); border: 1px solid var(--border);">
+                        <p style="margin: 0; color: var(--text-2); font-size: 0.9rem;">
+                            <i class="bi bi-envelope" style="color: var(--blue); margin-right: 6px;"></i>
+                            @Model.Correo
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div>
+                    <label class="form-label">Puesto</label>
+                    <div style="background: #f8fafc; padding: 12px; border-radius: var(--radius); border: 1px solid var(--border);">
+                        <p style="margin: 0; font-weight: 600; color: var(--text); font-size: 1rem;">@Model.Puesto</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ================================================
+   INFORMACIÓN LABORAL
+   ================================================ *@
+<div class="card mb-4">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-briefcase"></i>Información Laboral
+        </span>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div>
+                    <label class="form-label">Departamento</label>
+                    <div style="background: #f8fafc; padding: 12px; border-radius: var(--radius); border: 1px solid var(--border);">
+                        <p style="margin: 0; font-weight: 600; color: var(--text); font-size: 1rem;">@Model.Departamento</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div>
+                    <label class="form-label">Fecha de Ingreso</label>
+                    <div style="background: #f8fafc; padding: 12px; border-radius: var(--radius); border: 1px solid var(--border);">
+                        <p style="margin: 0; color: var(--text-2); font-size: 0.9rem;">
+                            <i class="bi bi-calendar-event" style="color: var(--blue); margin-right: 6px;"></i>
+                            @Model.FechaIngreso.ToString("dd/MMMM/yyyy")
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div>
+                    <label class="form-label">Salario Base</label>
+                    <div style="background: #f8fafc; padding: 12px; border-radius: var(--radius); border: 1px solid var(--border);">
+                        <p style="margin: 0; font-weight: 600; color: var(--green); font-size: 1rem;">
+                            ₡ @Model.SalarioBase.ToString("N2")
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div>
+                    <label class="form-label">Estado</label>
+                    <div style="background: #f8fafc; padding: 12px; border-radius: var(--radius); border: 1px solid var(--border);">
+                        @if (Model.Estado)
+                        {
+                            <span class="badge bg-success badge-dot">Activo</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger badge-dot">Inactivo</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ================================================
+   INFORMACIÓN ADICIONAL
+   ================================================ *@
+<div style="background: #eff6ff; border-left: 4px solid var(--blue); padding: 16px; border-radius: var(--radius-lg); margin-top: 24px;">
+    <p style="color: var(--blue-t); font-size: 0.9rem; margin: 0;">
+        <i class="bi bi-info-circle" style="margin-right: 8px;"></i>
+        Esta información es confidencial y solo tú puedes verla. Si necesitas hacer cambios en tus datos, contacta al Departamento de Recursos Humanos.
+    </p>
+</div>

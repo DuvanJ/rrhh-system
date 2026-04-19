@@ -1,0 +1,334 @@
+﻿@model List<Proyecto1.Models.LiquidacionVM>
+
+@{
+    ViewData["Title"] = "Consulta de Liquidaciones";
+
+    var pendientes = Model.Count(x => x.Estado == "Pendiente");
+    var aprobadas = Model.Count(x => x.Estado == "Aprobada");
+    var pagadas = Model.Count(x => x.Estado == "Pagada");
+    var montoTotal = Model.Sum(x => x.Total);
+}
+
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-cash-stack"></i>Consulta de Liquidaciones
+    </h3>
+    <a asp-controller="Consultas" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
+
+@* ================================================
+   KPI CARDS
+   ================================================ *@
+<div class="row g-3 mb-4">
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total liquidaciones</div>
+                <div class="kpi-value">@Model.Count</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-cash-stack"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Pendientes</div>
+                <div class="kpi-value" style="color:var(--amber)">@pendientes</div>
+            </div>
+            <div class="kpi-icon amber">
+                <i class="bi bi-clock-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Pagadas</div>
+                <div class="kpi-value" style="color:var(--green)">@pagadas</div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Monto total</div>
+                <div class="kpi-value" style="font-size:1.1rem;color:var(--green)">
+                    ₡ @montoTotal.ToString("N2")
+                </div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-currency-dollar"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@* ================================================
+   FILTROS
+   ================================================ *@
+<div class="filter-card mb-4">
+    <div class="filter-row flex-wrap">
+
+        <div class="filter-group" style="max-width:240px;">
+            <span class="filter-label">Buscar</span>
+            <input type="text"
+                   id="inputBuscar"
+                   class="form-control"
+                   placeholder="Nombre, tipo salida..." />
+        </div>
+
+        <div class="filter-group" style="max-width:160px;">
+            <span class="filter-label">Estado</span>
+            <select id="filtroEstado" class="form-select">
+                <option value="">Todos</option>
+                <option value="Pendiente">Pendiente</option>
+                <option value="Aprobada">Aprobada</option>
+                <option value="Pagada">Pagada</option>
+            </select>
+        </div>
+
+        <div class="filter-group" style="max-width:160px;">
+            <span class="filter-label">Fecha desde</span>
+            <input type="date" id="filtroFechaInicio" class="form-control" />
+        </div>
+
+        <div class="filter-group" style="max-width:160px;">
+            <span class="filter-label">Fecha hasta</span>
+            <input type="date" id="filtroFechaFin" class="form-control" />
+        </div>
+
+        <div class="filter-actions">
+            <button type="button"
+                    class="btn btn-outline-secondary"
+                    onclick="limpiarFiltros()">
+                <i class="bi bi-x-circle"></i>Limpiar
+            </button>
+        </div>
+
+    </div>
+</div>
+
+@* Contador *@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted" style="font-size:0.82rem;">
+        Mostrando <strong id="contadorVisible">@Model.Count</strong>
+        de @Model.Count registros
+    </span>
+</div>
+
+@* ================================================
+   TABLA
+   ================================================ *@
+<div class="card mb-4">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>Listado de liquidaciones
+        </span>
+        <span class="badge badge-info" id="badgeTotal">@Model.Count registros</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaLiquidaciones" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th>Colaborador</th>
+                        <th>Tipo salida</th>
+                        <th class="text-center">Fecha salida</th>
+                        <th class="text-end">Total</th>
+                        <th class="text-center">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        foreach (var item in Model.OrderByDescending(x => x.FechaSalida))
+                        {
+                            var iniciales = item.Colaborador?
+                            .Split(' ')
+                            .Where(s => !string.IsNullOrEmpty(s))
+                            .Take(2)
+                            .Select(s => s[0].ToString())
+                            .Aggregate("", (acc, c) => acc + c)
+                            .ToUpper() ?? "??";
+
+                            string badgeClass = item.Estado switch
+                            {
+                                "Pendiente" => "bg-warning",
+                                "Aprobada" => "bg-info",
+                                "Pagada" => "bg-success",
+                                _ => "bg-secondary"
+                            };
+
+                            string avatarColor = item.Estado switch
+                            {
+                                "Pendiente" => "amber",
+                                "Aprobada" => "blue",
+                                "Pagada" => "green",
+                                _ => "slate"
+                            };
+
+                            var fechaData = item.FechaSalida.ToString("yyyy-MM-dd");
+
+                            <tr data-buscar="@item.Colaborador @item.TipoSalida"
+                                data-estado="@item.Estado"
+                                data-fecha="@fechaData">
+                                <td>
+                                    <div class="table-avatar">
+                                        <div class="avatar-circle avatar-@avatarColor">
+                                            @iniciales
+                                        </div>
+                                        <div class="avatar-name">@item.Colaborador</div>
+                                    </div>
+                                </td>
+                                <td>@item.TipoSalida</td>
+                                <td class="text-center td-muted">
+                                    @item.FechaSalida.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-end td-mono"
+                                    style="font-weight:700;color:var(--green)">
+                                    ₡ @item.Total.ToString("N2")
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge @badgeClass badge-dot">@item.Estado</span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5">
+                                <div class="table-empty">
+                                    <i class="bi bi-cash-stack"></i>
+                                    <p>No hay registros de liquidaciones</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@* ================================================
+   GRAFICO
+   ================================================ *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-bar-chart-fill"></i>Liquidaciones por tipo de salida
+        </span>
+    </div>
+    <div class="card-body">
+        <canvas id="graficoTipoSalida" height="80"></canvas>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+
+        var inputBuscar       = document.getElementById('inputBuscar');
+        var filtroEstado      = document.getElementById('filtroEstado');
+        var filtroFechaInicio = document.getElementById('filtroFechaInicio');
+        var filtroFechaFin    = document.getElementById('filtroFechaFin');
+        var filas             = document.querySelectorAll('#tablaLiquidaciones tbody tr');
+        var contadorVisible   = document.getElementById('contadorVisible');
+        var badgeTotal        = document.getElementById('badgeTotal');
+
+        function filtrarTabla() {
+            var texto  = inputBuscar.value.toLowerCase();
+            var estado = filtroEstado.value;
+            var desde  = filtroFechaInicio.value;
+            var hasta  = filtroFechaFin.value;
+            var count  = 0;
+
+            filas.forEach(function (fila) {
+                var contenido  = fila.getAttribute('data-buscar').toLowerCase();
+                var filaEstado = fila.getAttribute('data-estado');
+                var filaFecha  = fila.getAttribute('data-fecha');
+
+                var coincideFecha = true;
+                if (desde) coincideFecha = filaFecha >= desde;
+                if (hasta) coincideFecha = coincideFecha && filaFecha <= hasta;
+
+                var ok = contenido.includes(texto)          &&
+                         (estado === '' || filaEstado === estado) &&
+                         coincideFecha;
+
+                fila.style.display = ok ? '' : 'none';
+                if (ok) count++;
+            });
+
+            contadorVisible.textContent = count;
+            badgeTotal.textContent      = count + ' registros';
+        }
+
+        function limpiarFiltros() {
+            inputBuscar.value       = '';
+            filtroEstado.value      = '';
+            filtroFechaInicio.value = '';
+            filtroFechaFin.value    = '';
+            filtrarTabla();
+        }
+
+        inputBuscar.addEventListener('keyup', filtrarTabla);
+        filtroEstado.addEventListener('change', filtrarTabla);
+        filtroFechaInicio.addEventListener('change', filtrarTabla);
+        filtroFechaFin.addEventListener('change', filtrarTabla);
+
+        // Grafico por tipo de salida
+        var labelsTipo = [@Html.Raw(string.Join(",",
+                    Model.GroupBy(x => x.TipoSalida)
+                              .Select(g => $"'{g.Key}'")))];
+
+    var dataTipo = [@string.Join(",",
+                Model.GroupBy(x => x.TipoSalida)
+                          .Select(g => g.Count()))];
+
+    new Chart(document.getElementById('graficoTipoSalida'), {
+        type: 'bar',
+        data: {
+            labels: labelsTipo,
+            datasets: [{
+                label: 'Cantidad',
+                data: dataTipo,
+                backgroundColor: '#2563eb',
+                borderRadius: 6,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: '#f1f5f9' },
+                    ticks: { color: '#94a3b8', font: { size: 11 } }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#64748b', font: { size: 11 } }
+                }
+            }
+        }
+    });
+
+    </script>
+}

@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Proyecto1.BLL;
+using Proyecto1.Models;
+using QuestPDF.Fluent;
+using QuestPDF.Infrastructure;
 
 namespace Proyecto1.Controllers
 {
@@ -17,7 +20,17 @@ namespace Proyecto1.Controllers
         // ===============================
         public async Task<IActionResult> Index(int? anio, int? idColaborador)
         {
-            int year = anio ?? DateTime.Now.Year;
+            // 🔹 Si no viene año → no cargar nada
+            if (!anio.HasValue)
+            {
+                ViewBag.Anio = 0;
+                ViewBag.Total = 0;
+                ViewBag.IdColaborador = idColaborador;
+
+                return View(new List<Aguinaldo>());
+            }
+
+            int year = anio.Value;
 
             var lista = await _service.ListarPorAnioAsync(year);
 
@@ -46,7 +59,6 @@ namespace Proyecto1.Controllers
 
             return View(lista);
         }
-
 
 
 
@@ -113,6 +125,70 @@ namespace Proyecto1.Controllers
             TempData["Success"] = "Aguinaldo pagado";
 
             return RedirectToAction("Index", new { anio });
+        }
+
+
+        // ===============================
+        // Detalles
+        // ===============================
+        public async Task<IActionResult> Details(int id, int? anio, int? idColaborador)
+        {
+            var lista = await _service.ListarAsync();
+
+            var aguinaldo = lista.FirstOrDefault(x => x.IdAguinaldo == id);
+
+            if (aguinaldo == null)
+                return NotFound();
+
+            ViewBag.Anio = anio;
+            ViewBag.IdColaborador = idColaborador;
+
+            return View(aguinaldo);
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> PagarMasivo(int anio)
+        {
+            await _service.PagarMasivoAsync(anio);
+
+            TempData["Success"] = "Aguinaldos pagados masivamente";
+
+            return RedirectToAction("Index", new { anio });
+        }
+
+
+        // ================= EXPORTAR PDF GENERAL =================
+        public async Task<IActionResult> ExportarPdf(int anio)
+        {
+            var lista = await _service.ListarPorAnioAsync(anio);
+
+            if (!lista.Any())
+                return NotFound();
+
+            var document = new AguinaldoPdf(lista, anio);
+
+            var pdf = document.GeneratePdf();
+
+            return File(pdf, "application/pdf", $"Aguinaldo_{anio}.pdf");
+        }
+
+
+        // ================= EXPORTAR PDF COLABORADOR =================
+        public async Task<IActionResult> ExportarPdfAguinaldo(int id)
+        {
+            var lista = await _service.ListarAsync();
+
+            var aguinaldo = lista.FirstOrDefault(x => x.IdAguinaldo == id);
+
+            if (aguinaldo == null)
+                return NotFound();
+
+            var document = new AguinaldoColaboradorPdf(aguinaldo);
+
+            var pdf = document.GeneratePdf();
+
+            return File(pdf, "application/pdf", $"Aguinaldo_{aguinaldo.NombreColaborador}_{aguinaldo.Año}.pdf");
         }
     }
 }

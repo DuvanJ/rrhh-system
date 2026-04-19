@@ -1,37 +1,184 @@
 ﻿@model Proyecto1.Models.HoraExtra
 
-<h3 class="fw-bold mb-4">Solicitar Horas Extras</h3>
-
-@if (!ViewData.ModelState.IsValid)
-{
-    <div class="alert alert-danger">
-        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-        {
-            <div>@error.ErrorMessage</div>
-        }
-    </div>
+@{
+    ViewData["Title"] = "Solicitar Horas Extras";
 }
 
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-clock-history"></i>Solicitar Horas Extras
+    </h3>
+    <a asp-action="MisHorasExtras" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
 
-<form asp-action="Create" method="post" class="card p-4 shadow-sm">
+<div class="row justify-content-center">
+    <div class="col-xl-6 col-lg-8">
 
-    <div class="mb-3">
-        <label>Fecha</label>
-        <input asp-for="Fecha" type="date" class="form-control" required />
+        <div class="card">
+            <div class="card-header">
+                <span class="card-header-title">
+                    <i class="bi bi-send"></i>Nueva solicitud
+                </span>
+            </div>
+            <div class="card-body">
+
+                <form asp-action="Create" method="post" id="formSolicitud" novalidate>
+
+                    @* Fecha *@
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Fecha <span class="required">*</span>
+                        </label>
+                        <input asp-for="Fecha"
+                               type="date"
+                               class="form-control"
+                               max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                    </div>
+
+                    @* Cantidad de horas *@
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Cantidad de horas <span class="required">*</span>
+                        </label>
+                        <div class="input-group">
+                            <input asp-for="CantidadHoras"
+                                   type="number"
+                                   step="0.5"
+                                   min="0.5"
+                                   class="form-control"
+                                   placeholder="Ej: 2.5" />
+                            <span class="input-group-text">hrs</span>
+                        </div>
+                        <span class="form-text">Ingrese la cantidad de horas a solicitar</span>
+                    </div>
+
+                    @* Motivo *@
+                    <div class="mb-4">
+                        <label class="form-label">
+                            Motivo <span class="required">*</span>
+                        </label>
+                        <textarea asp-for="Motivo"
+                                  id="inputMotivo"
+                                  class="form-control"
+                                  rows="4"
+                                  placeholder="Describa el motivo de las horas extras solicitadas..."
+                                  style="resize:vertical;min-height:100px;"></textarea>
+                        <div class="d-flex justify-content-between mt-1">
+                            <span class="form-text"></span>
+                            <span id="contadorMotivo" class="form-text ms-auto">0 / 300</span>
+                        </div>
+                    </div>
+
+                    @* Alerta informativa *@
+                    <div class="alert alert-info d-flex align-items-start gap-2 mb-4">
+                        <i class="bi bi-info-circle-fill flex-shrink-0"
+                           style="font-size:1rem;margin-top:2px;"></i>
+                        <div style="font-size:0.82rem;">
+                            Su solicitud será revisada por el departamento de RRHH.
+                            Recibirá una notificación cuando sea aprobada o rechazada.
+                        </div>
+                    </div>
+
+                    <hr class="section-divider" />
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a asp-action="MisHorasExtras" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i>Cancelar
+                        </a>
+                        <button type="button"
+                                class="btn btn-success"
+                                onclick="confirmarSolicitud()">
+                            <i class="bi bi-send"></i>Enviar solicitud
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
     </div>
+</div>
 
-    <div class="mb-3">
-        <label>Cantidad de horas</label>
-        <input asp-for="CantidadHoras" type="number" step="0.5" min="0.5"
-               class="form-control" required />
-    </div>
+@section Styles {
+    <style>
+        .required {
+            color: var(--red);
+            margin-left: 2px;
+        }
 
-    <div class="mb-3">
-        <label>Motivo</label>
-        <textarea asp-for="Motivo" class="form-control" required></textarea>
-    </div>
+        .input-group-text {
+            background: var(--slate-l);
+            border: 1.5px solid var(--border);
+            border-left: none;
+            color: var(--text-2);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
 
-    <button class="btn btn-success">Enviar solicitud</button>
-    <a asp-action="MisHorasExtras" class="btn btn-secondary">Cancelar</a>
-</form>
+        .input-group .form-control {
+            border-right: none;
+        }
 
+            .input-group .form-control:focus {
+                border-right: none;
+                box-shadow: none;
+                border-color: var(--blue);
+            }
+
+        .input-group:focus-within .input-group-text {
+            border-color: var(--blue);
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+
+        // Contador de caracteres en motivo
+        var motivo   = document.getElementById('inputMotivo');
+        var contador = document.getElementById('contadorMotivo');
+
+        motivo.addEventListener('input', function () {
+            var len = motivo.value.length;
+            contador.textContent = len + ' / 300';
+            contador.style.color = len > 300 ? 'var(--red)' : 'var(--text-3)';
+            if (len > 300) motivo.value = motivo.value.substring(0, 300);
+        });
+
+        function confirmarSolicitud() {
+            var fecha  = document.querySelector('input[name="Fecha"]').value;
+            var horas  = parseFloat(document.querySelector('input[name="CantidadHoras"]').value);
+            var motivo = document.getElementById('inputMotivo').value.trim();
+
+            if (!fecha) {
+                Alert.warning('Debe seleccionar una fecha.');
+                return;
+            }
+
+            if (!horas || horas <= 0) {
+                Alert.warning('Las horas extras deben ser mayores que 0.');
+                return;
+            }
+
+            if (!motivo) {
+                Alert.warning('Debe ingresar el motivo de la solicitud.');
+                return;
+            }
+
+            Alert.confirm(
+                'Se enviará la solicitud de ' + horas + ' hora(s) extra para el ' + fecha + '. ¿Desea continuar?',
+                function () {
+                    document.getElementById('formSolicitud').submit();
+                },
+                'question'
+            );
+        }
+
+    </script>
+}

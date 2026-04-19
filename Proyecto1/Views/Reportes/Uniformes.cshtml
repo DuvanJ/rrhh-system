@@ -1,0 +1,253 @@
+﻿@model List<Proyecto1.Models.UniformeHistorialVM>
+
+@{
+    ViewData["Title"] = "Reporte de Uniformes";
+
+    var colaboradorQ = Context.Request.Query["colaborador"].ToString();
+    var fechaInicioQ = Context.Request.Query["fechaInicio"].ToString();
+    var fechaFinQ = Context.Request.Query["fechaFin"].ToString();
+
+    var totalEntregas = (int)(ViewBag.TotalEntregas ?? 0);
+    var totalCosto = (decimal)(ViewBag.TotalCosto ?? 0m);
+    var totalCobrarPlanilla = (decimal)(ViewBag.TotalCobrarPlanilla ?? 0m);
+}
+
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-bag-check"></i>Reporte de Uniformes
+    </h3>
+    <a asp-controller="Reportes" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
+
+@* ================================================
+   FILTROS
+   ================================================ *@
+<div class="filter-card mb-4">
+    <form method="get" asp-action="Uniformes">
+        <div class="filter-row flex-wrap">
+
+            <div class="filter-group" style="max-width:220px;">
+                <span class="filter-label">Colaborador</span>
+                <input type="text"
+                       name="colaborador"
+                       value="@colaboradorQ"
+                       class="form-control"
+                       placeholder="Nombre..." />
+            </div>
+
+            <div class="filter-group" style="max-width:160px;">
+                <span class="filter-label">Fecha inicio</span>
+                <input type="date"
+                       name="fechaInicio"
+                       value="@fechaInicioQ"
+                       class="form-control" />
+            </div>
+
+            <div class="filter-group" style="max-width:160px;">
+                <span class="filter-label">Fecha fin</span>
+                <input type="date"
+                       name="fechaFin"
+                       value="@fechaFinQ"
+                       class="form-control" />
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i>Filtrar
+                </button>
+                <a asp-action="Uniformes" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i>Limpiar
+                </a>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+@* ================================================
+   KPI CARDS
+   ================================================ *@
+<div class="row g-3 mb-4">
+
+    <div class="col-md-4">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total entregas</div>
+                <div class="kpi-value">@totalEntregas</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-bag-check"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Costo total</div>
+                <div class="kpi-value" style="font-size:1.0rem;color:var(--green)">
+                    ₡ @totalCosto.ToString("N2")
+                </div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-cash-coin"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Cobrar en planilla</div>
+                <div class="kpi-value" style="font-size:1.0rem;color:var(--amber)">
+                    ₡ @totalCobrarPlanilla.ToString("N2")
+                </div>
+            </div>
+            <div class="kpi-icon amber">
+                <i class="bi bi-receipt-cutoff"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@* ================================================
+   BOTON EXCEL
+   ================================================ *@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted" style="font-size:0.82rem;">
+        @(Model?.Count ?? 0) registro(s) encontrado(s)
+    </span>
+    <a asp-action="ExportarUniformesExcel"
+       asp-route-colaborador="@colaboradorQ"
+       asp-route-fechaInicio="@fechaInicioQ"
+       asp-route-fechaFin="@fechaFinQ"
+       class="btn btn-success">
+        <i class="bi bi-file-earmark-excel"></i>Exportar Excel
+    </a>
+</div>
+
+@* ================================================
+   TABLA
+   ================================================ *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>Listado de entregas de uniforme
+        </span>
+        <span class="badge badge-info">@(Model?.Count ?? 0) registros</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaUniformes" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th>Colaborador</th>
+                        <th>Tipo uniforme</th>
+                        <th class="text-center">Talla</th>
+                        <th class="text-center">Cantidad</th>
+                        <th class="text-center">Fecha entrega</th>
+                        <th class="text-end">Costo</th>
+                        <th class="text-center">Cobro planilla</th>
+                        <th>Observaciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model.OrderByDescending(x => x.FechaEntrega))
+                        {
+                            var iniciales = item.NombreColaborador?
+                            .Split(' ')
+                            .Where(s => !string.IsNullOrEmpty(s))
+                            .Take(2)
+                            .Select(s => s[0].ToString())
+                            .Aggregate("", (acc, c) => acc + c)
+                            .ToUpper() ?? "??";
+
+                            var colores = new[] { "blue", "green", "amber", "slate" };
+                            var color = colores[item.IdColaborador % colores.Length];
+
+                            <tr>
+                                <td>
+                                    <div class="table-avatar">
+                                        <div class="avatar-circle avatar-@color">
+                                            @iniciales
+                                        </div>
+                                        <div class="avatar-name">@item.NombreColaborador</div>
+                                    </div>
+                                </td>
+                                <td>@item.NombreTipo</td>
+                                <td class="text-center">
+                                    <span class="badge badge-secondary">
+                                        @(item.Talla ?? "—")
+                                    </span>
+                                </td>
+                                <td class="text-center td-mono"
+                                    style="font-weight:700;">
+                                    @item.Cantidad
+                                </td>
+                                <td class="text-center td-muted">
+                                    @item.FechaEntrega.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-end td-mono"
+                                    style="color:var(--green);font-weight:600;">
+                                    ₡ @(item.Costo?.ToString("N2") ?? "0.00")
+                                </td>
+                                <td class="text-center">
+                                    @if (item.CobrarEnPlanilla)
+                                    {
+                                        <span class="badge bg-warning badge-dot">Si</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary badge-dot">No</span>
+                                    }
+                        </td>
+                        <td class="td-muted" style="max-width:180px;">
+                            @(string.IsNullOrEmpty(item.Observaciones)
+                                                        ? "—"
+                                                        : item.Observaciones.Length > 40
+                                                        ? item.Observaciones.Substring(0, 40) + "..."
+                                                        : item.Observaciones)
+                        </td>
+                    </tr>
+                                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8">
+                                <div class="table-empty">
+                                    <i class="bi bi-bag-check"></i>
+                                    <p>No se encontraron registros de uniformes</p>
+                                    <span class="text-muted" style="font-size:0.82rem;">
+                                        Ajuste los filtros e intente de nuevo
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            if (@((Model != null && Model.Any()).ToString().ToLower())) {
+                var config = Object.assign({}, DataTableConfig, {
+                    order: [[4, 'desc']]
+                });
+                $('#tablaUniformes').DataTable(config);
+            }
+        });
+    </script>
+}

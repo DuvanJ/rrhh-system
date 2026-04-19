@@ -1,5 +1,5 @@
-﻿using SendGrid;
-using SendGrid.Helpers.Mail;
+﻿using System.Net;
+using System.Net.Mail;
 
 public class EmailService
 {
@@ -12,25 +12,30 @@ public class EmailService
 
     public async Task EnviarAsync(string destinatario, string asunto, string mensaje)
     {
-        var apiKey = _config["SendGrid:ApiKey"];
-        var client = new SendGridClient(apiKey);
+        var smtp = new SmtpClient(_config["EmailSettings:Host"])
+        {
+            Port = int.Parse(_config["EmailSettings:Port"]),
+            EnableSsl = true,
+            UseDefaultCredentials = false,
+            Credentials = new NetworkCredential(
+                _config["EmailSettings:UserName"],
+                _config["EmailSettings:Password"]
+            )
+        };
 
-        var from = new EmailAddress(
-            _config["SendGrid:FromEmail"],
-            _config["SendGrid:FromName"]
-        );
+        var mail = new MailMessage
+        {
+            From = new MailAddress(
+                _config["EmailSettings:From"],
+                "Sistema RRHH"
+            ),
+            Subject = asunto,
+            Body = mensaje,
+            IsBodyHtml = true
+        };
 
-        var to = new EmailAddress(destinatario);
+        mail.To.Add(destinatario);
 
-        var msg = MailHelper.CreateSingleEmail(
-            from,
-            to,
-            asunto,
-            mensaje,
-            mensaje
-        );
-
-        await client.SendEmailAsync(msg);
+        await smtp.SendMailAsync(mail);
     }
 }
-

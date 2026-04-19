@@ -1,0 +1,204 @@
+﻿@model List<IncapacidadColabVM>
+
+@{
+    ViewData["Title"] = "Mis Incapacidades";
+}
+
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <div>
+        <h3 class="page-title">
+            <i class="bi bi-heart-pulse"></i>Mis Incapacidades
+        </h3>
+        <small class="text-muted">
+            Historial de incapacidades &middot; @DateTime.Now.ToString("dd MMMM yyyy")
+        </small>
+    </div>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
+
+@* ================================================
+   ESTADO VACIO
+   ================================================ *@
+@if (!Model.Any())
+{
+    <div class="card">
+        <div class="table-empty">
+            <i class="bi bi-heart-pulse"></i>
+            <p>No tienes incapacidades registradas</p>
+            <span class="text-muted" style="font-size:0.82rem;">
+                Las incapacidades se mostrarán aquí cuando sean registradas
+            </span>
+        </div>
+    </div>
+}
+
+@* ================================================
+   LISTADO DE INCAPACIDADES
+   ================================================ *@
+@if (Model.Any())
+{
+    <div class="row g-3 mb-5">
+        @foreach (var incapacidad in Model.OrderByDescending(i => i.FechaInicio))
+        {
+            var colorBadge = incapacidad.Estado switch
+            {
+                "Activa" => "bg-danger",
+                "Finalizada" => "bg-success",
+                "Cancelada" => "bg-secondary",
+                _ => "bg-slate"
+            };
+
+            var iconoEstado = incapacidad.Estado switch
+            {
+                "Activa" => "bi-exclamation-circle-fill",
+                "Finalizada" => "bi-check-circle-fill",
+                "Cancelada" => "bi-x-circle-fill",
+                _ => "bi-info-circle-fill"
+            };
+
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <span class="card-header-title">
+                            <i class="bi bi-hospital"></i>@incapacidad.TipoIncapacidad
+                        </span>
+                        <span class="badge @colorBadge badge-dot">
+                            <i class="bi @iconoEstado"></i> @incapacidad.Estado
+                        </span>
+                    </div>
+                    <div class="card-body">
+
+                        <!-- Información principal -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+
+                            <!-- Fecha de Inicio -->
+                            <div>
+                                <label class="form-label" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                                    Fecha de Inicio
+                                </label>
+                                <p style="margin: 0; font-weight: 600; color: var(--text); font-size: 1.1rem;">
+                                    @incapacidad.FechaInicio.ToString("dd/MM/yyyy")
+                                </p>
+                                <span style="font-size: 0.8rem; color: var(--text-3);">
+                                    @incapacidad.FechaInicio.ToString("dddd", new System.Globalization.CultureInfo("es-ES"))
+                                </span>
+                            </div>
+
+                            <!-- Fecha de Fin -->
+                            <div>
+                                <label class="form-label" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                                    Fecha de Fin
+                                </label>
+                                <p style="margin: 0; font-weight: 600; color: var(--text); font-size: 1.1rem;">
+                                    @incapacidad.FechaFin.ToString("dd/MM/yyyy")
+                                </p>
+                                <span style="font-size: 0.8rem; color: var(--text-3);">
+                                    @incapacidad.FechaFin.ToString("dddd", new System.Globalization.CultureInfo("es-ES"))
+                                </span>
+                            </div>
+
+                        </div>
+
+                        <!-- Separador -->
+                        <hr style="border: none; border-top: 1px solid var(--border); margin: 20px 0;">
+
+                        <!-- Días y Información complementaria -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+
+                            <!-- Días de Incapacidad -->
+                            <div>
+                                <label class="form-label" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                                    Días de Incapacidad
+                                </label>
+                                <p style="margin: 0; font-weight: 600; color: var(--blue); font-size: 1.3rem;">
+                                    @incapacidad.DiasIncapacidad
+                                </p>
+                            </div>
+
+                            <!-- Tipo de Pago -->
+                            <div>
+                                <label class="form-label" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                                    Tipo de Pago
+                                </label>
+                                @if (incapacidad.EsRemunerada)
+                                {
+                                    <span class="badge bg-success badge-dot">
+                                        <i class="bi bi-check-circle-fill"></i> Remunerada
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning badge-dot">
+                                        <i class="bi bi-exclamation-circle-fill"></i> No Remunerada
+                                    </span>
+                                }
+                            </div>
+
+                        </div>
+
+                        <!-- Entidad -->
+                        <div style="background: #f8fafc; padding: 12px; border-radius: var(--radius); border-left: 3px solid var(--blue); margin-bottom: 16px;">
+                            <p style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-2); margin: 0 0 4px 0;">
+                                Entidad Emisora
+                            </p>
+                            <p style="margin: 0; font-weight: 600; color: var(--text); font-size: 0.95rem;">
+                                @incapacidad.Entidad
+                            </p>
+                        </div>
+
+                        <!-- Timeline visual de la incapacidad -->
+                        <div style="margin-top: 20px;">
+                            @{
+                                var hoy = DateTime.Today;
+                                var porcentajeProgreso = 0;
+
+                                if (incapacidad.FechaFin >= hoy)
+                                {
+                                    var diasTotales = (incapacidad.FechaFin.Date - incapacidad.FechaInicio.Date).Days;
+                                    var diasTranscurridos = (hoy - incapacidad.FechaInicio.Date).Days;
+
+                                    if (diasTotales > 0)
+                                    {
+                                        porcentajeProgreso = Math.Min((int)((diasTranscurridos * 100) / diasTotales), 100);
+                                    }
+                                }
+                                else
+                                {
+                                    porcentajeProgreso = 100;
+                                }
+                            }
+
+                            <div style="font-size: 0.8rem; color: var(--text-3); margin-bottom: 6px; display: flex; justify-content: space-between;">
+                                <span>Progreso de incapacidad</span>
+                                <span>@porcentajeProgreso%</span>
+                            </div>
+                            <div style="background: #e2e8f0; border-radius: var(--radius); height: 8px; overflow: hidden;">
+                                <div style="background: @(incapacidad.Estado == "Activa" ? "var(--red)" : "var(--green)"); height: 100%; width: @(porcentajeProgreso)%; transition: width 0.3s ease;"></div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Footer con ID -->
+                    <div style="background: #f8fafc; padding: 12px 16px; border-top: 1px solid var(--border); border-radius: 0 0 var(--radius) var(--radius); font-size: 0.8rem; color: var(--text-3);">
+                        <i class="bi bi-info-circle" style="margin-right: 4px;"></i>
+                        ID: @incapacidad.IdIncapacidad
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<!-- Información adicional -->
+<div style="background: #fff3cd; border-left: 4px solid var(--amber); padding: 16px; border-radius: var(--radius-lg);">
+    <p style="color: #856404; font-size: 0.9rem; margin: 0;">
+        <i class="bi bi-info-circle" style="margin-right: 8px;"></i>
+        Estas incapacidades son registros oficiales de tu empresa. Si tienes preguntas sobre tus incapacidades o necesitas más información, contacta al Departamento de Recursos Humanos.
+    </p>
+</div>

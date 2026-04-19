@@ -1,85 +1,331 @@
 ﻿@model Proyecto1.Models.EvaluacionVM
 
-<h2>Registrar Evaluación</h2>
-
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
+@{
+    ViewData["Title"] = "Registrar Evaluacion";
 }
 
-<form asp-action="Create" method="post">
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-clipboard-plus"></i>Registrar Evaluacion
+    </h3>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
 
-    <div class="form-group">
-        <label>ID Colaborador</label>
-        <input asp-for="IdColaborador" id="IdColaborador" class="form-control" />
-        <button type="button" class="btn btn-info mt-2" onclick="buscarColaborador()">Buscar</button>
+<form asp-action="Create" method="post" id="formEvaluacion" novalidate>
+
+    <div class="row justify-content-center">
+        <div class="col-xl-9 col-lg-11">
+
+            @* ================================================
+               PASO 1 — Buscar colaborador
+               ================================================ *@
+            <div class="card mb-4">
+                <div class="card-header">
+                    <span class="card-header-title">
+                        <i class="bi bi-search"></i>Paso 1 — Colaborador a evaluar
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                ID Colaborador <span class="required">*</span>
+                            </label>
+                            <div class="input-group">
+                                <input asp-for="IdColaborador"
+                                       id="inputIdColaborador"
+                                       class="form-control"
+                                       placeholder="Ej: 12"
+                                       type="number"
+                                       min="1" />
+                                <button type="button"
+                                        class="btn btn-primary"
+                                        onclick="buscarColaborador()">
+                                    <i class="bi bi-search"></i>Buscar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="col-md-8">
+                            <label class="form-label">Nombre del colaborador</label>
+                            <input type="text"
+                                   id="inputNombreColaborador"
+                                   class="form-control"
+                                   placeholder="Se carga al buscar..."
+                                   readonly />
+                        </div>
+
+                    </div>
+
+                    <div id="panelColaborador"
+                         class="colaborador-found mt-3"
+                         style="display:none;">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="avatar-circle avatar-blue"
+                                 id="avatarColaborador"
+                                 style="width:40px;height:40px;font-size:0.9rem;flex-shrink:0;">
+                                --
+                            </div>
+                            <div id="labelNombrePanel"
+                                 style="font-weight:600;font-size:0.9rem;color:var(--text);">
+                            </div>
+                            <span class="badge bg-success badge-dot ms-auto">Encontrado</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            @* ================================================
+               PASO 2 — Datos de la evaluacion
+               ================================================ *@
+            <div class="card mb-4">
+                <div class="card-header">
+                    <span class="card-header-title">
+                        <i class="bi bi-calendar-check"></i>Paso 2 — Datos de la evaluacion
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                Fecha de evaluacion <span class="required">*</span>
+                            </label>
+                            <input asp-for="FechaEvaluacion"
+                                   type="date"
+                                   class="form-control"
+                                   max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                        </div>
+
+                        <div class="col-md-8">
+                            <label class="form-label">Comentarios generales</label>
+                            <textarea asp-for="ComentariosGenerales"
+                                      id="inputComentarios"
+                                      class="form-control"
+                                      rows="3"
+                                      placeholder="Observaciones generales sobre el desempeno del colaborador..."
+                                      style="resize:vertical;"></textarea>
+                            <div class="d-flex justify-content-end mt-1">
+                                <span id="contadorComentarios"
+                                      class="form-text">0 / 500</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            @* ================================================
+               PASO 3 — Criterios de evaluacion
+               ================================================ *@
+            <div class="card mb-4">
+                <div class="card-header">
+                    <span class="card-header-title">
+                        <i class="bi bi-list-check"></i>Paso 3 — Criterios de evaluacion
+                    </span>
+                    <span id="badgePuntaje" class="badge badge-info">
+                        Puntaje: 0 / 100
+                    </span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="tabla-sistema w-100">
+                            <thead>
+                                <tr>
+                                    <th>Criterio</th>
+                                    <th class="text-center" style="width:140px;">
+                                        Puntaje (0-100)
+                                    </th>
+                                    <th>Observacion</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.Detalles != null && Model.Detalles.Count > 0)
+                                {
+                                    @for (int i = 0; i < Model.Detalles.Count; i++)
+                                    {
+                                        var criterio = Model.Criterios?.FirstOrDefault(c => c.IdCriterio == Model.Detalles[i].IdCriterio);
+                                        var nombreCriterio = criterio?.NombreCriterio ?? "Criterio desconocido";
+
+                                        <tr>
+                                            <td style="font-weight:500;">
+                                                @nombreCriterio
+                                                <input type="hidden"
+                                                       asp-for="Detalles[@i].IdCriterio" />
+                                            </td>
+                                            <td class="text-center">
+                                                <input asp-for="Detalles[@i].Puntaje"
+                                                       type="number"
+                                                       min="0"
+                                                       max="100"
+                                                       class="form-control text-center puntaje-input"
+                                                       style="max-width:90px;margin:0 auto;" />
+                                            </td>
+                                            <td>
+                                                <input asp-for="Detalles[@i].Observacion"
+                                                       class="form-control"
+                                                       placeholder="Observacion opcional..." />
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="section-divider" />
+
+            <div class="d-flex justify-content-end gap-2">
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i>Cancelar
+                </a>
+                <button type="button"
+                        class="btn btn-success"
+                        onclick="confirmarGuardar()">
+                    <i class="bi bi-check-circle"></i>Guardar evaluacion
+                </button>
+            </div>
+
+        </div>
     </div>
 
-    <div class="form-group">
-        <label>Nombre del colaborador</label>
-        <input type="text" id="NombreColaborador" class="form-control" readonly />
-    </div>
-
-    <div class="form-group mt-3">
-        <label>Fecha evaluación</label>
-        <input asp-for="FechaEvaluacion" type="date" class="form-control" />
-    </div>
-
-    <div class="form-group mt-3">
-        <label>Comentarios generales</label>
-        <textarea asp-for="ComentariosGenerales" class="form-control"></textarea>
-    </div>
-
-    <hr />
-
-    <h4>Criterios de evaluación</h4>
-
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Criterio</th>
-                <th>Puntaje</th>
-                <th>Observación</th>
-            </tr>
-        </thead>
-        <tbody>
-            @for (int i = 0; i < Model.Detalles.Count; i++)
-            {
-                <tr>
-                    <td>
-                        @Model.Criterios[i].NombreCriterio
-                        <input type="hidden" asp-for="Detalles[@i].IdCriterio" />
-                    </td>
-                    <td>
-                        <input asp-for="Detalles[@i].Puntaje" type="number" min="0" max="100" class="form-control" />
-                    </td>
-                    <td>
-                        <input asp-for="Detalles[@i].Observacion" class="form-control" />
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-
-    <button type="submit" class="btn btn-primary">Guardar evaluación</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
 </form>
+
+@section Styles {
+    <style>
+        .required {
+            color: var(--red);
+            margin-left: 2px;
+        }
+
+        .colaborador-found {
+            background: var(--green-l);
+            border: 1px solid #bbf7d0;
+            border-radius: var(--radius);
+            padding: 12px 16px;
+        }
+
+        .puntaje-input {
+            font-family: 'Consolas', monospace;
+            font-weight: 600;
+        }
+    </style>
+}
 
 @section Scripts {
     <script>
+
+        // Buscar colaborador
         function buscarColaborador() {
-            const id = document.getElementById("IdColaborador").value;
+            var id = document.getElementById('inputIdColaborador').value.trim();
+
+            document.getElementById('inputNombreColaborador').value = '';
+            document.getElementById('panelColaborador').style.display = 'none';
+
+            if (!id) {
+                Alert.warning('Debe ingresar un ID de colaborador.');
+                return;
+            }
 
             fetch('/Evaluacion/VerificarColaborador?id=' + id)
-                .then(res => res.json())
-                .then(data => {
+                .then(function (res) { return res.json(); })
+                .then(function (data) {
                     if (data.encontrado) {
-                        document.getElementById("NombreColaborador").value = data.nombre;
+                        document.getElementById('inputNombreColaborador').value = data.nombre;
+
+                        var iniciales = data.nombre
+                            .split(' ')
+                            .slice(0, 2)
+                            .map(function (n) { return n[0]; })
+                            .join('')
+                            .toUpperCase();
+
+                        document.getElementById('avatarColaborador').textContent = iniciales;
+                        document.getElementById('labelNombrePanel').textContent  = data.nombre;
+                        document.getElementById('panelColaborador').style.display = 'block';
+
+                        Alert.success('Colaborador encontrado: ' + data.nombre);
                     } else {
-                        alert(data.mensaje);
-                        document.getElementById("NombreColaborador").value = "";
+                        Alert.error(data.mensaje || 'El colaborador no existe.');
                     }
+                })
+                .catch(function () {
+                    Alert.error('Error al buscar el colaborador.');
                 });
         }
+
+        // Contador comentarios
+        var comentarios = document.getElementById('inputComentarios');
+        var contador    = document.getElementById('contadorComentarios');
+
+        comentarios.addEventListener('input', function () {
+            var len = comentarios.value.length;
+            contador.textContent = len + ' / 500';
+            contador.style.color = len > 500 ? 'var(--red)' : 'var(--text-3)';
+            if (len > 500) comentarios.value = comentarios.value.substring(0, 500);
+        });
+
+        // Calcular puntaje promedio en tiempo real
+        function calcularPuntaje() {
+            var inputs  = document.querySelectorAll('.puntaje-input');
+            var suma    = 0;
+            var count   = 0;
+
+            inputs.forEach(function (input) {
+                var val = parseFloat(input.value);
+                if (!isNaN(val)) {
+                    suma += val;
+                    count++;
+                }
+            });
+
+            var promedio = count > 0 ? (suma / count).toFixed(1) : 0;
+            var badge    = document.getElementById('badgePuntaje');
+            badge.textContent = 'Puntaje promedio: ' + promedio + ' / 100';
+
+            if (promedio >= 90)      badge.className = 'badge bg-success';
+            else if (promedio >= 70) badge.className = 'badge bg-info';
+            else if (promedio >= 50) badge.className = 'badge bg-warning';
+            else                     badge.className = 'badge bg-danger';
+        }
+
+        document.querySelectorAll('.puntaje-input').forEach(function (input) {
+            input.addEventListener('input', calcularPuntaje);
+        });
+
+        // Confirmar guardar
+        function confirmarGuardar() {
+            var idColab = document.getElementById('inputIdColaborador').value.trim();
+            var nombre  = document.getElementById('inputNombreColaborador').value.trim();
+            var fecha   = document.querySelector('input[name="FechaEvaluacion"]').value;
+
+            if (!idColab || !nombre) {
+                Alert.warning('Debe buscar y seleccionar un colaborador.');
+                return;
+            }
+
+            if (!fecha) {
+                Alert.warning('Debe seleccionar la fecha de evaluacion.');
+                return;
+            }
+
+            Alert.confirm(
+                'Se registrara la evaluacion de ' + nombre + ' con fecha ' + fecha + '. Desea continuar?',
+                function () {
+                    document.getElementById('formEvaluacion').submit();
+                },
+                'question'
+            );
+        }
+
     </script>
 }

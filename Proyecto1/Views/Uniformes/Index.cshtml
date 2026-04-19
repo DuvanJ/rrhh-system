@@ -1,95 +1,273 @@
 ﻿@model List<Proyecto1.Models.UniformeHistorialVM>
 
-<h3 class="fw-bold mb-4">Historial de Entregas de Uniforme</h3>
+@{
+    ViewData["Title"] = "Historial de Uniformes";
+    var idColActual = Context.Request.Query["idColaborador"].ToString();
 
-<!-- ➕ Botón Nueva Entrega -->
-<div class="mb-2">
-    <a asp-action="Create" class="btn btn-success">
-        <i class="bi bi-plus-circle"></i> Nueva Entrega
+    var totalEntregas = Model?.Count ?? 0;
+    var totalCosto = Model?.Sum(u => u.Costo ?? 0) ?? 0;
+    var cobranPlanilla = Model?.Count(u => u.CobrarEnPlanilla) ?? 0;
+}
+
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-bag-check"></i>Historial de Entregas de Uniforme
+    </h3>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-house"></i>Inicio
     </a>
 </div>
 
-<!-- Buscador compacto debajo del botón -->
-<div class="mb-3">
-    <form method="get" asp-action="Index" class="d-flex align-items-center">
-        <input type="number"
-               name="idColaborador"
-               class="form-control form-control-sm me-2"
-               placeholder="ID Colaborador"
-               style="width: 150px;"
-               value="@Context.Request.Query["idColaborador"]" />
-        <button type="submit" class="btn btn-primary btn-sm me-1">Buscar</button>
-        <a asp-action="Index" class="btn btn-secondary btn-sm">Limpiar</a>
+@* ================================================
+   KPI CARDS
+   ================================================ *@
+<div class="row g-3 mb-4">
+
+    <div class="col-md-4">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total entregas</div>
+                <div class="kpi-value">@totalEntregas</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-bag-check"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Costo total</div>
+                <div class="kpi-value" style="font-size:1.1rem;color:var(--blue)">
+                    ₡ @totalCosto.ToString("N2")
+                </div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-cash-coin"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Cobro en planilla</div>
+                <div class="kpi-value" style="color:var(--amber)">@cobranPlanilla</div>
+            </div>
+            <div class="kpi-icon amber">
+                <i class="bi bi-receipt-cutoff"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@* ================================================
+   FILTROS
+   ================================================ *@
+<div class="filter-card mb-4">
+    <form method="get" asp-action="Index">
+        <div class="filter-row">
+
+            <div class="filter-group" style="max-width:200px;">
+                <span class="filter-label">ID Colaborador</span>
+                <input type="number"
+                       name="idColaborador"
+                       class="form-control"
+                       placeholder="Ingrese ID..."
+                       value="@idColActual" />
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i>Buscar
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i>Limpiar
+                </a>
+            </div>
+
+        </div>
     </form>
 </div>
 
-<!-- Mensajes -->
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
-@if (TempData["Warning"] != null)
-{
-    <div class="alert alert-warning">@TempData["Warning"]</div>
-}
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
+@* ================================================
+   BOTON NUEVA ENTREGA
+   ================================================ *@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted" style="font-size:0.82rem;">
+        @totalEntregas entrega(s) encontrada(s)
+    </span>
+    <a asp-action="Create" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i>Nueva entrega
+    </a>
+</div>
 
-<!-- Tabla de historial -->
-<table class="table table-bordered table-hover">
-    <thead class="table-light">
-        <tr>
-            <th>ID</th>
-            <th>ID Colaborador</th>
-            <th>Colaborador</th>
-            <th>Tipo</th>
-            <th>Talla</th>
-            <th>Cantidad</th>
-            <th>Fecha</th>
-            <th>Costo</th>
-            <th>Cobro en planilla</th>
-            <th>Observaciones</th>
-            <th class="text-center">Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model.Any())
-        {
-            foreach (var item in Model)
-            {
-                <tr>
-                    <td>@item.IdEntrega</td>
-                    <td>@item.IdColaborador</td>
-                    <td>@item.NombreColaborador</td>
-                    <td>@item.NombreTipo</td>
-                    <td>@item.Talla</td>
-                    <td>@item.Cantidad</td>
-                    <td>@item.FechaEntrega.ToShortDateString()</td>
-                    <td>@item.Costo?.ToString("C")</td>
-                    <td>@(item.CobrarEnPlanilla ? "Sí" : "No")</td>
-                    <td>@item.Observaciones</td>
-                    <td class="text-center">
-                        <a asp-action="Edit" asp-route-id="@item.IdEntrega" class="btn btn-sm btn-warning">Editar</a>
-                        <form asp-action="Delete" asp-route-id="@item.IdEntrega" method="post" class="d-inline"
-                              onsubmit="return confirm('¿Desea eliminar esta entrega?');">
-                            <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
-                        </form>
-                    </td>
-                </tr>
+@* ================================================
+   TABLA
+   ================================================ *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>Listado de entregas
+        </span>
+        <span class="badge badge-info">@totalEntregas registros</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaUniformes" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Colaborador</th>
+                        <th>Tipo</th>
+                        <th class="text-center">Talla</th>
+                        <th class="text-center">Cantidad</th>
+                        <th class="text-center">Fecha</th>
+                        <th class="text-end">Costo</th>
+                        <th class="text-center">Cobro planilla</th>
+                        <th>Observaciones</th>
+                        <th class="text-end pe-3">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            var iniciales = item.NombreColaborador?
+                            .Split(' ')
+                            .Where(s => !string.IsNullOrEmpty(s))
+                            .Take(2)
+                            .Select(s => s[0].ToString())
+                            .Aggregate("", (acc, c) => acc + c)
+                            .ToUpper() ?? "??";
+
+                            var colores = new[] { "blue", "green", "amber", "slate" };
+                            var color = colores[item.IdColaborador % colores.Length];
+
+                            <tr>
+                                <td class="td-mono">@item.IdEntrega</td>
+                                <td>
+                                    <div class="table-avatar">
+                                        <div class="avatar-circle avatar-@color">
+                                            @iniciales
+                                        </div>
+                                        <div>
+                                            <div class="avatar-name">
+                                                @item.NombreColaborador
+                                            </div>
+                                            <div class="avatar-sub">
+                                                ID: @item.IdColaborador
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>@item.NombreTipo</td>
+                                <td class="text-center">
+                                    <span class="badge badge-secondary">@item.Talla</span>
+                                </td>
+                                <td class="text-center td-mono"
+                                    style="font-weight:700;">
+                                    @item.Cantidad
+                                </td>
+                                <td class="text-center td-muted">
+                                    @item.FechaEntrega.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-end td-mono"
+                                    style="color:var(--blue);font-weight:600;">
+                                    @(item.Costo.HasValue
+                                                                ? "₡ " + item.Costo.Value.ToString("N2")
+                                                                : "—")
+                        </td>
+                        <td class="text-center">
+                            @if (item.CobrarEnPlanilla)
+                                    {
+                                        <span class="badge bg-warning badge-dot">Si</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary badge-dot">No</span>
+                                    }
+                        </td>
+                        <td class="td-muted" style="max-width:180px;">
+                            @(string.IsNullOrEmpty(item.Observaciones)
+                                                        ? "—"
+                                                        : item.Observaciones.Length > 40
+                                                        ? item.Observaciones.Substring(0, 40) + "..."
+                                                        : item.Observaciones)
+                        </td>
+                        <td>
+                            <div class="td-actions">
+                                <a asp-action="Edit"
+                                   asp-route-id="@item.IdEntrega"
+                                   class="btn btn-warning btn-sm">
+                                    <i class="bi bi-pencil"></i>Editar
+                                </a>
+                                <form asp-action="Delete"
+                                      asp-route-id="@item.IdEntrega"
+                                      method="post"
+                                      id="formEliminar_@item.IdEntrega"
+                                      class="d-inline">
+                                    <button type="button"
+                                            class="btn btn-danger btn-sm"
+                                            onclick="confirmarEliminar(@item.IdEntrega, '@item.NombreColaborador')">
+                                        <i class="bi bi-trash"></i>Eliminar
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="10">
+                                <div class="table-empty">
+                                    <i class="bi bi-bag-check"></i>
+                                    <p>No hay registros de entregas de uniforme</p>
+                                    <a asp-action="Create" class="btn btn-success btn-sm">
+                                        <i class="bi bi-plus-circle"></i>Nueva entrega
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+
+        $(document).ready(function () {
+            if (@((Model != null && Model.Any()).ToString().ToLower())) {
+                var config = Object.assign({}, DataTableConfig, {
+                    order: [[5, 'desc']]
+                });
+                $('#tablaUniformes').DataTable(config);
             }
-        }
-        else
-        {
-            <tr>
-                <td colspan="11" class="text-center text-muted">No hay registros para mostrar</td>
-            </tr>
-        }
-    </tbody>
-</table>
+        });
 
+        function confirmarEliminar(id, nombre) {
+            Alert.confirm(
+                'Se eliminara la entrega de uniforme de ' + nombre + '. Desea continuar?',
+                function () {
+                    document.getElementById('formEliminar_' + id).submit();
+                },
+                'warning'
+            );
+        }
 
+    </script>
+}
 
 
 

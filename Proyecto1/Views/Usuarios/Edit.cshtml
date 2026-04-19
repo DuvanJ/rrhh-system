@@ -1,35 +1,180 @@
 ﻿@model Proyecto1.Models.Usuario
 
-<h2>Editar Usuario</h2>
+@{
+    ViewData["Title"] = "Editar Usuario";
+    var inicial = Model.NombreUsuario?.Substring(0, 1).ToUpper() ?? "U";
+    var perfilColor = Model.NombrePerfil switch
+    {
+        "Administrador" => "amber",
+        "RRHH" => "blue",
+        _ => "slate"
+    };
+}
 
-<form asp-action="Edit" method="post">
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-pencil-square"></i>Editar Usuario
+    </h3>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
 
-    <!-- 🔴 OBLIGATORIOS -->
-    <input type="hidden" asp-for="IdUsuario" />
-    <input type="hidden" asp-for="Estado" />
+<div class="row justify-content-center">
+    <div class="col-xl-7 col-lg-9">
 
-    <div class="mb-3">
-        <label class="form-label">Nombre de Usuario</label>
-        <input asp-for="NombreUsuario" class="form-control" />
-        <span asp-validation-for="NombreUsuario" class="text-danger"></span>
+        @* Tarjeta de identidad *@
+        <div class="card mb-3">
+            <div class="card-body py-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="avatar-circle avatar-@perfilColor"
+                         style="width:48px;height:48px;font-size:1rem;flex-shrink:0;">
+                        @inicial
+                    </div>
+                    <div>
+                        <div style="font-size:1rem;font-weight:700;color:var(--navy);">
+                            @Model.NombreUsuario
+                        </div>
+                        <div style="font-size:0.82rem;color:var(--text-3);">
+                            ID: @Model.IdUsuario &nbsp;·&nbsp; @Model.Correo
+                        </div>
+                    </div>
+                    <div class="ms-auto">
+                        @if (Model.Estado)
+                        {
+                            <span class="badge bg-success badge-dot">Activo</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger badge-dot">Inactivo</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* Formulario *@
+        <div class="card">
+            <div class="card-header">
+                <span class="card-header-title">
+                    <i class="bi bi-person-gear"></i>Datos del usuario
+                </span>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" method="post" id="formEditar" novalidate>
+
+                    <input type="hidden" asp-for="IdUsuario" />
+                    <input type="hidden" asp-for="Estado" />
+                    <input type="hidden" asp-for="IdColaborador" />
+
+                    @* Fila 1: Nombre usuario y Perfil *@
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Nombre de usuario <span class="required">*</span>
+                            </label>
+                            <input asp-for="NombreUsuario"
+                                   id="inputNombreUsuario"
+                                   class="form-control"
+                                   placeholder="Ej: jperez" />
+                            <span asp-validation-for="NombreUsuario" class="form-error d-block"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Perfil <span class="required">*</span>
+                            </label>
+                            <select asp-for="IdPerfil"
+                                    id="selectPerfil"
+                                    class="form-select"
+                                    asp-items="ViewBag.Perfiles">
+                            </select>
+                            <span asp-validation-for="IdPerfil" class="form-error d-block"></span>
+                        </div>
+                    </div>
+
+                    @* Fila 2: Correo *@
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-12">
+                            <label class="form-label">
+                                Correo electronico <span class="required">*</span>
+                            </label>
+                            <input asp-for="Correo"
+                                   class="form-control"
+                                   placeholder="correo@empresa.com"
+                                   type="email" />
+                            <span asp-validation-for="Correo" class="form-error d-block"></span>
+                        </div>
+                    </div>
+
+                    <hr class="section-divider" />
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i>Cancelar
+                        </a>
+                        <button type="button"
+                                class="btn btn-warning"
+                                onclick="confirmarActualizar()">
+                            <i class="bi bi-check-circle"></i>Guardar cambios
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
     </div>
+</div>
 
-    <div class="mb-3">
-        <label class="form-label">Correo</label>
-        <input asp-for="Correo" class="form-control" />
-        <span asp-validation-for="Correo" class="text-danger"></span>
-    </div>
+@section Styles {
+    <style>
+        .required {
+            color: var(--red);
+            margin-left: 2px;
+        }
 
-    <div class="mb-3">
-        <label class="form-label">Perfil</label>
-        <select asp-for="IdPerfil"
-                class="form-select"
-                asp-items="ViewBag.Perfiles">
-        </select>
-        <span asp-validation-for="IdPerfil" class="text-danger"></span>
-    </div>
+        .field-validation-error {
+            color: var(--red);
+            font-size: 0.78rem;
+            margin-top: 4px;
+        }
 
-    <button type="submit" class="btn btn-primary">Actualizar</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
-</form>
+        .input-validation-error {
+            border-color: var(--red) !important;
+        }
 
+            .input-validation-error:focus {
+                box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12) !important;
+            }
+    </style>
+}
+
+@section Scripts {
+    <script>
+
+        function confirmarActualizar() {
+            const nombre = document.getElementById('inputNombreUsuario').value.trim();
+            const perfil = document.getElementById('selectPerfil');
+            const perfilTexto = perfil.options[perfil.selectedIndex]?.text ?? '';
+
+            if (!nombre) {
+                Alert.warning('El nombre de usuario es obligatorio.');
+                return;
+            }
+
+            if (!perfil.value) {
+                Alert.warning('Debe seleccionar un perfil.');
+                return;
+            }
+
+            Alert.confirm(
+                `Se actualizara el usuario "${nombre}" con perfil ${perfilTexto}. Desea continuar?`,
+                () => {
+                    document.getElementById('formEditar').submit();
+                },
+                'question'
+            );
+        }
+
+    </script>
+}

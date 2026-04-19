@@ -1,0 +1,151 @@
+﻿@{
+    ViewData["Title"] = "Reportes";
+}
+
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-file-earmark-bar-graph"></i>Modulo de Reportes
+    </h3>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-house"></i>Inicio
+    </a>
+</div>
+
+<div class="mb-4">
+    <span class="text-muted" style="font-size:0.82rem;">
+        Sistema de Gestion RRHH
+        &nbsp;·&nbsp;
+        @DateTime.Now.ToString("dd MMMM yyyy",
+        System.Globalization.CultureInfo.GetCultureInfo("es-ES"))
+    </span>
+</div>
+
+@* ================================================
+   CARDS DE MODULOS
+   ================================================ *@
+<div class="row g-4">
+
+    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+        <a asp-controller="Reportes" asp-action="Aguinaldo"
+           class="text-decoration-none h-100 d-block">
+            <div class="card dashboard-card text-center p-4 h-100">
+                <i class="bi bi-cash-stack mb-3"></i>
+                <h6>Aguinaldos</h6>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+        <a asp-controller="Reportes" asp-action="Asistencia"
+           class="text-decoration-none h-100 d-block">
+            <div class="card dashboard-card text-center p-4 h-100">
+                <i class="bi bi-calendar-check mb-3"></i>
+                <h6>Asistencia</h6>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+        <a asp-controller="Reportes" asp-action="Colaboradores"
+           class="text-decoration-none h-100 d-block">
+            <div class="card dashboard-card text-center p-4 h-100">
+                <i class="bi bi-people-fill mb-3"></i>
+                <h6>Colaboradores</h6>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+        <a asp-controller="Reportes" asp-action="Evaluaciones"
+           class="text-decoration-none h-100 d-block">
+            <div class="card dashboard-card text-center p-4 h-100">
+                <i class="bi bi-clipboard-check mb-3"></i>
+                <h6>Evaluaciones</h6>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+        <a asp-controller="Reportes" asp-action="HorasExtras"
+           class="text-decoration-none h-100 d-block">
+            <div class="card dashboard-card text-center p-4 h-100">
+                <i class="bi bi-clock-history mb-3"></i>
+                <h6>Horas Extras</h6>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+        <a asp-controller="Reportes" asp-action="Incapacidades"
+           class="text-decoration-none h-100 d-block">
+            <div class="card dashboard-card text-center p-4 h-100">
+                <i class="bi bi-heart-pulse mb-3"></i>
+                <h6>Incapacidades</h6>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+        <a asp-controller="Reportes" asp-action="Liquidaciones"
+           class="text-decoration-none h-100 d-block">
+            <div class="card dashboard-card text-center p-4 h-100">
+                <i class="bi bi-file-earmark-text mb-3"></i>
+                <h6>Liquidaciones</h6>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+        <a asp-controller="Reportes" asp-action="Permisos"
+           class="text-decoration-none h-100 d-block">
+            <div class="card dashboard-card text-center p-4 h-100">
+                <i class="bi bi-calendar-event mb-3"></i>
+                <h6>Permisos</h6>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+        <a asp-controller="Reportes" asp-action="Planillas"
+           class="text-decoration-none h-100 d-block">
+            <div class="card dashboard-card text-center p-4 h-100">
+                <i class="bi bi-receipt-cutoff mb-3"></i>
+                <h6>Planillas</h6>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+        <a asp-controller="Reportes" asp-action="Uniformes"
+           class="text-decoration-none h-100 d-block">
+            <div class="card dashboard-card text-center p-4 h-100">
+                <i class="bi bi-bag-check mb-3"></i>
+                <h6>Uniformes</h6>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+        <a asp-controller="Reportes" asp-action="Usuarios"
+           class="text-decoration-none h-100 d-block">
+            <div class="card dashboard-card text-center p-4 h-100">
+                <i class="bi bi-person-gear mb-3"></i>
+                <h6>Usuarios</h6>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+        <a asp-controller="Reportes" asp-action="Vacaciones"
+           class="text-decoration-none h-100 d-block">
+            <div class="card dashboard-card text-center p-4 h-100">
+                <i class="bi bi-sun mb-3"></i>
+                <h6>Vacaciones</h6>
+            </div>
+        </a>
+    </div>
+
+</div>

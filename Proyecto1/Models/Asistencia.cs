@@ -25,6 +25,8 @@ namespace Proyecto1.Models
         [Required(ErrorMessage = "Debe indicar el motivo del ajuste.")]
         [StringLength(250)]
         public string Motivo { get; set; } = string.Empty;
+
+
     }
 }
 

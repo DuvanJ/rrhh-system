@@ -1,0 +1,292 @@
+﻿@model List<Proyecto1.Models.AsistenciaReporteVM>
+
+@{
+    ViewData["Title"] = "Reporte de Asistencia";
+
+    var colaboradorQ = Context.Request.Query["colaborador"].ToString();
+    var fechaInicioQ = Context.Request.Query["fechaInicio"].ToString();
+    var fechaFinQ = Context.Request.Query["fechaFin"].ToString();
+    var estadoQ = Context.Request.Query["estado"].ToString();
+
+    var totalRegistros = (int)(ViewBag.TotalRegistros ?? 0);
+    var totalTardanzas = (int)(ViewBag.TotalTardanzas ?? 0);
+    var totalFaltas = (int)(ViewBag.TotalFaltas ?? 0);
+    var totalPresentes = totalRegistros - totalTardanzas - totalFaltas;
+}
+
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-calendar-check"></i>Reporte de Asistencia
+    </h3>
+    <a asp-controller="Reportes" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
+
+<div class="filter-card mb-4">
+    <form method="get" asp-controller="Reportes" asp-action="Asistencia">
+        <div class="filter-row flex-wrap">
+
+            <div class="filter-group" style="max-width:220px;">
+                <span class="filter-label">Colaborador</span>
+                <input type="text"
+                       name="colaborador"
+                       value="@colaboradorQ"
+                       class="form-control"
+                       placeholder="Nombre..." />
+            </div>
+
+            <div class="filter-group" style="max-width:160px;">
+                <span class="filter-label">Fecha inicio</span>
+                <input type="date"
+                       name="fechaInicio"
+                       value="@fechaInicioQ"
+                       class="form-control" />
+            </div>
+
+            <div class="filter-group" style="max-width:160px;">
+                <span class="filter-label">Fecha fin</span>
+                <input type="date"
+                       name="fechaFin"
+                       value="@fechaFinQ"
+                       class="form-control" />
+            </div>
+
+            <div class="filter-group" style="max-width:150px;">
+                <span class="filter-label">Estado</span>
+                <select name="estado" class="form-select">
+                    <option value="">Todos</option>
+                    @if (estadoQ == "Presente")
+                    {
+                        <option value="Presente" selected="selected">Presente</option>
+                        <option value="Tardanza">Tardanza</option>
+                        <option value="Falta">Falta</option>
+                    }
+                    else if (estadoQ == "Tardanza")
+                    {
+                        <option value="Presente">Presente</option>
+                        <option value="Tardanza" selected="selected">Tardanza</option>
+                        <option value="Falta">Falta</option>
+                    }
+                    else if (estadoQ == "Falta")
+                    {
+                        <option value="Presente">Presente</option>
+                        <option value="Tardanza">Tardanza</option>
+                        <option value="Falta" selected="selected">Falta</option>
+                    }
+                    else
+                    {
+                        <option value="Presente">Presente</option>
+                        <option value="Tardanza">Tardanza</option>
+                        <option value="Falta">Falta</option>
+                    }
+                </select>
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i>Filtrar
+                </button>
+                <a asp-controller="Reportes"
+                   asp-action="Asistencia"
+                   class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i>Limpiar
+                </a>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+<div class="row g-3 mb-4">
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total registros</div>
+                <div class="kpi-value">@totalRegistros</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-calendar-check"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Presentes</div>
+                <div class="kpi-value" style="color:var(--green)">@totalPresentes</div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Tardanzas</div>
+                <div class="kpi-value" style="color:var(--amber)">@totalTardanzas</div>
+            </div>
+            <div class="kpi-icon amber">
+                <i class="bi bi-clock-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Faltas</div>
+                <div class="kpi-value" style="color:var(--red)">@totalFaltas</div>
+            </div>
+            <div class="kpi-icon red">
+                <i class="bi bi-x-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted" style="font-size:0.82rem;">
+        @Model.Count registro(s) encontrado(s)
+    </span>
+    <div>
+        <a asp-controller="Reportes"
+           asp-action="ExportarAsistenciaExcel"
+           asp-route-colaborador="@colaboradorQ"
+           asp-route-fechaInicio="@fechaInicioQ"
+           asp-route-fechaFin="@fechaFinQ"
+           asp-route-estado="@estadoQ"
+           class="btn btn-success">
+            <i class="bi bi-file-earmark-excel"></i>Exportar Excel
+        </a>
+        <a asp-controller="Reportes"
+           asp-action="AuditoriaAsistencia"
+           class="btn btn-outline-primary">
+            <i class="bi bi-clock-history"></i>Ver Auditoría
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>Registros de asistencia
+        </span>
+        <span class="badge badge-info">@Model.Count registros</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaAsistencia" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th>Colaborador</th>
+                        <th class="text-center">Fecha</th>
+                        <th class="text-center">Entrada</th>
+                        <th class="text-center">Salida</th>
+                        <th class="text-center">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            string badgeClass = item.Estado switch
+                            {
+                                "Presente" => "bg-success",
+                                "Tardanza" => "bg-warning",
+                                _ => "bg-danger"
+                            };
+
+                            string avatarColor = item.Estado switch
+                            {
+                                "Presente" => "green",
+                                "Tardanza" => "amber",
+                                _ => "red"
+                            };
+
+                            <tr>
+                                <td>
+                                    <div class="table-avatar">
+                                        <div class="avatar-circle avatar-@avatarColor">
+                                            @if (!string.IsNullOrEmpty(item.NombreColaborador))
+                                            {
+                                                @(string.Join("",
+                                                                                    item.NombreColaborador
+                                                                                    .Split(' ')
+                                                                                    .Where(s => !string.IsNullOrEmpty(s))
+                                                                                    .Take(2)
+                                                                                    .Select(s => s[0].ToString()))
+                                                                                    .ToUpper())
+                                                                        }
+                                            else
+                                            {
+                                                <text>#@item.IdColaborador</text>
+                                            }
+                                </div>
+                                <div>
+                                    <div class="avatar-name">
+                                        @(string.IsNullOrEmpty(item.NombreColaborador)
+                                                                                ? "Colaborador #" + item.IdColaborador
+                                                                                : item.NombreColaborador)
+                                    </div>
+                                    <div class="avatar-sub">
+                                        ID: @item.IdColaborador
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-center td-muted">
+                            @item.Fecha.ToString("dd/MM/yyyy")
+                        </td>
+                        <td class="text-center td-mono" style="color:var(--green)">
+                            @(item.HoraEntrada?.ToString(@"hh\:mm") ?? "—")
+                        </td>
+                        <td class="text-center td-mono">
+                            @(item.HoraSalida?.ToString(@"hh\:mm") ?? "—")
+                        </td>
+                        <td class="text-center">
+                            <span class="badge @badgeClass badge-dot">
+                                @item.Estado
+                            </span>
+                        </td>
+                    </tr>
+                                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5">
+                                <div class="table-empty">
+                                    <i class="bi bi-calendar-x"></i>
+                                    <p>No se encontraron registros de asistencia</p>
+                                    <span class="text-muted" style="font-size:0.82rem;">
+                                        Ajuste los filtros e intente de nuevo
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            if (@Model.Any().ToString().ToLower()) {
+                var config = Object.assign({}, DataTableConfig, {
+                    order: [[1, 'desc']]
+                });
+                $('#tablaAsistencia').DataTable(config);
+            }
+        });
+    </script>
+}

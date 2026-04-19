@@ -1,80 +1,291 @@
 ﻿@model List<Proyecto1.Models.VacacionAdminVM>
 
+@{
+    ViewData["Title"] = "Gestión de Vacaciones";
+    var idColActual = Context.Request.Query["idColaborador"].ToString();
 
-<h3 class="fw-bold mb-4">Gestión de Vacaciones</h3>
+    var pendientes = Model?.Count(v => v.Estado == "Pendiente") ?? 0;
+    var aprobadas = Model?.Count(v => v.Estado == "Aprobada") ?? 0;
+    var rechazadas = Model?.Count(v => v.Estado == "Rechazada") ?? 0;
+}
 
-<form method="get" asp-action="Index" class="row g-3 mb-4">
-    <div class="col-md-4">
-        <input type="number"
-               name="idColaborador"
-               class="form-control"
-               placeholder="Buscar por ID de colaborador" />
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-sun"></i>Gestión de Vacaciones
+    </h3>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-house"></i>Inicio
+    </a>
+</div>
+
+@* ================================================
+   KPI CARDS
+   ================================================ *@
+<div class="row g-3 mb-4">
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total solicitudes</div>
+                <div class="kpi-value">@(Model?.Count ?? 0)</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-sun"></i>
+            </div>
+        </div>
     </div>
 
-    <div class="col-md-2">
-        <button type="submit" class="btn btn-primary w-100">
-            Buscar
-        </button>
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Pendientes</div>
+                <div class="kpi-value" style="color:var(--amber)">@pendientes</div>
+            </div>
+            <div class="kpi-icon amber">
+                <i class="bi bi-clock-fill"></i>
+            </div>
+        </div>
     </div>
 
-    <div class="col-md-2">
-        <a asp-action="Index" class="btn btn-secondary w-100">
-            Limpiar
-        </a>
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Aprobadas</div>
+                <div class="kpi-value" style="color:var(--green)">@aprobadas</div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+        </div>
     </div>
-</form>
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>ID Colaborador</th>
-            <th>Colaborador</th>
-            <th>Fecha Solicitud</th>
-            <th>Desde</th>
-            <th>Hasta</th>
-            <th>Días</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var v in Model)
-        {
-            <tr>
-                <td>@v.IdColaborador</td>
-                <td>@v.NombreColaborador</td>
-                <td>@v.FechaSolicitud.ToString("dd/MM/yyyy")</td>
-                <td>@v.FechaInicio.ToString("dd/MM/yyyy")</td>
-                <td>@v.FechaFin.ToString("dd/MM/yyyy")</td>
-                <td>@v.DiasSolicitados</td>
-                <td>
-                    <span class="badge
-                            @(v.Estado == "Pendiente" ? "bg-warning" :
-                                                    v.Estado == "Aprobada" ? "bg-success" : "bg-danger")">
-                    @v.Estado
-                </span>
-            </td>
-            <td>
-                @if (v.Estado == "Pendiente")
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Rechazadas</div>
+                <div class="kpi-value" style="color:var(--red)">@rechazadas</div>
+            </div>
+            <div class="kpi-icon red">
+                <i class="bi bi-x-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@* ================================================
+   FILTROS
+   ================================================ *@
+<div class="filter-card mb-4">
+    <form method="get" asp-action="Index">
+        <div class="filter-row">
+
+            <div class="filter-group" style="max-width:200px;">
+                <span class="filter-label">ID Colaborador</span>
+                <input type="number"
+                       name="idColaborador"
+                       class="form-control"
+                       placeholder="Ingrese ID..."
+                       value="@idColActual" />
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i>Buscar
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i>Limpiar
+                </a>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+@* Contador *@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted" style="font-size:0.82rem;">
+        @(Model?.Count ?? 0) solicitud(es) encontrada(s)
+    </span>
+</div>
+
+@* ================================================
+   TABLA
+   ================================================ *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>Listado de vacaciones
+        </span>
+        <span class="badge badge-info">@(Model?.Count ?? 0) registros</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaVacaciones" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th>Colaborador</th>
+                        <th class="text-center">Solicitud</th>
+                        <th class="text-center">Desde</th>
+                        <th class="text-center">Hasta</th>
+                        <th class="text-center">Días</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-end pe-3">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
                     {
-                        <form asp-action="CambiarEstado" method="post" class="d-inline">
-                            <input type="hidden" name="id" value="@v.IdVacacion" />
-                            <input type="hidden" name="estado" value="Aprobada" />
-                            <button type="submit" class="btn btn-success btn-sm">
-                                Aprobar
-                            </button>
-                        </form>
+                        foreach (var v in Model)
+                        {
+                            var iniciales = v.NombreColaborador?
+                            .Split(' ')
+                            .Where(s => !string.IsNullOrEmpty(s))
+                            .Take(2)
+                            .Select(s => s[0].ToString())
+                            .Aggregate("", (acc, c) => acc + c)
+                            .ToUpper() ?? "??";
 
-                        <form asp-action="CambiarEstado" method="post" class="d-inline">
-                            <input type="hidden" name="id" value="@v.IdVacacion" />
-                            <input type="hidden" name="estado" value="Rechazada" />
-                            <button type="submit" class="btn btn-danger btn-sm">
-                                Rechazar
-                            </button>
-                        </form>
+                            string badgeClass = v.Estado switch
+                            {
+                                "Aprobada" => "bg-success",
+                                "Pendiente" => "bg-warning",
+                                _ => "bg-danger"
+                            };
+
+                            string avatarColor = v.Estado switch
+                            {
+                                "Aprobada" => "green",
+                                "Pendiente" => "amber",
+                                _ => "red"
+                            };
+
+                            <tr>
+                                <td>
+                                    <div class="table-avatar">
+                                        <div class="avatar-circle avatar-@avatarColor">
+                                            @iniciales
+                                        </div>
+                                        <div>
+                                            <div class="avatar-name">
+                                                @v.NombreColaborador
+                                            </div>
+                                            <div class="avatar-sub">
+                                                ID: @v.IdColaborador
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center td-muted">
+                                    @v.FechaSolicitud.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center td-muted">
+                                    @v.FechaInicio.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center td-muted">
+                                    @v.FechaFin.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center">
+                                    <span class="td-mono"
+                                          style="font-weight:700;color:var(--blue)">
+                                        @v.DiasSolicitados
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge @badgeClass badge-dot">
+                                        @v.Estado
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="td-actions">
+                                        @if (v.Estado == "Pendiente")
+                                        {
+                                            <form asp-action="CambiarEstado"
+                                                  method="post"
+                                                  id="formAprobar_@v.IdVacacion"
+                                                  class="d-inline">
+                                                <input type="hidden" name="id"
+                                                       value="@v.IdVacacion" />
+                                                <input type="hidden" name="estado"
+                                                       value="Aprobada" />
+                                                <button type="button"
+                                                        class="btn btn-success btn-sm"
+                                                        onclick="confirmarCambio(@v.IdVacacion, 'aprobar', '@v.NombreColaborador', @v.DiasSolicitados)">
+                                                    <i class="bi bi-check-circle"></i>Aprobar
+                                                </button>
+                                            </form>
+                                            <form asp-action="CambiarEstado"
+                                                  method="post"
+                                                  id="formRechazar_@v.IdVacacion"
+                                                  class="d-inline">
+                                                <input type="hidden" name="id"
+                                                       value="@v.IdVacacion" />
+                                                <input type="hidden" name="estado"
+                                                       value="Rechazada" />
+                                                <button type="button"
+                                                        class="btn btn-danger btn-sm"
+                                                        onclick="confirmarCambio(@v.IdVacacion, 'rechazar', '@v.NombreColaborador', @v.DiasSolicitados)">
+                                                    <i class="bi bi-x-circle"></i>Rechazar
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <span class="td-muted" style="font-size:0.82rem;">
+                                                Procesado
+                                            </span>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
                     }
-                </td>
-            </tr>
+                    else
+                    {
+                        <tr>
+                            <td colspan="7">
+                                <div class="table-empty">
+                                    <i class="bi bi-sun"></i>
+                                    <p>No hay solicitudes de vacaciones para mostrar</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+
+        $(document).ready(function () {
+            if (@((Model != null && Model.Any()).ToString().ToLower())) {
+                var config = Object.assign({}, DataTableConfig, {
+                    order: [[1, 'desc']]
+                });
+                $('#tablaVacaciones').DataTable(config);
+            }
+        });
+
+        function confirmarCambio(id, accion, nombre, dias) {
+            var mensaje = accion === 'aprobar'
+                ? 'Se aprobarán ' + dias + ' día(s) de vacaciones para ' + nombre + '. ¿Desea continuar?'
+                : 'Se rechazará la solicitud de vacaciones de ' + nombre + '. ¿Desea continuar?';
+
+            var tipo   = accion === 'aprobar' ? 'question' : 'warning';
+            var formId = accion === 'aprobar'
+                ? 'formAprobar_' + id
+                : 'formRechazar_' + id;
+
+            Alert.confirm(mensaje, function () {
+                document.getElementById(formId).submit();
+            }, tipo);
         }
-    </tbody>
-</table>
+
+    </script>
+}

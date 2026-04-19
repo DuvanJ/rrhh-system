@@ -2,40 +2,235 @@
 
 @{
     ViewData["Title"] = "Mis Permisos";
+    var lista = Model.ToList();
+    var pendientes = lista.Count(p => p.Estado == "Pendiente");
+    var aprobados = lista.Count(p => p.Estado == "Aprobado");
+    var rechazados = lista.Count(p => p.Estado == "Rechazado");
 }
 
-<h2 class="mb-3">Mis Permisos</h2>
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-calendar-event"></i>Mis Permisos
+    </h3>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-house"></i>Inicio
+    </a>
+</div>
 
-<a asp-action="Create" class="btn btn-primary mb-3">
-    <i class="bi bi-plus-square"></i> Solicitar Permiso
-</a>
+@* ================================================
+   KPI CARDS
+   ================================================ *@
+<div class="row g-3 mb-4">
 
-<table class="table table-striped mt-3">
-    <thead>
-        <tr>
-            <th>Tipo</th>
-            <th>Desde</th>
-            <th>Hasta</th>
-            <th>Estado</th>
-            <th>Observaciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@item.TipoPermiso</td>
-                <td>@item.FechaInicio.ToString("dd/MM/yyyy")</td>
-                <td>@item.FechaFin.ToString("dd/MM/yyyy")</td>
-                <td>
-                    <span class="badge
-                            @(item.Estado == "Pendiente" ? "bg-warning" :
-                                                    item.Estado == "Aprobado" ? "bg-success" : "bg-danger")">
-                    @item.Estado
-                </span>
-            </td>
-            <td>@item.Observaciones</td>
-        </tr>
-                }
-    </tbody>
-</table>
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total solicitudes</div>
+                <div class="kpi-value">@lista.Count</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-calendar-event"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Pendientes</div>
+                <div class="kpi-value" style="color:var(--amber)">@pendientes</div>
+            </div>
+            <div class="kpi-icon amber">
+                <i class="bi bi-clock-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Aprobados</div>
+                <div class="kpi-value" style="color:var(--green)">@aprobados</div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Rechazados</div>
+                <div class="kpi-value" style="color:var(--red)">@rechazados</div>
+            </div>
+            <div class="kpi-icon red">
+                <i class="bi bi-x-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@* ================================================
+   BOTÓN SOLICITAR
+   ================================================ *@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted" style="font-size:0.82rem;">
+        @lista.Count solicitud(es) registrada(s)
+    </span>
+    <a asp-action="Create" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i>Solicitar permiso
+    </a>
+</div>
+
+@* ================================================
+   TABLA
+   ================================================ *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>Historial de permisos
+        </span>
+        <div class="d-flex align-items-center gap-3">
+            <select id="filtroEstado"
+                    class="form-select form-select-sm"
+                    style="width:140px;">
+                <option value="">Todos</option>
+                <option value="Pendiente">Pendientes</option>
+                <option value="Aprobado">Aprobados</option>
+                <option value="Rechazado">Rechazados</option>
+            </select>
+            <span class="badge badge-info" id="badgeContador">
+                @lista.Count registros
+            </span>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaPermisos" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th class="text-center">Desde</th>
+                        <th class="text-center">Hasta</th>
+                        <th class="text-center">Estado</th>
+                        <th>Observaciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (lista.Any())
+                    {
+                        foreach (var item in lista.OrderByDescending(p => p.FechaInicio))
+                        {
+                            string badgeClass = item.Estado switch
+                            {
+                                "Aprobado" => "bg-success",
+                                "Pendiente" => "bg-warning",
+                                _ => "bg-danger"
+                            };
+
+                            var esPendiente = item.Estado == "Pendiente";
+
+                            <tr data-estado="@item.Estado"
+                                class="@(esPendiente ? "fila-pendiente" : "")">
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        @if (esPendiente)
+                                        {
+                                            <span class="badge bg-warning"
+                                                  style="font-size:0.65rem;">PENDIENTE</span>
+                                        }
+                                <span style="font-weight:500;">
+                                    @item.TipoPermiso
+                                </span>
+                            </div>
+                        </td>
+                        <td class="text-center td-mono">
+                            @item.FechaInicio.ToString("dd/MM/yyyy")
+                        </td>
+                        <td class="text-center td-mono">
+                            @item.FechaFin.ToString("dd/MM/yyyy")
+                        </td>
+                        <td class="text-center">
+                            <span class="badge @badgeClass badge-dot">
+                                @item.Estado
+                            </span>
+                        </td>
+                        <td class="td-muted" style="max-width:220px;">
+                            @(string.IsNullOrEmpty(item.Observaciones)
+                                                        ? "Sin observaciones"
+                                                        : item.Observaciones.Length > 60
+                                                        ? item.Observaciones.Substring(0, 60) + "..."
+                                                        : item.Observaciones)
+                        </td>
+                    </tr>
+                                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5">
+                                <div class="table-empty">
+                                    <i class="bi bi-calendar-event"></i>
+                                    <p>No tienes permisos registrados</p>
+                                    <a asp-action="Create" class="btn btn-success btn-sm">
+                                        <i class="bi bi-plus-circle"></i>Solicitar permiso
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .fila-pendiente {
+            background: #fffbeb !important;
+        }
+
+            .fila-pendiente:hover {
+                background: #fef3c7 !important;
+            }
+    </style>
+}
+
+@section Scripts {
+    <script>
+
+        $(document).ready(function () {
+            if (@lista.Any().ToString().ToLower()) {
+                var config = Object.assign({}, DataTableConfig, {
+                    order: [[1, 'desc']]
+                });
+                $('#tablaPermisos').DataTable(config);
+            }
+        });
+
+        var filtroEstado  = document.getElementById('filtroEstado');
+        var badgeContador = document.getElementById('badgeContador');
+
+        filtroEstado.addEventListener('change', function () {
+            var estado = this.value;
+            var table  = $('#tablaPermisos').DataTable();
+
+            table.rows().every(function () {
+                var fila       = this.node();
+                var filaEstado = fila.getAttribute('data-estado');
+                var ok         = estado === '' || filaEstado === estado;
+                $(fila).toggle(ok);
+            });
+
+            var visibles = $('#tablaPermisos tbody tr:visible').length;
+            badgeContador.textContent = visibles + ' registros';
+        });
+
+    </script>
+}

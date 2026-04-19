@@ -87,5 +87,21 @@ namespace Proyecto1.Services
                 .FirstOrDefault();
         }
 
+
+        public async Task<List<Colaborador>> ObtenerColaboradoresConsulta()
+        {
+            return await _context.Colaboradores
+                .FromSqlRaw("EXEC sp_ObtenerColaboradores")
+                .ToListAsync();
+        }
+
+
+        public async Task<List<Colaborador>> ObtenerColaboradoresActivos()
+        {
+            return await _context.Colaboradores
+                .FromSqlRaw("EXEC sp_ObtenerColaboradoresActivos")
+                .ToListAsync();
+        }
+
     }
 }

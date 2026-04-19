@@ -18,19 +18,20 @@ namespace Proyecto1.BLL
         public async Task RegistrarAsync(Permiso p)
         {
             await _context.Database.ExecuteSqlRawAsync(
-                "EXEC sp_Permisos_Registrar @IdColaborador, @TipoPermiso, @FechaInicio, @FechaFin, @Observaciones",
+                "EXEC sp_Permisos_Registrar @IdColaborador, @TipoPermiso, @FechaInicio, @FechaFin, @Observaciones, @EsConGoce",
                 new SqlParameter("@IdColaborador", p.IdColaborador),
                 new SqlParameter("@TipoPermiso", p.TipoPermiso),
                 new SqlParameter("@FechaInicio", p.FechaInicio),
                 new SqlParameter("@FechaFin", p.FechaFin),
-                new SqlParameter("@Observaciones", (object?)p.Observaciones ?? DBNull.Value)
+                new SqlParameter("@Observaciones", (object?)p.Observaciones ?? DBNull.Value),
+                new SqlParameter("@EsConGoce", p.EsConGoce)
             );
         }
 
         // Listado general de permisos
-        public async Task<List<Permiso>> ListarAsync()
+        public async Task<List<PermisoAdminVM>> ListarAsync()
         {
-            return await _context.Permisos
+            return await _context.Set<PermisoAdminVM>()
                 .FromSqlRaw("EXEC sp_Permisos_Listar")
                 .ToListAsync();
         }
@@ -74,6 +75,14 @@ namespace Proyecto1.BLL
         {
             return await _context.Colaboradores
                 .AnyAsync(c => c.IdColaborador == idColaborador);
+        }
+
+
+        public async Task<List<Permiso>> ListarParaPermisosAsync()
+        {
+            return await _context.Permisos
+                .FromSqlRaw("EXEC sp_Permisos_Listar_SoloPermiso")
+                .ToListAsync();
         }
 
     }

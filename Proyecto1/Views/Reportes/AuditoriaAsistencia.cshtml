@@ -1,0 +1,255 @@
+﻿@model List<Proyecto1.Models.AsistenciaAuditoria>
+
+@{
+    ViewData["Title"] = "Auditoria de Asistencia";
+    var idColActual = Context.Request.Query["idColaborador"].ToString();
+}
+
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-shield-check"></i>Auditoria de Asistencia
+    </h3>
+    <a asp-controller="Reportes" asp-action="Asistencia" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
+
+@if (Model.Any())
+{
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-4">
+            <div class="kpi-card">
+                <div>
+                    <div class="kpi-label">Total ajustes</div>
+                    <div class="kpi-value">@Model.Count</div>
+                </div>
+                <div class="kpi-icon blue">
+                    <i class="bi bi-list-check"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="kpi-card">
+                <div>
+                    <div class="kpi-label">Colaboradores afectados</div>
+                    <div class="kpi-value">
+                        @Model.Select(a => a.IdColaborador).Distinct().Count()
+                    </div>
+                </div>
+                <div class="kpi-icon amber">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="kpi-card">
+                <div>
+                    <div class="kpi-label">Ultimo ajuste</div>
+                    <div class="kpi-value" style="font-size:1rem;">
+                        @Model.Max(a => a.FechaModificacion).ToString("dd/MM/yyyy HH:mm")
+                    </div>
+                </div>
+                <div class="kpi-icon slate">
+                    <i class="bi bi-calendar-event"></i>
+                </div>
+            </div>
+        </div>
+
+    </div>
+}
+
+<div class="filter-card mb-4">
+    <form method="get" asp-controller="Reportes" asp-action="AuditoriaAsistencia">
+        <div class="filter-row">
+
+            <div class="filter-group" style="max-width:200px;">
+                <span class="filter-label">ID Colaborador</span>
+                <input type="number"
+                       name="idColaborador"
+                       value="@idColActual"
+                       class="form-control"
+                       placeholder="Ingrese ID..." />
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i>Buscar
+                </button>
+                <a asp-controller="Reportes"
+                   asp-action="AuditoriaAsistencia"
+                   class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i>Limpiar
+                </a>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+<div class="d-flex justify-content-end mb-3">
+    <a asp-controller="Reportes"
+       asp-action="ExportarAuditoriaExcel"
+       class="btn btn-success">
+        <i class="bi bi-file-earmark-excel"></i>Exportar Excel
+    </a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card">
+        <div class="table-empty">
+            <i class="bi bi-shield-check"></i>
+            <p>No hay registros de auditoria disponibles</p>
+            <span class="text-muted" style="font-size:0.82rem;">
+                Los ajustes de asistencia apareceran aqui una vez realizados
+            </span>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="card-header">
+            <span class="card-header-title">
+                <i class="bi bi-table"></i>Historial de ajustes
+            </span>
+            <span class="badge badge-info">@Model.Count registros</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table id="tablaAuditoria" class="tabla-sistema w-100">
+                    <thead>
+                        <tr>
+                            <th>ID Colab.</th>
+                            <th class="text-center">Fecha</th>
+                            <th class="text-center">Entrada ant.</th>
+                            <th class="text-center">Salida ant.</th>
+                            <th class="text-center">Entrada nueva</th>
+                            <th class="text-center">Salida nueva</th>
+                            <th>Motivo</th>
+                            <th>Usuario</th>
+                            <th class="text-center">Modificacion</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var a in Model)
+                        {
+                            <tr>
+                                <td class="td-mono">@a.IdColaborador</td>
+                                <td class="text-center td-muted">
+                                    @a.Fecha.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center">
+                                    @if (a.HoraEntradaAnterior.HasValue)
+                                    {
+                                        <span class="badge bg-secondary">
+                                            @a.HoraEntradaAnterior.Value.ToString(@"hh\:mm")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="td-muted">—</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (a.HoraSalidaAnterior.HasValue)
+                                    {
+                                        <span class="badge bg-secondary">
+                                            @a.HoraSalidaAnterior.Value.ToString(@"hh\:mm")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="td-muted">—</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (a.HoraEntradaNueva.HasValue)
+                                    {
+                                        <span class="badge bg-success">
+                                            @a.HoraEntradaNueva.Value.ToString(@"hh\:mm")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="td-muted">—</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (a.HoraSalidaNueva.HasValue)
+                                    {
+                                        <span class="badge bg-success">
+                                            @a.HoraSalidaNueva.Value.ToString(@"hh\:mm")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="td-muted">—</span>
+                                    }
+                            </td>
+                            <td style="max-width:220px;">
+                                <span class="motivo-truncado"
+                                      data-motivo="@a.Motivo">
+                                    @(a.Motivo?.Length > 40
+                                                                    ? a.Motivo.Substring(0, 40) + "..."
+                                                                    : a.Motivo)
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="avatar-circle avatar-amber"
+                                     style="width:28px;height:28px;
+                                                    font-size:0.7rem;flex-shrink:0;">
+                                    @(a.UsuarioModifica?.Substring(0, 1).ToUpper() ?? "?")
+                                </div>
+                                <span class="td-muted">@a.UsuarioModifica</span>
+                            </div>
+                        </td>
+                        <td class="text-center td-mono td-muted">
+                            @a.FechaModificacion.ToString("dd/MM/yyyy HH:mm")
+                        </td>
+                    </tr>
+                                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
+@section Styles {
+    <style>
+        .motivo-truncado {
+            cursor: pointer;
+            color: var(--text-2);
+            font-size: 0.875rem;
+        }
+
+            .motivo-truncado:hover {
+                color: var(--blue);
+                text-decoration: underline;
+            }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            if (@Model.Any().ToString().ToLower()) {
+                var config = Object.assign({}, DataTableConfig, {
+                    order: [[8, 'desc']]
+                });
+                $('#tablaAuditoria').DataTable(config);
+            }
+        });
+
+        document.querySelectorAll('.motivo-truncado').forEach(function (el) {
+            el.addEventListener('click', function () {
+                Alert.info(this.getAttribute('data-motivo'));
+            });
+        });
+    </script>
+}

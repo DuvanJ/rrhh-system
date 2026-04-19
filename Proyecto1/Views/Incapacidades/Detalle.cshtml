@@ -1,0 +1,242 @@
+﻿@model Proyecto1.Models.IncapacidadDetalleVM
+
+@{
+    ViewData["Title"] = "Detalle de Incapacidad";
+
+    var iniciales = Model.NombreColaborador?
+        .Split(' ')
+        .Where(s => !string.IsNullOrEmpty(s))
+        .Take(2)
+        .Select(s => s[0].ToString())
+        .Aggregate("", (acc, c) => acc + c)
+        .ToUpper() ?? "??";
+
+    string estadoBadge = Model.Estado == "Activa" ? "bg-danger" : "bg-secondary";
+    string avatarColor = Model.Estado == "Activa" ? "red" : "slate";
+}
+
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-file-earmark-medical"></i>Detalle de Incapacidad
+    </h3>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-xl-8 col-lg-10">
+
+        @* Perfil del colaborador *@
+        <div class="card mb-4">
+            <div class="card-body py-4">
+                <div class="d-flex align-items-center gap-4">
+
+                    <div class="avatar-circle avatar-@avatarColor"
+                         style="width:64px;height:64px;font-size:1.3rem;flex-shrink:0;">
+                        @iniciales
+                    </div>
+
+                    <div class="flex-grow-1">
+                        <h4 style="font-weight:700;color:var(--navy);margin-bottom:4px;">
+                            @Model.NombreColaborador
+                        </h4>
+                        <div style="font-size:0.82rem;color:var(--text-3);margin-bottom:8px;">
+                            Incapacidad #@Model.IdIncapacidad
+                            &nbsp;·&nbsp;
+                            Registrada: @Model.FechaRegistro.ToString("dd/MM/yyyy")
+                        </div>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <span class="badge @estadoBadge badge-dot">@Model.Estado</span>
+                            @if (Model.EsRemunerada)
+                            {
+                                <span class="badge bg-success badge-dot">Remunerada</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary badge-dot">No remunerada</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="text-end" style="flex-shrink:0;">
+                        <div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;
+                                    letter-spacing:.5px;color:var(--text-3);margin-bottom:4px;">
+                            Dias de incapacidad
+                        </div>
+                        <div style="font-size:2rem;font-weight:700;color:var(--amber);
+                                    font-family:'Consolas',monospace;">
+                            @Model.DiasIncapacidad
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        @* Datos de la incapacidad *@
+        <div class="card mb-4">
+            <div class="card-header">
+                <span class="card-header-title">
+                    <i class="bi bi-card-list"></i>Informacion de la incapacidad
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+                        <div class="detail-field">
+                            <span class="detail-label">
+                                <i class="bi bi-heart-pulse"></i>Tipo de incapacidad
+                            </span>
+                            <span class="detail-value">@Model.TipoIncapacidad</span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="detail-field">
+                            <span class="detail-label">
+                                <i class="bi bi-calendar-event"></i>Fecha inicio
+                            </span>
+                            <span class="detail-value td-mono">
+                                @Model.FechaInicio.ToString("dd/MM/yyyy")
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="detail-field">
+                            <span class="detail-label">
+                                <i class="bi bi-calendar-check"></i>Fecha fin
+                            </span>
+                            <span class="detail-value td-mono">
+                                @Model.FechaFin.ToString("dd/MM/yyyy")
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="detail-field">
+                            <span class="detail-label">
+                                <i class="bi bi-calendar-range"></i>Dias de incapacidad
+                            </span>
+                            <span class="detail-value td-mono"
+                                  style="font-weight:700;color:var(--amber);font-size:1.1rem;">
+                                @Model.DiasIncapacidad dia(s)
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="detail-field">
+                            <span class="detail-label">
+                                <i class="bi bi-cash-coin"></i>Remunerada
+                            </span>
+                            <span class="detail-value">
+                                @if (Model.EsRemunerada)
+                                {
+                                    <span class="badge bg-success badge-dot">Si</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary badge-dot">No</span>
+                                }
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="detail-field">
+                            <span class="detail-label">
+                                <i class="bi bi-info-circle"></i>Estado
+                            </span>
+                            <span class="detail-value">
+                                <span class="badge @estadoBadge badge-dot">@Model.Estado</span>
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        @* Motivo *@
+        <div class="card mb-4">
+            <div class="card-header">
+                <span class="card-header-title">
+                    <i class="bi bi-chat-text"></i>Motivo
+                </span>
+            </div>
+            <div class="card-body">
+                <p style="font-size:0.9rem;color:var(--text-2);line-height:1.7;margin:0;">
+                    @(string.IsNullOrEmpty(Model.Motivo)
+                                        ? "No especificado"
+                                        : Model.Motivo)
+                </p>
+            </div>
+        </div>
+
+        @* Documento adjunto *@
+        @if (!string.IsNullOrEmpty(Model.DocumentoAdjunto))
+        {
+            <div class="card mb-4">
+                <div class="card-header">
+                    <span class="card-header-title">
+                        <i class="bi bi-paperclip"></i>Documento adjunto
+                    </span>
+                </div>
+                <div class="card-body">
+                    <a href="@Model.DocumentoAdjunto"
+                       target="_blank"
+                       class="btn btn-primary">
+                        <i class="bi bi-file-earmark-text"></i>Ver documento
+                    </a>
+                </div>
+            </div>
+        }
+
+        @* Footer *@
+        <div class="d-flex justify-content-end">
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i>Volver al listado
+            </a>
+        </div>
+
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .detail-field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 12px 14px;
+            background: var(--slate-ll);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            height: 100%;
+        }
+
+        .detail-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-3);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+            .detail-label i {
+                font-size: 0.75rem;
+            }
+
+        .detail-value {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+    </style>
+}

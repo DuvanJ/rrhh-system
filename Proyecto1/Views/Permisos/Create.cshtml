@@ -4,33 +4,269 @@
     ViewData["Title"] = "Solicitar Permiso";
 }
 
-<h2>Solicitar Permiso</h2>
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-calendar-plus"></i>Solicitar Permiso
+    </h3>
+    <a asp-action="MisPermisos" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
 
-<form asp-action="Create" method="post" class="mt-3">
+<div class="row justify-content-center">
+    <div class="col-xl-6 col-lg-8">
 
-    <div class="mb-3">
-        <label asp-for="TipoPermiso" class="form-label"></label>
-        <select asp-for="TipoPermiso" class="form-select" required>
-            <option value="">-- Seleccione --</option>
-            <option value="Con goce salarial">Con goce salarial</option>
-            <option value="Sin goce salarial">Sin goce salarial</option>
-        </select>
+        <div class="card">
+            <div class="card-header">
+                <span class="card-header-title">
+                    <i class="bi bi-send"></i>Nueva solicitud de permiso
+                </span>
+            </div>
+            <div class="card-body">
+
+                <form asp-action="Create"
+                      method="post"
+                      id="formPermiso"
+                      novalidate>
+
+                    @* Tipo de permiso *@
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Tipo de permiso <span class="required">*</span>
+                        </label>
+                        <select asp-for="TipoPermiso"
+                                id="selectTipo"
+                                class="form-select">
+                            <option value="">-- Seleccione --</option>
+                            <option value="Con goce salarial">Con goce salarial</option>
+                            <option value="Sin goce salarial">Sin goce salarial</option>
+                        </select>
+                        <span asp-validation-for="TipoPermiso"
+                              class="form-error d-block"></span>
+                    </div>
+
+                    @* Fechas *@
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Fecha inicio <span class="required">*</span>
+                            </label>
+                            <input asp-for="FechaInicio"
+                                   type="date"
+                                   class="form-control"
+                                   id="inputFechaInicio" />
+                            <span asp-validation-for="FechaInicio"
+                                  class="form-error d-block"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Fecha fin <span class="required">*</span>
+                            </label>
+                            <input asp-for="FechaFin"
+                                   type="date"
+                                   class="form-control"
+                                   id="inputFechaFin" />
+                            <span id="msgFechas" class="form-text"
+                                  style="display:none;"></span>
+                            <span asp-validation-for="FechaFin"
+                                  class="form-error d-block"></span>
+                        </div>
+                    </div>
+
+                    @* Días calculados *@
+                    <div class="mb-3">
+                        <div class="detail-field">
+                            <span class="detail-label">
+                                <i class="bi bi-calendar-range"></i>Días solicitados
+                            </span>
+                            <span id="diasCalculados"
+                                  style="font-size:1.1rem;font-weight:700;
+                                         color:var(--blue);font-family:'Consolas',monospace;">
+                                —
+                            </span>
+                        </div>
+                    </div>
+
+                    @* Observaciones *@
+                    <div class="mb-4">
+                        <label class="form-label">Observaciones</label>
+                        <textarea asp-for="Observaciones"
+                                  id="inputObservaciones"
+                                  class="form-control"
+                                  rows="3"
+                                  placeholder="Describa el motivo del permiso..."
+                                  style="resize:vertical;"></textarea>
+                        <div class="d-flex justify-content-end mt-1">
+                            <span id="contadorObs" class="form-text">0 / 300</span>
+                        </div>
+                        <span asp-validation-for="Observaciones"
+                              class="form-error d-block"></span>
+                    </div>
+
+                    @* Alerta informativa *@
+                    <div class="alert alert-info d-flex align-items-start gap-2 mb-4">
+                        <i class="bi bi-info-circle-fill flex-shrink-0"
+                           style="font-size:1rem;margin-top:2px;"></i>
+                        <div style="font-size:0.82rem;">
+                            Su solicitud será revisada por el departamento de RRHH.
+                            Recibirá una notificación cuando sea aprobada o rechazada.
+                        </div>
+                    </div>
+
+                    <hr class="section-divider" />
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a asp-action="MisPermisos" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i>Cancelar
+                        </a>
+                        <button type="button"
+                                class="btn btn-success"
+                                onclick="confirmarSolicitud()">
+                            <i class="bi bi-send"></i>Enviar solicitud
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
     </div>
+</div>
 
-    <div class="mb-3">
-        <label asp-for="FechaInicio" class="form-label"></label>
-        <input asp-for="FechaInicio" type="date" class="form-control" required />
-    </div>
+@section Styles {
+    <style>
+        .required {
+            color: var(--red);
+            margin-left: 2px;
+        }
 
-    <div class="mb-3">
-        <label asp-for="FechaFin" class="form-label"></label>
-        <input asp-for="FechaFin" type="date" class="form-control" required />
-    </div>
+        .detail-field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 12px 14px;
+            background: var(--slate-ll);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
 
-    <div class="mb-3">
-        <label asp-for="Observaciones" class="form-label"></label>
-        <textarea asp-for="Observaciones" class="form-control"></textarea>
-    </div>
+        .detail-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-3);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
 
-    <button type="submit" class="btn btn-primary">Enviar Solicitud</button>
-</form>
+            .detail-label i {
+                font-size: 0.75rem;
+            }
+
+        .field-validation-error {
+            color: var(--red);
+            font-size: 0.78rem;
+            margin-top: 4px;
+        }
+
+        .input-validation-error {
+            border-color: var(--red) !important;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+
+        var inputInicio = document.getElementById('inputFechaInicio');
+        var inputFin    = document.getElementById('inputFechaFin');
+        var diasSpan    = document.getElementById('diasCalculados');
+        var msgFechas   = document.getElementById('msgFechas');
+        var obs         = document.getElementById('inputObservaciones');
+        var contador    = document.getElementById('contadorObs');
+
+        // Calcular días
+        function calcularDias() {
+            var inicio = inputInicio.value;
+            var fin    = inputFin.value;
+
+            if (!inicio || !fin) {
+                diasSpan.textContent    = '—';
+                msgFechas.style.display = 'none';
+                return;
+            }
+
+            var d1   = new Date(inicio);
+            var d2   = new Date(fin);
+            var diff = Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
+
+            if (diff <= 0) {
+                diasSpan.textContent       = '—';
+                msgFechas.style.display    = 'block';
+                msgFechas.style.color      = 'var(--red)';
+                msgFechas.textContent      = 'La fecha fin debe ser posterior a la fecha inicio';
+                inputFin.style.borderColor = 'var(--red)';
+            } else {
+                diasSpan.textContent       = diff + ' día(s)';
+                msgFechas.style.display    = 'block';
+                msgFechas.style.color      = 'var(--green)';
+                msgFechas.textContent      = diff + ' día(s) de permiso solicitados';
+                inputFin.style.borderColor = 'var(--green)';
+            }
+        }
+
+        inputInicio.addEventListener('change', calcularDias);
+        inputFin.addEventListener('change', calcularDias);
+        calcularDias();
+
+        // Contador observaciones
+        obs.addEventListener('input', function () {
+            var len = obs.value.length;
+            contador.textContent = len + ' / 300';
+            contador.style.color = len > 300 ? 'var(--red)' : 'var(--text-3)';
+            if (len > 300) obs.value = obs.value.substring(0, 300);
+        });
+
+        // Confirmar solicitud
+        function confirmarSolicitud() {
+            var tipo   = document.getElementById('selectTipo');
+            var inicio = inputInicio.value;
+            var fin    = inputFin.value;
+            var tipoTexto = tipo.options[tipo.selectedIndex]?.text;
+
+            if (!tipo.value) {
+                Alert.warning('Debe seleccionar el tipo de permiso.');
+                return;
+            }
+
+            if (!inicio || !fin) {
+                Alert.warning('Debe seleccionar las fechas de inicio y fin.');
+                return;
+            }
+
+            var d1   = new Date(inicio);
+            var d2   = new Date(fin);
+            var diff = Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
+
+            if (diff <= 0) {
+                Alert.warning('La fecha fin debe ser posterior a la fecha inicio.');
+                return;
+            }
+
+            Alert.confirm(
+                'Se enviará la solicitud de permiso ' + tipoTexto + ' por ' + diff + ' día(s). ¿Desea continuar?',
+                function () {
+                    document.getElementById('formPermiso').submit();
+                },
+                'question'
+            );
+        }
+
+    </script>
+}

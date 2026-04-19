@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Proyecto1.BLL;
 using Proyecto1.Models;
+using Proyecto1.Services;
 
 namespace Proyecto1.Controllers
 {
@@ -9,12 +10,14 @@ namespace Proyecto1.Controllers
         private readonly VacacionesService _service;
         private readonly EmailService _emailService;
         private readonly IConfiguration _config;
+        private readonly ColaboradoresService _colaboradoresService;
 
-        public VacacionesController(VacacionesService service, EmailService emailService, IConfiguration config)
+        public VacacionesController (VacacionesService service, EmailService emailService, IConfiguration config, ColaboradoresService colaboradoresService)
         {
             _service = service;
             _emailService = emailService;
             _config = config;
+            _colaboradoresService = colaboradoresService;
         }
 
         // ================= ADMIN =================
@@ -135,21 +138,23 @@ namespace Proyecto1.Controllers
         [HttpPost]
         public async Task<IActionResult> CambiarEstado(int id, string estado)
         {
-            // 1️⃣ Cambiar estado en BD
-            await _service.CambiarEstadoAsync(id, estado);
-
-            // 2️⃣ Obtener datos para el correo
-            var datos = await _service.ObtenerDetalleAsync(id);
-
-            if (datos == null)
+            try
             {
-                TempData["Error"] = "No se pudieron obtener los datos de la solicitud.";
-                return RedirectToAction(nameof(Index));
-            }
+                // 1️⃣ Cambiar estado en BD
+                await _service.CambiarEstadoAsync(id, estado);
 
-            string asunto = "Estado de su solicitud de vacaciones";
+                // 2️⃣ Obtener datos para el correo
+                var datos = await _service.ObtenerDetalleAsync(id);
 
-            string mensaje = $@"
+                if (datos == null)
+                {
+                    TempData["Error"] = "No se pudieron obtener los datos de la solicitud.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                string asunto = "Estado de su solicitud de vacaciones";
+
+                string mensaje = $@"
 Hola {datos.NombreColaborador},
 
 Su solicitud de vacaciones ha sido <b>{estado}</b>.
@@ -162,40 +167,61 @@ Atentamente,
 Departamento de Recursos Humanos
 ";
 
-            // 3️⃣ Enviar correo al colaborador
-            if (!string.IsNullOrWhiteSpace(datos.CorreoColaborador))
-            {
-                try
+                // 3️⃣ Obtener correo: primero del SP, si no, de Colaboradores
+                string correoColaborador = !string.IsNullOrWhiteSpace(datos.CorreoColaborador)
+                    ? datos.CorreoColaborador
+                    : null;
+
+                if (string.IsNullOrWhiteSpace(correoColaborador) && datos.IdColaborador > 0)
                 {
-                    await _emailService.EnviarAsync(
-                        datos.CorreoColaborador,
-                        asunto,
-                        mensaje
-                    );
+                    var colaborador = await _colaboradoresService.ObtenerPorId(datos.IdColaborador);
+                    correoColaborador = colaborador?.Correo;
                 }
-                catch
+
+                // 4️⃣ Enviar correo al colaborador (si existe)
+                if (!string.IsNullOrWhiteSpace(correoColaborador))
                 {
-                    TempData["Warning"] =
-                        "La solicitud fue procesada, pero el correo del colaborador no existe.";
+                    try
+                    {
+                        await _emailService.EnviarAsync(
+                            correoColaborador,
+                            asunto,
+                            mensaje
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        TempData["Warning"] = "La solicitud fue procesada, pero hubo un error al enviar el correo al colaborador.";
+                    }
                 }
+                else
+                {
+                    TempData["Warning"] = "La solicitud fue procesada, pero el colaborador no tiene correo registrado.";
+                }
+
+                // 5️⃣ Enviar correo a RRHH
+                string correoRRHH = _config["SendGrid:CorreoRRHH"];
+                if (!string.IsNullOrWhiteSpace(correoRRHH))
+                {
+                    try
+                    {
+                        await _emailService.EnviarAsync(
+                            correoRRHH,
+                            $"Solicitud de vacaciones {estado}",
+                            mensaje
+                        );
+                    }
+                    catch { }
+                }
+
+                TempData["Success"] = $"Vacaciones {estado.ToLower()} correctamente.";
+                return RedirectToAction(nameof(Index));
             }
-            else
+            catch (Exception ex)
             {
-                TempData["Warning"] =
-                    "La solicitud fue procesada, pero el colaborador no tiene correo registrado.";
+                TempData["Error"] = $"Error al procesar la solicitud: {ex.Message}";
+                return RedirectToAction(nameof(Index));
             }
-
-            // 4️⃣ Enviar correo a RRHH (SIEMPRE)
-            await _emailService.EnviarAsync(
-                _config["SendGrid:CorreoRRHH"],
-                $"Solicitud de vacaciones {estado}",
-                mensaje
-            );
-
-            // 5️⃣ Mensaje final
-            TempData["Success"] = $"Vacaciones {estado.ToLower()} correctamente.";
-
-            return RedirectToAction(nameof(Index));
         }
 
 

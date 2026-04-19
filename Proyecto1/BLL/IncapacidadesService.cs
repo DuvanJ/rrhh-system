@@ -39,6 +39,14 @@ namespace Proyecto1.BLL
                 .ToListAsync();
         }
 
+
+        public async Task<List<TiposIncapacidad>> ObtenerTiposActivosAsync()
+        {
+            return await _context.Set<TiposIncapacidad>()
+                .FromSqlRaw("SELECT * FROM Cat_TiposIncapacidad WHERE Estado = 1")
+                .ToListAsync();
+        }
+
         // =========================
         // REGISTRAR
         // =========================
@@ -47,18 +55,16 @@ namespace Proyecto1.BLL
         {
             await _context.Database.ExecuteSqlRawAsync(
                 @"EXEC sp_Incapacidad_Insertar 
-                    @IdColaborador,
-                    @TipoIncapacidad,
-                    @FechaInicio,
-                    @FechaFin,
-                    @EsRemunerada,
-                    @Motivo,
-                    @DocumentoAdjunto",
+            @IdColaborador,
+            @IdTipoIncapacidad,
+            @FechaInicio,
+            @FechaFin,
+            @Motivo,
+            @DocumentoAdjunto",
                 new SqlParameter("@IdColaborador", i.IdColaborador),
-                new SqlParameter("@TipoIncapacidad", i.TipoIncapacidad),
+                new SqlParameter("@IdTipoIncapacidad", i.IdTipoIncapacidad),
                 new SqlParameter("@FechaInicio", i.FechaInicio),
                 new SqlParameter("@FechaFin", i.FechaFin),
-                new SqlParameter("@EsRemunerada", i.EsRemunerada),
                 new SqlParameter("@Motivo", i.Motivo ?? (object)DBNull.Value),
                 new SqlParameter("@DocumentoAdjunto", i.DocumentoAdjunto ?? (object)DBNull.Value)
             );
@@ -72,19 +78,17 @@ namespace Proyecto1.BLL
         {
             await _context.Database.ExecuteSqlRawAsync(
                 @"EXEC sp_Incapacidad_Actualizar
-                    @IdIncapacidad,
-                    @TipoIncapacidad,
-                    @FechaInicio,
-                    @FechaFin,
-                    @EsRemunerada,
-                    @Motivo,
-                    @DocumentoAdjunto,
-                    @Estado",
+            @IdIncapacidad,
+            @IdTipoIncapacidad,
+            @FechaInicio,
+            @FechaFin,
+            @Motivo,
+            @DocumentoAdjunto,
+            @Estado",
                 new SqlParameter("@IdIncapacidad", i.IdIncapacidad),
-                new SqlParameter("@TipoIncapacidad", i.TipoIncapacidad),
+                new SqlParameter("@IdTipoIncapacidad", i.IdTipoIncapacidad),
                 new SqlParameter("@FechaInicio", i.FechaInicio),
                 new SqlParameter("@FechaFin", i.FechaFin),
-                new SqlParameter("@EsRemunerada", i.EsRemunerada),
                 new SqlParameter("@Motivo", i.Motivo ?? (object)DBNull.Value),
                 new SqlParameter("@DocumentoAdjunto", i.DocumentoAdjunto ?? (object)DBNull.Value),
                 new SqlParameter("@Estado", i.Estado)
@@ -144,9 +148,6 @@ namespace Proyecto1.BLL
                 })
                 .FirstOrDefaultAsync();
         }
-
-
-
 
     }
 }

@@ -1,0 +1,286 @@
+﻿@model List<Proyecto1.Models.UsuarioListado>
+
+@{
+    ViewData["Title"] = "Consulta de Usuarios";
+
+    var activos = Model.Count(u => u.Estado);
+    var inactivos = Model.Count(u => !u.Estado);
+    var admins = Model.Count(u => u.NombrePerfil == "Administrador");
+    var perfiles = Model.Select(u => u.NombrePerfil).Distinct().OrderBy(p => p).ToList();
+}
+
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-people-fill"></i>Consulta de Usuarios
+    </h3>
+    <a asp-controller="Consultas" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
+
+@* ================================================
+   KPI CARDS
+   ================================================ *@
+<div class="row g-3 mb-4">
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total usuarios</div>
+                <div class="kpi-value">@Model.Count</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-people-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Activos</div>
+                <div class="kpi-value" style="color:var(--green)">@activos</div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Inactivos</div>
+                <div class="kpi-value" style="color:var(--red)">@inactivos</div>
+            </div>
+            <div class="kpi-icon red">
+                <i class="bi bi-x-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Administradores</div>
+                <div class="kpi-value" style="color:var(--amber)">@admins</div>
+            </div>
+            <div class="kpi-icon amber">
+                <i class="bi bi-shield-fill"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@* ================================================
+   FILTROS
+   ================================================ *@
+<div class="filter-card mb-4">
+    <div class="filter-row flex-wrap">
+
+        <div class="filter-group" style="max-width:240px;">
+            <span class="filter-label">Buscar</span>
+            <input type="text"
+                   id="inputBuscar"
+                   class="form-control"
+                   placeholder="Usuario, correo..." />
+        </div>
+
+        <div class="filter-group" style="max-width:180px;">
+            <span class="filter-label">Perfil</span>
+            <select id="filtroPerfil" class="form-select">
+                <option value="">Todos</option>
+                @foreach (var p in perfiles)
+                {
+                    <option value="@p">@p</option>
+                }
+            </select>
+        </div>
+
+        <div class="filter-group" style="max-width:150px;">
+            <span class="filter-label">Estado</span>
+            <select id="filtroEstado" class="form-select">
+                <option value="">Todos</option>
+                <option value="Activo">Activos</option>
+                <option value="Inactivo">Inactivos</option>
+            </select>
+        </div>
+
+        <div class="filter-actions">
+            <button type="button"
+                    class="btn btn-outline-secondary"
+                    onclick="limpiarFiltros()">
+                <i class="bi bi-x-circle"></i>Limpiar
+            </button>
+        </div>
+
+    </div>
+</div>
+
+@* Contador *@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted" style="font-size:0.82rem;">
+        Mostrando <strong id="contadorVisible">@Model.Count</strong>
+        de @Model.Count usuarios
+    </span>
+</div>
+
+@* ================================================
+   TABLA
+   ================================================ *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>Listado de usuarios
+        </span>
+        <span class="badge badge-info" id="badgeTotal">@Model.Count registros</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaUsuarios" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Correo</th>
+                        <th>Perfil</th>
+                        <th class="text-center">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            var inicial = item.NombreUsuario?.Substring(0, 1).ToUpper() ?? "U";
+
+                            string perfilColor = item.NombrePerfil switch
+                            {
+                                "Administrador" => "amber",
+                                "RRHH" => "blue",
+                                _ => "slate"
+                            };
+
+                            string perfilBadge = item.NombrePerfil switch
+                            {
+                                "Administrador" => "bg-warning",
+                                "RRHH" => "bg-info",
+                                _ => "bg-secondary"
+                            };
+
+                            string estadoActual = item.Estado ? "Activo" : "Inactivo";
+
+                            <tr data-buscar="@item.NombreUsuario @item.Correo"
+                                data-perfil="@item.NombrePerfil"
+                                data-estado="@estadoActual">
+                                <td>
+                                    <div class="table-avatar">
+                                        <div class="avatar-circle avatar-@perfilColor">
+                                            @inicial
+                                        </div>
+                                        <div>
+                                            <div class="avatar-name">@item.NombreUsuario</div>
+                                            <div class="avatar-sub">ID: @item.IdUsuario</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.Correo))
+                                    {
+                                        <a href="mailto:@item.Correo"
+                                           style="color:var(--blue);text-decoration:none;
+                                                              font-size:0.875rem;">
+                                            @item.Correo
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="td-muted" style="font-style:italic;">
+                                            Sin correo
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge @perfilBadge badge-dot">
+                                        @item.NombrePerfil
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    @if (item.Estado)
+                                    {
+                                        <span class="badge bg-success badge-dot">Activo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger badge-dot">Inactivo</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4">
+                                <div class="table-empty">
+                                    <i class="bi bi-people-fill"></i>
+                                    <p>No hay usuarios registrados</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+
+        var inputBuscar     = document.getElementById('inputBuscar');
+        var filtroPerfil    = document.getElementById('filtroPerfil');
+        var filtroEstado    = document.getElementById('filtroEstado');
+        var filas           = document.querySelectorAll('#tablaUsuarios tbody tr');
+        var contadorVisible = document.getElementById('contadorVisible');
+        var badgeTotal      = document.getElementById('badgeTotal');
+
+        function filtrarTabla() {
+            var texto  = inputBuscar.value.toLowerCase();
+            var perfil = filtroPerfil.value;
+            var estado = filtroEstado.value;
+            var count  = 0;
+
+            filas.forEach(function (fila) {
+                var buscar      = fila.getAttribute('data-buscar').toLowerCase();
+                var filaPerfil  = fila.getAttribute('data-perfil');
+                var filaEstado  = fila.getAttribute('data-estado');
+
+                var ok = buscar.includes(texto)                    &&
+                         (perfil === '' || filaPerfil === perfil)  &&
+                         (estado === '' || filaEstado === estado);
+
+                fila.style.display = ok ? '' : 'none';
+                if (ok) count++;
+            });
+
+            contadorVisible.textContent = count;
+            badgeTotal.textContent      = count + ' registros';
+        }
+
+        function limpiarFiltros() {
+            inputBuscar.value  = '';
+            filtroPerfil.value = '';
+            filtroEstado.value = '';
+            filtrarTabla();
+        }
+
+        inputBuscar.addEventListener('keyup', filtrarTabla);
+        filtroPerfil.addEventListener('change', filtrarTabla);
+        filtroEstado.addEventListener('change', filtrarTabla);
+
+    </script>
+}

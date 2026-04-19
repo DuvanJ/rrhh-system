@@ -9,20 +9,25 @@ namespace Proyecto1.Controllers
     {
         private readonly HorasExtrasService _service;
         private readonly EmailService _emailService;
+        private readonly ColaboradoresService _colaboradoresService;
         private readonly IConfiguration _config;
 
-        public HorasExtrasController(HorasExtrasService service, EmailService emailService,
-        IConfiguration config)
+        public HorasExtrasController(
+            HorasExtrasService service,
+            EmailService emailService,
+            ColaboradoresService colaboradoresService,
+            IConfiguration config)
         {
             _service = service;
             _emailService = emailService;
+            _colaboradoresService = colaboradoresService;
             _config = config;
         }
 
         // 📌 Vista principal (Admin / RRHH)
         public async Task<IActionResult> Index(int? idColaborador)
         {
-            var lista = await _service.ListarAsync(); // 🔹 siempre cargamos todo
+            var lista = await _service.ListarAsync();
 
             if (idColaborador.HasValue)
             {
@@ -31,7 +36,7 @@ namespace Proyecto1.Controllers
                 if (!existe)
                 {
                     TempData["Error"] = $"No existe ningún colaborador con ID {idColaborador.Value}.";
-                    return View(lista); // ✔ tabla completa
+                    return View(lista);
                 }
 
                 var filtrada = lista
@@ -41,18 +46,15 @@ namespace Proyecto1.Controllers
                 if (!filtrada.Any())
                 {
                     TempData["Warning"] = "El colaborador existe, pero no tiene horas extras registradas.";
-                    return View(lista); // ✔ tabla completa
+                    return View(lista);
                 }
 
                 TempData["Success"] = "Horas extras encontradas correctamente.";
-                return View(filtrada); // ✔ solo resultados
+                return View(filtrada);
             }
 
             return View(lista);
         }
-
-
-
 
         // 📌 Crear solicitud (Colaborador)
         public IActionResult Create()
@@ -63,13 +65,22 @@ namespace Proyecto1.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(HoraExtra model)
         {
-            if (!ModelState.IsValid)
-                return View(model);
-
             int? idColaborador = HttpContext.Session.GetInt32("IdColaborador");
 
             if (!idColaborador.HasValue)
                 return RedirectToAction("Index", "Login");
+
+            if (model.CantidadHoras <= 0)
+            {
+                TempData["Error"] = "Las horas extras deben ser mayor que 0";
+                return RedirectToAction("Create");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                TempData["Error"] = "Debe completar todos los campos obligatorios";
+                return RedirectToAction("Create");
+            }
 
             model.IdColaborador = idColaborador.Value;
             model.Estado = "Pendiente";
@@ -80,72 +91,100 @@ namespace Proyecto1.Controllers
             return RedirectToAction("MisHorasExtras");
         }
 
-
         // 📌 Aprobar / Rechazar (Admin)
         [HttpPost]
         public async Task<IActionResult> CambiarEstado(int id, string estado)
         {
-            // 1️⃣ Cambiar estado en BD
-            await _service.CambiarEstadoAsync(id, estado);
-
-            // 2️⃣ Obtener datos para el correo
-            var datos = await _service.ObtenerDetalleAsync(id);
-
-            if (datos == null)
+            try
             {
-                TempData["Error"] = "No se pudieron obtener los datos de la solicitud.";
-                return RedirectToAction(nameof(Index));
-            }
+                // 1️⃣ Cambiar estado en BD
+                await _service.CambiarEstadoAsync(id, estado);
 
-            string asunto = "Estado de su solicitud de horas extra";
-            string mensaje = $@"
-                                Hola {datos.NombreColaborador},
+                // 2️⃣ Obtener datos para el correo
+                var datos = await _service.ObtenerDetalleAsync(id);
 
-                                Su solicitud de horas extra del {datos.Fecha:dd/MM/yyyy} ha sido {estado}.
+                if (datos == null)
+                {
+                    TempData["Error"] = "No se pudieron obtener los datos de la solicitud.";
+                    return RedirectToAction(nameof(Index));
+                }
 
-                                Cantidad de horas: {datos.CantidadHoras}
+                string asunto = "Estado de su solicitud de horas extra";
+                string mensaje = $@"
+Hola {datos.NombreColaborador},
 
-                                Atentamente,
-                                Departamento de RRHH
+Su solicitud de horas extra del {datos.Fecha:dd/MM/yyyy} ha sido {estado}.
+
+Cantidad de horas: {datos.CantidadHoras}
+
+Atentamente,
+Departamento de RRHH
 ";
 
-            // 3️⃣ Enviar correo al colaborador (con validación + control de error)
-            if (!string.IsNullOrWhiteSpace(datos.CorreoColaborador))
-            {
-                try
+                // 3️⃣ OBTENER CORREO: primero del SP, si no, de Colaboradores
+                string correoColaborador = !string.IsNullOrWhiteSpace(datos.CorreoColaborador)
+                    ? datos.CorreoColaborador
+                    : null;
+
+                if (string.IsNullOrWhiteSpace(correoColaborador) && datos.IdColaborador > 0)
                 {
-                    await _emailService.EnviarAsync(
-                        datos.CorreoColaborador,
-                        asunto,
-                        mensaje
-                    );
+                    var colaborador = await _colaboradoresService.ObtenerPorId(datos.IdColaborador);
+                    correoColaborador = colaborador?.Correo;
                 }
-                catch
+
+                // 4️⃣ Enviar correo al colaborador
+                if (!string.IsNullOrWhiteSpace(correoColaborador))
+                {
+                    try
+                    {
+                        await _emailService.EnviarAsync(
+                            correoColaborador,
+                            asunto,
+                            mensaje
+                        );
+                    }
+                    catch
+                    {
+                        TempData["Warning"] =
+                            "La solicitud fue procesada, pero el correo del colaborador no es válido o no existe.";
+                    }
+                }
+                else
                 {
                     TempData["Warning"] =
-                        "La solicitud fue procesada, pero el correo del colaborador no es válido o no existe.";
+                        "La solicitud fue procesada, pero el colaborador no tiene correo registrado.";
                 }
+
+                // 5️⃣ ENVIAR CORREO A RRHH - VALIDAR QUE NO SEA NULO
+                string correoRRHH = _config["SendGrid:CorreoRRHH"];
+
+                if (!string.IsNullOrWhiteSpace(correoRRHH))
+                {
+                    try
+                    {
+                        await _emailService.EnviarAsync(
+                            correoRRHH,
+                            $"Solicitud {estado}",
+                            mensaje
+                        );
+                    }
+                    catch
+                    {
+                        // Log silenciosamente
+                    }
+                }
+
+                // 6️⃣ Mensaje final
+                TempData["Success"] = $"Solicitud {estado.ToLower()} correctamente.";
+
+                return RedirectToAction(nameof(Index));
             }
-            else
+            catch (Exception ex)
             {
-                TempData["Warning"] =
-                    "La solicitud fue procesada, pero el colaborador no tiene correo registrado.";
+                TempData["Error"] = $"Error al procesar la solicitud: {ex.Message}";
+                return RedirectToAction(nameof(Index));
             }
-
-            // 4️⃣ Enviar correo a RRHH (SIEMPRE)
-            await _emailService.EnviarAsync(
-                _config["SendGrid:CorreoRRHH"],
-                $"Solicitud {estado}",
-                mensaje
-            );
-
-            // 5️⃣ Mensaje final
-            TempData["Success"] = $"Solicitud {estado.ToLower()} correctamente.";
-
-            return RedirectToAction(nameof(Index));
         }
-
-
 
         public async Task<IActionResult> MisHorasExtras()
         {
@@ -156,8 +195,5 @@ namespace Proyecto1.Controllers
 
             return View(await _service.ListarPorColaboradorAsync(idColaborador.Value));
         }
-
-
-
     }
 }

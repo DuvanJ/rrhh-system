@@ -1,0 +1,266 @@
+﻿@model List<Proyecto1.Models.Colaborador>
+
+@{
+    ViewData["Title"] = "Consulta de Colaboradores";
+    var departamentos = Model.Select(x => x.Departamento).Distinct().OrderBy(d => d).ToList();
+    var puestos = Model.Select(x => x.Puesto).Distinct().OrderBy(p => p).ToList();
+}
+
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-people-fill"></i>Consulta de Colaboradores
+    </h3>
+    <a asp-controller="Consultas" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
+
+@* ================================================
+   KPI CARDS
+   ================================================ *@
+<div class="row g-3 mb-4">
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total colaboradores</div>
+                <div class="kpi-value" id="kpiTotal">@Model.Count</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-people-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Activos</div>
+                <div class="kpi-value" style="color:var(--green)">
+                    @Model.Count(c => c.Estado)
+                </div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Departamentos</div>
+                <div class="kpi-value">@departamentos.Count</div>
+            </div>
+            <div class="kpi-icon amber">
+                <i class="bi bi-building"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Salario promedio</div>
+                <div class="kpi-value" style="font-size:1.1rem;">
+                    @(Model.Any()
+                                        ? "₡ " + (Model.Average(c => c.SalarioBase)).ToString("N0")
+                                        : "₡ 0")
+                </div>
+            </div>
+            <div class="kpi-icon slate">
+                <i class="bi bi-cash-coin"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@* ================================================
+   FILTROS DINAMICOS
+   ================================================ *@
+<div class="filter-card mb-4">
+    <div class="filter-row flex-wrap">
+
+        <div class="filter-group" style="max-width:240px;">
+            <span class="filter-label">Buscar</span>
+            <input type="text"
+                   id="inputBuscar"
+                   class="form-control"
+                   placeholder="Nombre, cedula, puesto..." />
+        </div>
+
+        <div class="filter-group" style="max-width:200px;">
+            <span class="filter-label">Departamento</span>
+            <select id="filtroDepartamento" class="form-select">
+                <option value="">Todos</option>
+                @foreach (var dep in departamentos)
+                {
+                    <option value="@dep">@dep</option>
+                }
+            </select>
+        </div>
+
+        <div class="filter-group" style="max-width:200px;">
+            <span class="filter-label">Puesto</span>
+            <select id="filtroPuesto" class="form-select">
+                <option value="">Todos</option>
+                @foreach (var p in puestos)
+                {
+                    <option value="@p">@p</option>
+                }
+            </select>
+        </div>
+
+        <div class="filter-group" style="max-width:150px;">
+            <span class="filter-label">Estado</span>
+            <select id="filtroEstado" class="form-select">
+                <option value="">Todos</option>
+                <option value="Activo">Activos</option>
+                <option value="Inactivo">Inactivos</option>
+            </select>
+        </div>
+
+        <div class="filter-actions">
+            <button type="button"
+                    class="btn btn-outline-secondary"
+                    onclick="limpiarFiltros()">
+                <i class="bi bi-x-circle"></i>Limpiar
+            </button>
+        </div>
+
+    </div>
+</div>
+
+@* Contador dinamico *@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted" style="font-size:0.82rem;">
+        Mostrando <strong id="contadorVisible">@Model.Count</strong>
+        de @Model.Count colaboradores
+    </span>
+</div>
+
+@* ================================================
+   TABLA
+   ================================================ *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>Listado de colaboradores
+        </span>
+        <span class="badge badge-info" id="badgeTotal">@Model.Count registros</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaColaboradores" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th>Cedula</th>
+                        <th>Colaborador</th>
+                        <th>Puesto</th>
+                        <th>Departamento</th>
+                        <th>Ingreso</th>
+                        <th class="text-end">Salario</th>
+                        <th class="text-center">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Model)
+                    {
+                        var iniciales = $"{c.Nombre?.Substring(0, 1)}{c.Apellidos?.Substring(0, 1)}".ToUpper();
+                        var colores = new[] { "blue", "green", "amber", "slate" };
+                        var color = colores[c.IdColaborador % colores.Length];
+
+                        <tr data-departamento="@c.Departamento"
+                            data-puesto="@c.Puesto"
+                            data-estado="@(c.Estado ? "Activo" : "Inactivo")">
+                            <td class="td-mono">@c.Cedula</td>
+                            <td>
+                                <div class="table-avatar">
+                                    <div class="avatar-circle avatar-@color">@iniciales</div>
+                                    <div>
+                                        <div class="avatar-name">@c.Nombre @c.Apellidos</div>
+                                        <div class="avatar-sub">@c.Correo</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>@c.Puesto</td>
+                            <td class="td-muted">@c.Departamento</td>
+                            <td class="td-muted">@c.FechaIngreso.ToString("dd/MM/yyyy")</td>
+                            <td class="text-end td-mono"
+                                style="font-weight:600;color:var(--green)">
+                                ₡ @c.SalarioBase.ToString("N2")
+                            </td>
+                            <td class="text-center">
+                                @if (c.Estado)
+                                {
+                                    <span class="badge bg-success badge-dot">Activo</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger badge-dot">Inactivo</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+
+        var inputBuscar        = document.getElementById('inputBuscar');
+        var filtroDepartamento = document.getElementById('filtroDepartamento');
+        var filtroPuesto       = document.getElementById('filtroPuesto');
+        var filtroEstado       = document.getElementById('filtroEstado');
+        var filas              = document.querySelectorAll('#tablaColaboradores tbody tr');
+        var contadorVisible    = document.getElementById('contadorVisible');
+        var badgeTotal         = document.getElementById('badgeTotal');
+
+        function filtrarTabla() {
+            var texto  = inputBuscar.value.toLowerCase();
+            var dep    = filtroDepartamento.value;
+            var puesto = filtroPuesto.value;
+            var estado = filtroEstado.value;
+            var count  = 0;
+
+            filas.forEach(function (fila) {
+                var contenido  = fila.innerText.toLowerCase();
+                var filaDep    = fila.getAttribute('data-departamento');
+                var filaPuesto = fila.getAttribute('data-puesto');
+                var filaEstado = fila.getAttribute('data-estado');
+
+                var ok = contenido.includes(texto) &&
+                         (dep    === '' || filaDep    === dep)    &&
+                         (puesto === '' || filaPuesto === puesto) &&
+                         (estado === '' || filaEstado === estado);
+
+                fila.style.display = ok ? '' : 'none';
+                if (ok) count++;
+            });
+
+            contadorVisible.textContent = count;
+            badgeTotal.textContent      = count + ' registros';
+        }
+
+        function limpiarFiltros() {
+            inputBuscar.value        = '';
+            filtroDepartamento.value = '';
+            filtroPuesto.value       = '';
+            filtroEstado.value       = '';
+            filtrarTabla();
+        }
+
+        inputBuscar.addEventListener('keyup', filtrarTabla);
+        filtroDepartamento.addEventListener('change', filtrarTabla);
+        filtroPuesto.addEventListener('change', filtrarTabla);
+        filtroEstado.addEventListener('change', filtrarTabla);
+
+    </script>
+}

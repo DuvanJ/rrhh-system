@@ -1,81 +1,239 @@
 ﻿@model Proyecto1.Models.Usuario
 
+@{
+    ViewData["Title"] = "Nuevo Usuario";
+}
 
-<h2>Nuevo Usuario</h2>
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-person-plus-fill"></i>Nuevo Usuario
+    </h3>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
 
-<form asp-action="Create" method="post">
+<div class="row justify-content-center">
+    <div class="col-xl-8 col-lg-10">
+        <form asp-action="Create" method="post" id="formCrear" novalidate>
 
-    <!-- ID COLABORADOR + BOTÓN -->
-    <div class="mb-3">
-        <label class="form-label">ID Colaborador</label>
-        <div class="input-group">
-            <input asp-for="IdColaborador" class="form-control" id="IdColaborador" />
-            <button type="button" class="btn btn-primary" id="btnBuscar">
-                Buscar
-            </button>
-        </div>
+            @* ================================================
+               PASO 1 — Buscar colaborador
+               ================================================ *@
+            <div class="card mb-4">
+                <div class="card-header">
+                    <span class="card-header-title">
+                        <i class="bi bi-search"></i>Paso 1 — Buscar colaborador
+                    </span>
+                </div>
+                <div class="card-body">
+
+                    <div class="row g-3">
+
+                        @* Input ID + boton buscar *@
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                ID Colaborador <span class="required">*</span>
+                            </label>
+                            <div class="input-group">
+                                <input asp-for="IdColaborador"
+                                       id="inputIdColaborador"
+                                       class="form-control"
+                                       placeholder="Ej: 12"
+                                       type="number"
+                                       min="1" />
+                                <button type="button"
+                                        class="btn btn-primary"
+                                        id="btnBuscar">
+                                    <i class="bi bi-search"></i>Buscar
+                                </button>
+                            </div>
+                            <span asp-validation-for="IdColaborador" class="form-error d-block"></span>
+                        </div>
+
+                        @* Nombre (readonly) *@
+                        <div class="col-md-4">
+                            <label class="form-label">Nombre del colaborador</label>
+                            <input type="text"
+                                   id="inputNombreColaborador"
+                                   class="form-control"
+                                   placeholder="Se carga al buscar..."
+                                   readonly />
+                        </div>
+
+                        @* Correo (readonly) *@
+                        <div class="col-md-4">
+                            <label class="form-label">Correo</label>
+                            <input asp-for="Correo"
+                                   id="inputCorreo"
+                                   class="form-control"
+                                   placeholder="Se carga al buscar..."
+                                   readonly />
+                            <span asp-validation-for="Correo" class="form-error d-block"></span>
+                        </div>
+
+                    </div>
+
+                    @* Panel de resultado de busqueda *@
+                    <div id="panelColaborador" class="colaborador-found mt-3" style="display:none;">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="avatar-circle avatar-blue" id="avatarColaborador"
+                                 style="width:40px;height:40px;font-size:0.9rem;flex-shrink:0;">
+                                --
+                            </div>
+                            <div>
+                                <div id="labelNombrePanel"
+                                     style="font-weight:600;font-size:0.9rem;color:var(--text);">
+                                </div>
+                                <div id="labelCorreoPanel"
+                                     style="font-size:0.78rem;color:var(--text-3);">
+                                </div>
+                            </div>
+                            <span class="badge bg-success badge-dot ms-auto">Encontrado</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            @* ================================================
+               PASO 2 — Datos del usuario
+               ================================================ *@
+            <div class="card mb-4">
+                <div class="card-header">
+                    <span class="card-header-title">
+                        <i class="bi bi-person-gear"></i>Paso 2 — Datos del usuario
+                    </span>
+                </div>
+                <div class="card-body">
+
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Nombre de usuario <span class="required">*</span>
+                            </label>
+                            <input asp-for="NombreUsuario"
+                                   id="inputNombreUsuario"
+                                   class="form-control"
+                                   placeholder="Ej: jperez" />
+                            <span asp-validation-for="NombreUsuario" class="form-error d-block"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Perfil <span class="required">*</span>
+                            </label>
+                            <select asp-for="IdPerfil"
+                                    class="form-select"
+                                    asp-items="ViewBag.Perfiles">
+                                <option value="">-- Seleccione un perfil --</option>
+                            </select>
+                            <span asp-validation-for="IdPerfil" class="form-error d-block"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Contrasena <span class="required">*</span>
+                            </label>
+                            <div class="login-input-group">
+                                <input asp-for="ContrasenaHash"
+                                       id="inputPassword"
+                                       type="password"
+                                       class="form-control login-input"
+                                       placeholder="Minimo 6 caracteres"
+                                       style="padding-left:12px;padding-right:40px;" />
+                                <button type="button"
+                                        class="login-input-toggle"
+                                        onclick="togglePass('inputPassword','iconPass')"
+                                        tabindex="-1">
+                                    <i id="iconPass" class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="ContrasenaHash" class="form-error d-block"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Confirmar contrasena <span class="required">*</span>
+                            </label>
+                            <div class="login-input-group">
+                                <input type="password"
+                                       id="inputConfirmar"
+                                       class="form-control"
+                                       placeholder="Repite la contrasena"
+                                       style="padding-right:40px;" />
+                                <button type="button"
+                                        class="login-input-toggle"
+                                        onclick="togglePass('inputConfirmar','iconPass2')"
+                                        tabindex="-1">
+                                    <i id="iconPass2" class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <p id="matchMsg" class="form-text mt-1" style="display:none;"></p>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            @* Botones *@
+            <div class="d-flex justify-content-end gap-2">
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i>Cancelar
+                </a>
+                <button type="button" class="btn btn-success" onclick="confirmarGuardar()">
+                    <i class="bi bi-check-circle"></i>Guardar usuario
+                </button>
+            </div>
+
+        </form>
     </div>
+</div>
 
-    <!-- MENSAJE DEL SISTEMA -->
-    <div class="mb-3">
-        <span id="msgColaborador" class="fw-semibold"></span>
-    </div>
+@section Styles {
+    <style>
+        .required {
+            color: var(--red);
+            margin-left: 2px;
+        }
 
-    <!-- DATOS DEL COLABORADOR -->
-    <div class="mb-3">
-        <label class="form-label">Nombre del Colaborador</label>
-        <input class="form-control" id="NombreColaborador" readonly />
-    </div>
+        .colaborador-found {
+            background: var(--green-l);
+            border: 1px solid #bbf7d0;
+            border-radius: var(--radius);
+            padding: 12px 16px;
+        }
 
-    <div class="mb-3">
-        <label class="form-label">Correo</label>
-        <input asp-for="Correo" class="form-control" id="Correo" readonly />
-    </div>
+        .field-validation-error {
+            color: var(--red);
+            font-size: 0.78rem;
+            margin-top: 4px;
+        }
 
-    <hr />
-
-    <!-- DATOS DEL USUARIO -->
-    <div class="mb-3">
-        <label class="form-label">Nombre de Usuario</label>
-        <input asp-for="NombreUsuario" class="form-control" />
-        <span asp-validation-for="NombreUsuario" class="text-danger"></span>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Contraseña</label>
-        <input asp-for="ContrasenaHash" type="password" class="form-control" />
-        <span asp-validation-for="ContrasenaHash" class="text-danger"></span>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Perfil</label>
-        <select asp-for="IdPerfil" class="form-select" asp-items="ViewBag.Perfiles">
-            <option value="">-- Seleccione --</option>
-        </select>
-        <span asp-validation-for="IdPerfil" class="text-danger"></span>
-    </div>
-
-    <button type="submit" class="btn btn-success">Guardar</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
-</form>
+        .input-validation-error {
+            border-color: var(--red) !important;
+        }
+    </style>
+}
 
 @section Scripts {
     <script>
-        document.getElementById("btnBuscar").addEventListener("click", function () {
 
-            let id = document.getElementById("IdColaborador").value;
+        // ================================================
+        // BUSCAR COLABORADOR
+        // ================================================
+        document.getElementById('btnBuscar').addEventListener('click', function () {
 
-            // limpiar campos
-            document.getElementById("NombreColaborador").value = "";
-            document.getElementById("Correo").value = "";
+            const id = document.getElementById('inputIdColaborador').value.trim();
+
+            document.getElementById('inputNombreColaborador').value = '';
+            document.getElementById('inputCorreo').value            = '';
+            document.getElementById('panelColaborador').style.display = 'none';
 
             if (!id) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Atención',
-                    text: 'Debe ingresar un ID de colaborador',
-                    confirmButtonText: 'OK'
-                });
+                Alert.warning('Debe ingresar un ID de colaborador.');
                 return;
             }
 
@@ -85,29 +243,105 @@
                     return res.json();
                 })
                 .then(data => {
-                    document.getElementById("NombreColaborador").value = data.nombreCompleto;
-                    document.getElementById("Correo").value = data.correo;
+                    document.getElementById('inputNombreColaborador').value = data.nombreCompleto;
+                    document.getElementById('inputCorreo').value            = data.correo ?? '';
 
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Correcto',
-                        text: 'Colaborador encontrado',
-                        confirmButtonText: 'OK'
-                    });
+                    const iniciales = data.nombreCompleto
+                        .split(' ')
+                        .slice(0, 2)
+                        .map(n => n[0])
+                        .join('')
+                        .toUpperCase();
+
+                    document.getElementById('avatarColaborador').textContent  = iniciales;
+                    document.getElementById('labelNombrePanel').textContent   = data.nombreCompleto;
+                    document.getElementById('labelCorreoPanel').textContent   = data.correo ?? 'Sin correo';
+                    document.getElementById('panelColaborador').style.display = 'block';
+
+                    Alert.success(`Colaborador encontrado: ${data.nombreCompleto}`);
                 })
                 .catch(() => {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'No encontrado',
-                        text: 'El colaborador no existe',
-                        confirmButtonText: 'OK'
-                    });
+                    Alert.error('El colaborador no existe o no esta activo.');
                 });
         });
+
+        // ================================================
+        // TOGGLE CONTRASENA
+        // ================================================
+        function togglePass(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon  = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type     = 'text';
+                icon.className = 'bi bi-eye-slash';
+            } else {
+                input.type     = 'password';
+                icon.className = 'bi bi-eye';
+            }
+        }
+
+        // ================================================
+        // VALIDACION COINCIDENCIA DE CONTRASENA
+        // ================================================
+        const pass     = document.getElementById('inputPassword');
+        const confirm  = document.getElementById('inputConfirmar');
+        const matchMsg = document.getElementById('matchMsg');
+
+        function validarCoincidencia() {
+            if (confirm.value.length === 0) {
+                matchMsg.style.display = 'none';
+                return;
+            }
+            matchMsg.style.display = 'block';
+            if (pass.value === confirm.value) {
+                matchMsg.textContent       = 'Las contrasenas coinciden';
+                matchMsg.style.color       = 'var(--green)';
+                confirm.style.borderColor  = 'var(--green)';
+            } else {
+                matchMsg.textContent       = 'Las contrasenas no coinciden';
+                matchMsg.style.color       = 'var(--red)';
+                confirm.style.borderColor  = 'var(--red)';
+            }
+        }
+
+        confirm.addEventListener('input', validarCoincidencia);
+        pass.addEventListener('input', validarCoincidencia);
+
+        // ================================================
+        // CONFIRMAR GUARDAR
+        // ================================================
+        function confirmarGuardar() {
+            const nombre   = document.getElementById('inputNombreUsuario').value.trim();
+            const idColab  = document.getElementById('inputIdColaborador').value.trim();
+            const passVal  = pass.value;
+            const confVal  = confirm.value;
+
+            if (!idColab || !nombre) {
+                Alert.warning('Complete todos los campos obligatorios.');
+                return;
+            }
+
+            if (!passVal) {
+                Alert.warning('Debe ingresar una contrasena.');
+                return;
+            }
+
+            if (passVal !== confVal) {
+                Alert.error('Las contrasenas no coinciden.');
+                return;
+            }
+
+            Alert.confirm(
+                `Se creara el usuario "${nombre}". Desea continuar?`,
+                () => {
+                    document.getElementById('formCrear').submit();
+                },
+                'question'
+            );
+        }
+
     </script>
 }
-
-
 
 
 

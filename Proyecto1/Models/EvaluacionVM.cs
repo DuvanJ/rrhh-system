@@ -33,7 +33,10 @@ namespace Proyecto1.Models
     public class DetalleEvaluacionVM
     {
         public int IdCriterio { get; set; }
+        [BindNever]
+        public string NombreCriterio { get; set; }
         public decimal? Puntaje { get; set; }
+        [BindNever]
         public string Observacion { get; set; }
     }
 

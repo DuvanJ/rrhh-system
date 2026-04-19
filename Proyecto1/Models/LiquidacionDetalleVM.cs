@@ -4,5 +4,7 @@
     {
         public string Rubro { get; set; }
         public decimal Monto { get; set; }
+
+        public string NombreColaborador { get; set; }
     }
 }

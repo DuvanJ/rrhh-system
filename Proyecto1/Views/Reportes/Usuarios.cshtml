@@ -1,0 +1,265 @@
+﻿@model List<Proyecto1.Models.UsuarioListado>
+
+@{
+    ViewData["Title"] = "Reporte de Usuarios";
+
+    var usuarioQ = Context.Request.Query["usuario"].ToString();
+    var perfilQ = Context.Request.Query["perfil"].ToString();
+    var estadoQ = Context.Request.Query["estado"].ToString();
+
+    var totalUsuarios = (int)(ViewBag.TotalUsuarios ?? 0);
+    var usuariosActivos = (int)(ViewBag.UsuariosActivos ?? 0);
+    var usuariosInact = (int)(ViewBag.UsuariosInactivos ?? 0);
+}
+
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-people-fill"></i>Reporte de Usuarios
+    </h3>
+    <a asp-controller="Reportes" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
+
+@* ================================================
+   FILTROS
+   ================================================ *@
+<div class="filter-card mb-4">
+    <form method="get" asp-action="Usuarios">
+        <div class="filter-row flex-wrap">
+
+            <div class="filter-group" style="max-width:220px;">
+                <span class="filter-label">Usuario</span>
+                <input type="text"
+                       name="usuario"
+                       value="@usuarioQ"
+                       class="form-control"
+                       placeholder="Nombre de usuario..." />
+            </div>
+
+            <div class="filter-group" style="max-width:180px;">
+                <span class="filter-label">Perfil</span>
+                <input type="text"
+                       name="perfil"
+                       value="@perfilQ"
+                       class="form-control"
+                       placeholder="Perfil..." />
+            </div>
+
+            <div class="filter-group" style="max-width:150px;">
+                <span class="filter-label">Estado</span>
+                <select name="estado" class="form-select">
+                    <option value="">Todos</option>
+                    @if (estadoQ == "true")
+                    {
+                        <option value="true" selected="selected">Activo</option>
+                        <option value="false">Inactivo</option>
+                    }
+                    else if (estadoQ == "false")
+                    {
+                        <option value="true">Activo</option>
+                        <option value="false" selected="selected">Inactivo</option>
+                    }
+                    else
+                    {
+                        <option value="true">Activo</option>
+                        <option value="false">Inactivo</option>
+                    }
+                </select>
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i>Filtrar
+                </button>
+                <a asp-action="Usuarios" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i>Limpiar
+                </a>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+@* ================================================
+   KPI CARDS
+   ================================================ *@
+<div class="row g-3 mb-4">
+
+    <div class="col-md-4">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total usuarios</div>
+                <div class="kpi-value">@totalUsuarios</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-people-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Activos</div>
+                <div class="kpi-value" style="color:var(--green)">@usuariosActivos</div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Inactivos</div>
+                <div class="kpi-value" style="color:var(--red)">@usuariosInact</div>
+            </div>
+            <div class="kpi-icon red">
+                <i class="bi bi-x-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@* ================================================
+   BOTON EXCEL
+   ================================================ *@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted" style="font-size:0.82rem;">
+        @(Model?.Count ?? 0) usuario(s) encontrado(s)
+    </span>
+    <a asp-action="ExportarUsuariosExcel"
+       asp-route-usuario="@usuarioQ"
+       asp-route-perfil="@perfilQ"
+       asp-route-estado="@estadoQ"
+       class="btn btn-success">
+        <i class="bi bi-file-earmark-excel"></i>Exportar Excel
+    </a>
+</div>
+
+@* ================================================
+   TABLA
+   ================================================ *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>Listado de usuarios
+        </span>
+        <span class="badge badge-info">@(Model?.Count ?? 0) registros</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaUsuarios" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Correo</th>
+                        <th>Perfil</th>
+                        <th class="text-center">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            var inicial = item.NombreUsuario?.Substring(0, 1).ToUpper() ?? "U";
+
+                            string perfilColor = item.NombrePerfil switch
+                            {
+                                "Administrador" => "amber",
+                                "RRHH" => "blue",
+                                _ => "slate"
+                            };
+
+                            string perfilBadge = item.NombrePerfil switch
+                            {
+                                "Administrador" => "bg-warning",
+                                "RRHH" => "bg-info",
+                                _ => "bg-secondary"
+                            };
+
+                            <tr>
+                                <td>
+                                    <div class="table-avatar">
+                                        <div class="avatar-circle avatar-@perfilColor">
+                                            @inicial
+                                        </div>
+                                        <div>
+                                            <div class="avatar-name">@item.NombreUsuario</div>
+                                            <div class="avatar-sub">ID: @item.IdUsuario</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.Correo))
+                                    {
+                                        <a href="mailto:@item.Correo"
+                                           style="color:var(--blue);text-decoration:none;
+                                                              font-size:0.875rem;">
+                                            @item.Correo
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="td-muted" style="font-style:italic;">
+                                            Sin correo
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge @perfilBadge badge-dot">
+                                        @item.NombrePerfil
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    @if (item.Estado)
+                                    {
+                                        <span class="badge bg-success badge-dot">Activo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger badge-dot">Inactivo</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4">
+                                <div class="table-empty">
+                                    <i class="bi bi-people-fill"></i>
+                                    <p>No se encontraron usuarios</p>
+                                    <span class="text-muted" style="font-size:0.82rem;">
+                                        Ajuste los filtros e intente de nuevo
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            if (@((Model != null && Model.Any()).ToString().ToLower())) {
+                var config = Object.assign({}, DataTableConfig, {
+                    order: [[0, 'asc']]
+                });
+                $('#tablaUsuarios').DataTable(config);
+            }
+        });
+    </script>
+}

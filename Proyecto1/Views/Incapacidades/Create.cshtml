@@ -1,179 +1,314 @@
 ﻿@model Proyecto1.Models.Incapacidad
+@using Microsoft.AspNetCore.Mvc.Rendering
 
 @{
     ViewData["Title"] = "Registrar Incapacidad";
 }
 
-<h3 class="fw-bold mb-4">Registrar Incapacidad</h3>
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-heart-pulse"></i>Registrar Incapacidad
+    </h3>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
 
-<!-- ================= BUSCAR COLABORADOR ================= -->
-<form asp-action="BuscarColaborador" method="post" class="mb-4">
+<div class="row justify-content-center">
+    <div class="col-xl-8 col-lg-10">
 
-    <div class="mb-3">
-        <label class="form-label">ID Colaborador</label>
-        <div class="input-group">
-            <input asp-for="IdColaborador"
-                   class="form-control"
-                   placeholder="Ej: 8" />
-            <button type="submit" class="btn btn-primary">
-                Buscar
-            </button>
-        </div>
-        <span asp-validation-for="IdColaborador" class="text-danger"></span>
+        <form asp-action="Create" method="post" id="formIncapacidad" novalidate>
+
+            @Html.AntiForgeryToken()
+
+            @* ================================================
+               PASO 1 — Buscar colaborador
+               ================================================ *@
+            <div class="card mb-4">
+                <div class="card-header">
+                    <span class="card-header-title">
+                        <i class="bi bi-search"></i>Paso 1 — Colaborador
+                    </span>
+                </div>
+                <div class="card-body">
+
+                    <div class="row g-3">
+
+                        <div class="col-md-5">
+                            <label class="form-label">
+                                ID Colaborador <span class="required">*</span>
+                            </label>
+                            <div class="input-group">
+                                <input asp-for="IdColaborador"
+                                       class="form-control"
+                                       placeholder="Ej: 12"
+                                       type="number"
+                                       min="1" />
+                                <button type="submit"
+                                        name="accion"
+                                        value="buscar"
+                                        class="btn btn-primary">
+                                    <i class="bi bi-search"></i>Buscar
+                                </button>
+                            </div>
+                            <span asp-validation-for="IdColaborador"
+                                  class="form-error d-block"></span>
+                        </div>
+
+                        <div class="col-md-7">
+                            <label class="form-label">Nombre del colaborador</label>
+                            <input class="form-control"
+                                   value="@(ViewBag.NombreColaborador ?? "Se carga al buscar...")"
+                                   readonly
+                                   style="background:var(--slate-ll);" />
+                        </div>
+
+                    </div>
+
+                    @if (ViewBag.NombreColaborador != null)
+                    {
+                        <div class="colaborador-found mt-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="avatar-circle avatar-red"
+                                     style="width:40px;height:40px;font-size:0.9rem;flex-shrink:0;">
+                                    @{
+                                        var nombre = (string)ViewBag.NombreColaborador;
+                                        var inics = string.Join("",
+                                        nombre.Split(' ')
+                                        .Where(s => !string.IsNullOrEmpty(s))
+                                        .Take(2)
+                                        .Select(s => s[0].ToString()))
+                                        .ToUpper();
+                                    }
+                                    @inics
+                                </div>
+                                <div style="font-weight:600;font-size:0.9rem;color:var(--text);">
+                                    @ViewBag.NombreColaborador
+                                </div>
+                                <span class="badge bg-success badge-dot ms-auto">
+                                    Encontrado
+                                </span>
+                            </div>
+                        </div>
+                    }
+
+                </div>
+            </div>
+
+            @* ================================================
+               PASO 2 — Datos de la incapacidad
+               ================================================ *@
+            <div class="card mb-4">
+                <div class="card-header">
+                    <span class="card-header-title">
+                        <i class="bi bi-heart-pulse"></i>Paso 2 — Datos de la incapacidad
+                    </span>
+                </div>
+                <div class="card-body">
+
+                    @* Tipo *@
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Tipo de incapacidad <span class="required">*</span>
+                        </label>
+                        <select asp-for="IdTipoIncapacidad"
+                                class="form-select"
+                                asp-items="@(new SelectList(ViewBag.TiposIncapacidad,
+                                                                                            "IdTipoIncapacidad",
+                                                                                            "Nombre"))">
+                            <option value="">-- Seleccione --</option>
+                        </select>
+                        <span asp-validation-for="IdTipoIncapacidad"
+                              class="form-error d-block"></span>
+                    </div>
+
+                    @* Fechas *@
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Fecha inicio <span class="required">*</span>
+                            </label>
+                            <input asp-for="FechaInicio"
+                                   type="date"
+                                   class="form-control"
+                                   id="inputFechaInicio" />
+                            <span asp-validation-for="FechaInicio"
+                                  class="form-error d-block"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Fecha fin <span class="required">*</span>
+                            </label>
+                            <input asp-for="FechaFin"
+                                   type="date"
+                                   class="form-control"
+                                   id="inputFechaFin" />
+                            <span id="msgFechas" class="form-text"
+                                  style="display:none;"></span>
+                            <span asp-validation-for="FechaFin"
+                                  class="form-error d-block"></span>
+                        </div>
+                    </div>
+
+                    @* Dias calculados *@
+                    <div class="mb-3">
+                        <div class="detail-field">
+                            <span class="detail-label">
+                                <i class="bi bi-calendar-range"></i>Dias de incapacidad
+                            </span>
+                            <span id="diasCalculados"
+                                  style="font-size:1.1rem;font-weight:700;
+                                         color:var(--amber);font-family:'Consolas',monospace;">
+                                —
+                            </span>
+                        </div>
+                    </div>
+
+                    @* Motivo *@
+                    <div class="mb-0">
+                        <label class="form-label">Motivo</label>
+                        <textarea asp-for="Motivo"
+                                  id="inputMotivo"
+                                  class="form-control"
+                                  rows="3"
+                                  placeholder="Describa el motivo de la incapacidad..."
+                                  style="resize:vertical;"></textarea>
+                        <div class="d-flex justify-content-end mt-1">
+                            <span id="contadorMotivo" class="form-text">0 / 300</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <hr class="section-divider" />
+
+            <div class="d-flex justify-content-end gap-2">
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i>Cancelar
+                </a>
+                <button type="submit"
+                        name="accion"
+                        value="guardar"
+                        id="btnGuardar"
+                        class="btn btn-success">
+                    <i class="bi bi-check-circle"></i>Guardar incapacidad
+                </button>
+            </div>
+
+        </form>
     </div>
+</div>
 
-    <div class="mb-3">
-        <label class="form-label">Nombre del Colaborador</label>
-        <input class="form-control"
-               value="@ViewBag.NombreColaborador"
-               readonly />
-    </div>
+@section Styles {
+    <style>
+        .required {
+            color: var(--red);
+            margin-left: 2px;
+        }
 
-</form>
+        .colaborador-found {
+            background: var(--green-l);
+            border: 1px solid #bbf7d0;
+            border-radius: var(--radius);
+            padding: 12px 16px;
+        }
 
-<hr />
+        .detail-field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 12px 14px;
+            background: var(--slate-ll);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
 
-<!-- ================= REGISTRAR INCAPACIDAD ================= -->
-<form asp-action="Create" method="post" class="card shadow-sm p-4">
-    @Html.AntiForgeryToken()
+        .detail-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-3);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
 
-    <!-- MENSAJES DE ERROR -->
-    @if (!ViewData.ModelState.IsValid)
-    {
-        <div class="alert alert-danger">
-            <ul class="mb-0">
-                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-                {
-                    <li>@error.ErrorMessage</li>
-                }
-            </ul>
-        </div>
-    }
+            .detail-label i {
+                font-size: 0.75rem;
+            }
 
-    <!-- ID oculto -->
-    <input type="hidden" asp-for="IdColaborador" />
+        .field-validation-error {
+            color: var(--red);
+            font-size: 0.78rem;
+            margin-top: 4px;
+        }
 
-    <!-- TIPO -->
-    <div class="mb-3">
-        <label class="form-label">Tipo de Incapacidad</label>
-        <select asp-for="TipoIncapacidad"
-                class="form-select"
-                id="TipoIncapacidad">
-            <option value="">-- Seleccione --</option>
-            <option value="CCSS-EC">CCSS - Enfermedad Común / Accidente no laboral</option>
-            <option value="INS-RT">INS - Riesgo del Trabajo</option>
-            <option value="CCSS-MAT">CCSS - Licencia por Maternidad</option>
-            <option value="CCSS-CUID">CCSS - Cuidados Especiales</option>
-            <option value="INS-SOA">INS - Accidente de Tránsito (SOA)</option>
-        </select>
-        <span asp-validation-for="TipoIncapacidad" class="text-danger"></span>
-    </div>
-
-    <!-- FECHAS -->
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Fecha Inicio</label>
-            <input asp-for="FechaInicio"
-                   id="FechaInicio"
-                   type="date"
-                   class="form-control" />
-            <span asp-validation-for="FechaInicio" class="text-danger"></span>
-        </div>
-
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Fecha Fin</label>
-            <input asp-for="FechaFin"
-                   id="FechaFin"
-                   type="date"
-                   class="form-control" />
-            <span asp-validation-for="FechaFin" class="text-danger"></span>
-        </div>
-    </div>
-
-    <!-- MOTIVO -->
-    <div class="mb-3">
-        <label class="form-label">Motivo / Observación</label>
-        <textarea asp-for="Motivo"
-                  class="form-control"
-                  rows="3"
-                  placeholder="Detalle breve de la incapacidad"></textarea>
-    </div>
-
-    <!-- ENTIDAD -->
-    <div class="mb-3">
-        <label class="form-label">Entidad Responsable</label>
-        <input class="form-control"
-               id="EntidadInfo"
-               value="Se determina automáticamente"
-               readonly />
-    </div>
-
-    <!-- REMUNERADA -->
-    <div class="mb-3">
-        <label class="form-label">Incapacidad Remunerada</label>
-        <input class="form-control"
-               id="RemuneradaInfo"
-               value="Se ajusta automáticamente según el tipo"
-               readonly />
-    </div>
-
-    <!-- VALOR REAL QUE SE ENVÍA -->
-    <input type="hidden" asp-for="EsRemunerada" id="EsRemunerada" />
-
-    <div class="d-flex justify-content-end">
-        <button type="submit" class="btn btn-success">
-            <i class="bi bi-save"></i> Guardar
-        </button>
-        <a asp-action="Index" class="btn btn-secondary ms-2">Cancelar</a>
-    </div>
-
-</form>
+        .input-validation-error {
+            border-color: var(--red) !important;
+        }
+    </style>
+}
 
 @section Scripts {
     <script>
-        const tipo = document.getElementById("TipoIncapacidad");
-        const entidad = document.getElementById("EntidadInfo");
-        const remuneradaTxt = document.getElementById("RemuneradaInfo");
-        const remuneradaHidden = document.getElementById("EsRemunerada");
 
-        tipo.addEventListener("change", () => {
+        var inputInicio  = document.getElementById('inputFechaInicio');
+        var inputFin     = document.getElementById('inputFechaFin');
+        var diasSpan     = document.getElementById('diasCalculados');
+        var msgFechas    = document.getElementById('msgFechas');
+        var motivo       = document.getElementById('inputMotivo');
+        var contador     = document.getElementById('contadorMotivo');
 
-            const v = tipo.value;
+        // Calcular dias entre fechas
+        function calcularDias() {
+            var inicio = inputInicio.value;
+            var fin    = inputFin.value;
 
-            entidad.value = "Se determina automáticamente";
-            remuneradaTxt.value = "Se ajusta automáticamente según el tipo";
-            remuneradaHidden.value = "";
-
-            if (v.startsWith("CCSS")) {
-                entidad.value = "Caja Costarricense de Seguro Social (CCSS)";
-
-                if (v === "CCSS-MAT") {
-                    remuneradaTxt.value = "Sí (100% - CCSS 50% / Patrono 50%)";
-                    remuneradaHidden.value = true;
-                } else {
-                    remuneradaTxt.value = "No (Subsidio CCSS según días)";
-                    remuneradaHidden.value = false;
-                }
+            if (!inicio || !fin) {
+                diasSpan.textContent = '—';
+                msgFechas.style.display = 'none';
+                return;
             }
 
-            if (v.startsWith("INS")) {
-                entidad.value = "Instituto Nacional de Seguros (INS)";
-                remuneradaTxt.value = "Sí (Cubierta desde el primer día)";
-                remuneradaHidden.value = true;
+            var d1   = new Date(inicio);
+            var d2   = new Date(fin);
+            var diff = Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
+
+            if (diff <= 0) {
+                diasSpan.textContent    = '—';
+                msgFechas.style.display = 'block';
+                msgFechas.style.color   = 'var(--red)';
+                msgFechas.textContent   = 'La fecha fin debe ser posterior a la fecha inicio';
+                inputFin.style.borderColor = 'var(--red)';
+            } else {
+                diasSpan.textContent    = diff + ' dia(s)';
+                msgFechas.style.display = 'block';
+                msgFechas.style.color   = 'var(--green)';
+                msgFechas.textContent   = diff + ' dia(s) de incapacidad';
+                inputFin.style.borderColor = 'var(--green)';
             }
-        });
+        }
 
-        // VALIDACIÓN CLIENTE FECHAS
-        document.querySelector("form[asp-action='Create']")
-            .addEventListener("submit", function (e) {
+        inputInicio.addEventListener('change', calcularDias);
+        inputFin.addEventListener('change', calcularDias);
 
-                const inicio = document.getElementById("FechaInicio").value;
-                const fin = document.getElementById("FechaFin").value;
+        // Inicializar si ya hay fechas cargadas
+        calcularDias();
 
-                if (inicio && fin && fin < inicio) {
-                    e.preventDefault();
-                    alert("La fecha final no puede ser menor que la fecha inicial.");
-                }
+        // Contador motivo
+        if (motivo) {
+            motivo.addEventListener('input', function () {
+                var len = motivo.value.length;
+                contador.textContent = len + ' / 300';
+                contador.style.color = len > 300 ? 'var(--red)' : 'var(--text-3)';
+                if (len > 300) motivo.value = motivo.value.substring(0, 300);
             });
+        }
+
     </script>
 }

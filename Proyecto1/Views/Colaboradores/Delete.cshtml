@@ -1,31 +1,169 @@
 ﻿@model Proyecto1.Models.Colaborador
 
 @{
-    ViewData["Title"] = "Eliminar Colaborador";
+    ViewData["Title"] = "Desactivar Colaborador";
+    var iniciales = $"{Model.Nombre?.Substring(0, 1)}{Model.Apellidos?.Substring(0, 1)}".ToUpper();
+    var colores = new[] { "blue", "green", "amber", "slate" };
+    var color = colores[Model.IdColaborador % colores.Length];
 }
 
-<h2>Eliminar Colaborador</h2>
-
-<div class="alert alert-danger">
-    ¿Está seguro que desea eliminar este colaborador?
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-person-x-fill"></i>Desactivar Colaborador
+    </h3>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
 </div>
 
-<form asp-action="DeleteConfirmed" method="post">
-    @Html.AntiForgeryToken()
+<div class="row justify-content-center">
+    <div class="col-xl-6 col-lg-8">
 
-    <input type="hidden" asp-for="IdColaborador" />
+        @* Alerta de advertencia *@
+        <div class="alert alert-warning d-flex align-items-start gap-3 mb-4">
+            <i class="bi bi-exclamation-triangle-fill flex-shrink-0"
+               style="font-size:1.2rem;margin-top:2px;"></i>
+            <div>
+                <div style="font-weight:600;margin-bottom:2px;">Acción irreversible</div>
+                <div style="font-size:0.875rem;">
+                    El colaborador será marcado como inactivo y no podrá acceder al sistema.
+                    Esta acción no elimina los registros históricos asociados.
+                </div>
+            </div>
+        </div>
 
-    <dl class="row">
-        <dt class="col-sm-3">Nombre</dt>
-        <dd class="col-sm-9">@Model.Nombre @Model.Apellidos</dd>
+        @* Card del colaborador *@
+        <div class="card mb-4">
+            <div class="card-header">
+                <span class="card-header-title">
+                    <i class="bi bi-person"></i>Colaborador a desactivar
+                </span>
+            </div>
+            <div class="card-body">
 
-        <dt class="col-sm-3">Correo</dt>
-        <dd class="col-sm-9">@Model.Correo</dd>
+                @* Perfil *@
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="avatar-circle avatar-@color"
+                         style="width:56px;height:56px;font-size:1.1rem;flex-shrink:0;">
+                        @iniciales
+                    </div>
+                    <div>
+                        <div style="font-size:1rem;font-weight:700;color:var(--navy);">
+                            @Model.Nombre @Model.Apellidos
+                        </div>
+                        <div style="font-size:0.82rem;color:var(--text-3);">
+                            @Model.Puesto &nbsp;·&nbsp; @Model.Departamento
+                        </div>
+                    </div>
+                    <div class="ms-auto">
+                        <span class="badge bg-success badge-dot">Activo</span>
+                    </div>
+                </div>
 
-        <dt class="col-sm-3">Puesto</dt>
-        <dd class="col-sm-9">@Model.Puesto</dd>
-    </dl>
+                @* Datos resumidos *@
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="detail-field">
+                            <span class="detail-label">
+                                <i class="bi bi-hash"></i>ID
+                            </span>
+                            <span class="detail-value td-mono">#@Model.IdColaborador</span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="detail-field">
+                            <span class="detail-label">
+                                <i class="bi bi-card-text"></i>Cédula
+                            </span>
+                            <span class="detail-value td-mono">@Model.Cedula</span>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="detail-field">
+                            <span class="detail-label">
+                                <i class="bi bi-envelope"></i>Correo
+                            </span>
+                            <span class="detail-value">
+                                @(string.IsNullOrEmpty(Model.Correo)
+                                                                ? "Sin correo registrado"
+                                                                : Model.Correo)
+                            </span>
+                        </div>
+                    </div>
+                </div>
 
-    <button type="submit" class="btn btn-danger">Eliminar</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
-</form>
+            </div>
+
+            @* Footer con formulario *@
+            <div class="card-footer"
+                 style="background:transparent;border-top:1px solid var(--border);padding:16px 20px;">
+                <form asp-action="DeleteConfirmed" method="post" id="formDesactivar">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="IdColaborador" />
+                    <div class="d-flex justify-content-end gap-2">
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i>Cancelar
+                        </a>
+                        <button type="button"
+                                class="btn btn-danger"
+                                onclick="confirmarDesactivar('@Model.Nombre @Model.Apellidos')">
+                            <i class="bi bi-person-x"></i>Confirmar desactivación
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .detail-field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 12px 14px;
+            background: var(--slate-ll);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            height: 100%;
+        }
+
+        .detail-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-3);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+            .detail-label i {
+                font-size: 0.75rem;
+            }
+
+        .detail-value {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        function confirmarDesactivar(nombre) {
+            Alert.confirm(
+                `Se desactivará a ${nombre}. Ya no podrá acceder al sistema. ¿Desea continuar?`,
+                () => {
+                    document.getElementById('formDesactivar').submit();
+                },
+                'warning'
+            );
+        }
+    </script>
+}

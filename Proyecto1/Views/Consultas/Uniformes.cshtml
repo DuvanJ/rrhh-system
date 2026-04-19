@@ -1,0 +1,273 @@
+﻿@model List<Proyecto1.Models.UniformeHistorialVM>
+
+@{
+    ViewData["Title"] = "Consulta de Uniformes";
+
+    var totalEntregas = Model.Count;
+    var totalCosto = Model.Sum(x => x.Costo ?? 0);
+    var cobranPlanilla = Model.Count(x => x.CobrarEnPlanilla);
+    var tipos = Model.Select(x => x.NombreTipo).Distinct().OrderBy(t => t).ToList();
+}
+
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-bag-check"></i>Consulta de Uniformes
+    </h3>
+    <a asp-controller="Consultas" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
+
+@* ================================================
+   KPI CARDS
+   ================================================ *@
+<div class="row g-3 mb-4">
+
+    <div class="col-md-4">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total entregas</div>
+                <div class="kpi-value">@totalEntregas</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-bag-check"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Costo total</div>
+                <div class="kpi-value" style="font-size:1.1rem;color:var(--blue)">
+                    ₡ @totalCosto.ToString("N2")
+                </div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-cash-coin"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Cobro en planilla</div>
+                <div class="kpi-value" style="color:var(--amber)">@cobranPlanilla</div>
+            </div>
+            <div class="kpi-icon amber">
+                <i class="bi bi-receipt-cutoff"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@* ================================================
+   FILTROS
+   ================================================ *@
+<div class="filter-card mb-4">
+    <div class="filter-row flex-wrap">
+
+        <div class="filter-group" style="max-width:240px;">
+            <span class="filter-label">Buscar</span>
+            <input type="text"
+                   id="inputBuscar"
+                   class="form-control"
+                   placeholder="Nombre, tipo..." />
+        </div>
+
+        <div class="filter-group" style="max-width:200px;">
+            <span class="filter-label">Tipo uniforme</span>
+            <select id="filtroTipo" class="form-select">
+                <option value="">Todos</option>
+                @foreach (var t in tipos)
+                {
+                    <option value="@t">@t</option>
+                }
+            </select>
+        </div>
+
+        <div class="filter-group" style="max-width:160px;">
+            <span class="filter-label">Cobro en planilla</span>
+            <select id="filtroCobro" class="form-select">
+                <option value="">Todos</option>
+                <option value="true">Si</option>
+                <option value="false">No</option>
+            </select>
+        </div>
+
+        <div class="filter-actions">
+            <button type="button"
+                    class="btn btn-outline-secondary"
+                    onclick="limpiarFiltros()">
+                <i class="bi bi-x-circle"></i>Limpiar
+            </button>
+        </div>
+
+    </div>
+</div>
+
+@* Contador *@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted" style="font-size:0.82rem;">
+        Mostrando <strong id="contadorVisible">@Model.Count</strong>
+        de @Model.Count registros
+    </span>
+</div>
+
+@* ================================================
+   TABLA
+   ================================================ *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>Historial de entregas
+        </span>
+        <span class="badge badge-info" id="badgeTotal">@Model.Count registros</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaUniformes" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th>Colaborador</th>
+                        <th>Tipo uniforme</th>
+                        <th class="text-center">Talla</th>
+                        <th class="text-center">Cantidad</th>
+                        <th class="text-center">Fecha</th>
+                        <th class="text-end">Costo</th>
+                        <th class="text-center">Cobro planilla</th>
+                        <th>Observaciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            var iniciales = item.NombreColaborador?
+                            .Split(' ')
+                            .Where(s => !string.IsNullOrEmpty(s))
+                            .Take(2)
+                            .Select(s => s[0].ToString())
+                            .Aggregate("", (acc, c) => acc + c)
+                            .ToUpper() ?? "??";
+
+                            var colores = new[] { "blue", "green", "amber", "slate" };
+                            var color = colores[item.IdColaborador % colores.Length];
+
+                            <tr data-buscar="@item.NombreColaborador @item.NombreTipo"
+                                data-tipo="@item.NombreTipo"
+                                data-cobro="@(item.CobrarEnPlanilla ? "true" : "false")">
+                                <td>
+                                    <div class="table-avatar">
+                                        <div class="avatar-circle avatar-@color">
+                                            @iniciales
+                                        </div>
+                                        <div class="avatar-name">@item.NombreColaborador</div>
+                                    </div>
+                                </td>
+                                <td>@item.NombreTipo</td>
+                                <td class="text-center">
+                                    <span class="badge badge-secondary">
+                                        @(item.Talla ?? "—")
+                                    </span>
+                                </td>
+                                <td class="text-center td-mono"
+                                    style="font-weight:700;">
+                                    @item.Cantidad
+                                </td>
+                                <td class="text-center td-muted">
+                                    @item.FechaEntrega.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-end td-mono"
+                                    style="color:var(--blue);font-weight:600;">
+                                    ₡ @((item.Costo ?? 0).ToString("N2"))
+                                </td>
+                                <td class="text-center">
+                                    @if (item.CobrarEnPlanilla)
+                                    {
+                                        <span class="badge bg-warning badge-dot">Si</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary badge-dot">No</span>
+                                    }
+                        </td>
+                        <td class="td-muted" style="max-width:180px;">
+                            @(string.IsNullOrEmpty(item.Observaciones)
+                                                        ? "—"
+                                                        : item.Observaciones.Length > 40
+                                                        ? item.Observaciones.Substring(0, 40) + "..."
+                                                        : item.Observaciones)
+                        </td>
+                    </tr>
+                                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8">
+                                <div class="table-empty">
+                                    <i class="bi bi-bag-check"></i>
+                                    <p>No hay registros de entregas de uniforme</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+
+        var inputBuscar    = document.getElementById('inputBuscar');
+        var filtroTipo     = document.getElementById('filtroTipo');
+        var filtroCobro    = document.getElementById('filtroCobro');
+        var filas          = document.querySelectorAll('#tablaUniformes tbody tr');
+        var contadorVisible = document.getElementById('contadorVisible');
+        var badgeTotal     = document.getElementById('badgeTotal');
+
+        function filtrarTabla() {
+            var texto = inputBuscar.value.toLowerCase();
+            var tipo  = filtroTipo.value;
+            var cobro = filtroCobro.value;
+            var count = 0;
+
+            filas.forEach(function (fila) {
+                var buscar    = fila.getAttribute('data-buscar').toLowerCase();
+                var filaTipo  = fila.getAttribute('data-tipo');
+                var filaCobro = fila.getAttribute('data-cobro');
+
+                var ok = buscar.includes(texto)                &&
+                         (tipo  === '' || filaTipo  === tipo)  &&
+                         (cobro === '' || filaCobro === cobro);
+
+                fila.style.display = ok ? '' : 'none';
+                if (ok) count++;
+            });
+
+            contadorVisible.textContent = count;
+            badgeTotal.textContent      = count + ' registros';
+        }
+
+        function limpiarFiltros() {
+            inputBuscar.value  = '';
+            filtroTipo.value   = '';
+            filtroCobro.value  = '';
+            filtrarTabla();
+        }
+
+        inputBuscar.addEventListener('keyup', filtrarTabla);
+        filtroTipo.addEventListener('change', filtrarTabla);
+        filtroCobro.addEventListener('change', filtrarTabla);
+
+    </script>
+}

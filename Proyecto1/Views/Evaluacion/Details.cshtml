@@ -1,0 +1,305 @@
+﻿@model Proyecto1.Models.EvaluacionVM
+
+@{
+    ViewData["Title"] = "Detalle de Evaluacion";
+
+    var iniciales = Model.NombreColaborador?
+        .Split(' ')
+        .Where(s => !string.IsNullOrEmpty(s))
+        .Take(2)
+        .Select(s => s[0].ToString())
+        .Aggregate("", (acc, c) => acc + c)
+        .ToUpper() ?? "??";
+
+    string desempeno;
+    string badgeClass;
+    string avatarColor;
+
+    if (Model.PuntajeTotal >= 90)
+    {
+        desempeno = "Excelente";
+        badgeClass = "bg-success";
+        avatarColor = "green";
+    }
+    else if (Model.PuntajeTotal >= 70)
+    {
+        desempeno = "Bueno";
+        badgeClass = "bg-info";
+        avatarColor = "blue";
+    }
+    else if (Model.PuntajeTotal >= 50)
+    {
+        desempeno = "Regular";
+        badgeClass = "bg-warning";
+        avatarColor = "amber";
+    }
+    else
+    {
+        desempeno = "Deficiente";
+        badgeClass = "bg-danger";
+        avatarColor = "red";
+    }
+}
+
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-clipboard-check"></i>Detalle de Evaluacion
+    </h3>
+    <div class="d-flex gap-2">
+        <a asp-action="Edit"
+           asp-route-id="@Model.IdEvaluacion"
+           class="btn btn-warning">
+            <i class="bi bi-pencil"></i>Editar
+        </a>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i>Volver
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-xl-8 col-lg-10">
+
+        @* ================================================
+           PERFIL DEL COLABORADOR
+           ================================================ *@
+        <div class="card mb-4">
+            <div class="card-body py-4">
+                <div class="d-flex align-items-center gap-4">
+
+                    <div class="avatar-circle avatar-@avatarColor"
+                         style="width:64px;height:64px;font-size:1.3rem;flex-shrink:0;">
+                        @iniciales
+                    </div>
+
+                    <div class="flex-grow-1">
+                        <h4 style="font-weight:700;color:var(--navy);margin-bottom:4px;">
+                            @Model.NombreColaborador
+                        </h4>
+                        <div style="font-size:0.82rem;color:var(--text-3);margin-bottom:8px;">
+                            ID Colaborador: @Model.IdColaborador
+                            &nbsp;·&nbsp;
+                            Evaluacion #@Model.IdEvaluacion
+                            &nbsp;·&nbsp;
+                            @Model.FechaEvaluacion.ToString("dd/MM/yyyy")
+                        </div>
+                        <span class="badge @badgeClass badge-dot">@desempeno</span>
+                    </div>
+
+                    @if (Model.PuntajeTotal.HasValue)
+                    {
+                        <div class="text-end" style="flex-shrink:0;">
+                            <div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;
+                                            letter-spacing:.5px;color:var(--text-3);margin-bottom:4px;">
+                                Puntaje total
+                            </div>
+                            <div style="font-size:2rem;font-weight:700;
+                                            font-family:'Consolas',monospace;
+                                            color:var(--@(avatarColor == "green" ? "green" :
+                                                                                       avatarColor == "blue" ? "blue" :
+                                                                                       avatarColor == "amber" ? "amber" : "red"))">
+                            @Model.PuntajeTotal.Value.ToString("N1")
+                        </div>
+                        <div style="font-size:0.72rem;color:var(--text-3);">de 100 puntos</div>
+                    </div>
+                                        }
+
+                </div>
+            </div>
+        </div>
+
+        @* ================================================
+           COMENTARIOS GENERALES
+           ================================================ *@
+        @if (!string.IsNullOrEmpty(Model.ComentariosGenerales))
+        {
+            <div class="card mb-4">
+                <div class="card-header">
+                    <span class="card-header-title">
+                        <i class="bi bi-chat-text"></i>Comentarios generales
+                    </span>
+                </div>
+                <div class="card-body">
+                    <p style="font-size:0.9rem;color:var(--text-2);line-height:1.7;margin:0;">
+                        @Model.ComentariosGenerales
+                    </p>
+                </div>
+            </div>
+        }
+
+        @* ================================================
+           CRITERIOS DE EVALUACION
+           ================================================ *@
+        <div class="card mb-4">
+            <div class="card-header">
+                <span class="card-header-title">
+                    <i class="bi bi-list-check"></i>Criterios de evaluacion
+                </span>
+                <span class="badge badge-info">
+                    @Model.Detalles.Count criterios
+                </span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="tabla-sistema w-100">
+                        <thead>
+                            <tr>
+                                <th>Criterio</th>
+                                <th class="text-center" style="width:160px;">Puntaje</th>
+                                <th>Observacion</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Detalles != null && Model.Detalles.Any())
+                            {
+                                foreach (var item in Model.Detalles)
+                                {
+                                    string fillColor;
+                                    if (item.Puntaje >= 90) fillColor = "green";
+                                    else if (item.Puntaje >= 70) fillColor = "blue";
+                                    else if (item.Puntaje >= 50) fillColor = "amber";
+                                    else fillColor = "red";
+
+                                    <tr>
+                                        <td style="font-weight:500;">
+                                            @item.NombreCriterio
+                                        </td>
+                                        <td class="text-center">
+                                            @if (item.Puntaje.HasValue)
+                                            {
+                                                <div class="puntaje-bar">
+                                                    <span class="puntaje-valor">
+                                                        @item.Puntaje.Value.ToString("N0")
+                                                    </span>
+                                                    <div class="puntaje-track">
+                                                        <div class="puntaje-fill @fillColor"
+                                                             style="width:@item.Puntaje%"></div>
+                                                    </div>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <span class="td-muted">—</span>
+                                            }
+                                </td>
+                                <td class="td-muted">
+                                    @(string.IsNullOrEmpty(item.Observacion)
+                                                                        ? "Sin observacion"
+                                                                        : item.Observacion)
+                                </td>
+                            </tr>
+                                                        }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="3">
+                                        <div class="table-empty">
+                                            <i class="bi bi-clipboard-x"></i>
+                                            <p>No hay criterios registrados</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card-footer d-flex justify-content-end gap-2"
+                 style="background:transparent;border-top:1px solid var(--border);padding:16px 20px;">
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i>Volver al listado
+                </a>
+                <a asp-action="Edit"
+                   asp-route-id="@Model.IdEvaluacion"
+                   class="btn btn-warning">
+                    <i class="bi bi-pencil"></i>Editar evaluacion
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .detail-field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 12px 14px;
+            background: var(--slate-ll);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            height: 100%;
+        }
+
+        .detail-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-3);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+            .detail-label i {
+                font-size: 0.75rem;
+            }
+
+        .detail-value {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .puntaje-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .puntaje-valor {
+            font-family: 'Consolas', monospace;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--text);
+            min-width: 28px;
+            text-align: right;
+        }
+
+        .puntaje-track {
+            flex: 1;
+            max-width: 80px;
+            height: 6px;
+            background: var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .puntaje-fill {
+            height: 100%;
+            border-radius: 10px;
+        }
+
+            .puntaje-fill.green {
+                background: var(--green);
+            }
+
+            .puntaje-fill.blue {
+                background: var(--blue);
+            }
+
+            .puntaje-fill.amber {
+                background: var(--amber);
+            }
+
+            .puntaje-fill.red {
+                background: var(--red);
+            }
+    </style>
+}

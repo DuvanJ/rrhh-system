@@ -15,6 +15,8 @@ namespace Proyecto1.Models
         public string Estado { get; set; } = string.Empty;
         public string? Observaciones { get; set; }
 
+        public bool EsConGoce { get; set; }
+
         // SOLO PARA VISTAS ADMIN
         [NotMapped]
         public string NombreColaborador { get; set; } = string.Empty;

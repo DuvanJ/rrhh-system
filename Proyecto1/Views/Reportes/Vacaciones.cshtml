@@ -1,0 +1,271 @@
+﻿@model List<Proyecto1.Models.VacacionAdminVM>
+
+@{
+    ViewData["Title"] = "Reporte de Vacaciones";
+
+    var colaboradorQ = Context.Request.Query["colaborador"].ToString();
+    var estadoQ = Context.Request.Query["estado"].ToString();
+
+    // 🔴 CALCULAR DIRECTAMENTE DEL MODEL
+    var totalSolicitudes = Model?.Count ?? 0;
+    var aprobadas = Model?.Count(x => x.Estado == "Aprobada") ?? 0;
+    var pendientes = Model?.Count(x => x.Estado == "Pendiente") ?? 0;
+    var rechazadas = Model?.Count(x => x.Estado == "Rechazada") ?? 0;
+}
+
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-sun"></i>Reporte de Vacaciones
+    </h3>
+    <a asp-controller="Reportes" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
+
+@* ================================================
+   FILTROS
+   ================================================ *@
+<div class="filter-card mb-4">
+    <form method="get">
+        <div class="filter-row flex-wrap">
+
+            <div class="filter-group" style="max-width:240px;">
+                <span class="filter-label">Colaborador</span>
+                <input type="text"
+                       name="colaborador"
+                       value="@colaboradorQ"
+                       class="form-control"
+                       placeholder="Nombre..." />
+            </div>
+
+            <div class="filter-group" style="max-width:160px;">
+                <span class="filter-label">Estado</span>
+                <select name="estado" class="form-select">
+                    <option value="">Todos</option>
+                    @if (estadoQ == "Pendiente")
+                    {
+                        <option value="Pendiente" selected="selected">Pendiente</option>
+                        <option value="Aprobada">Aprobada</option>
+                        <option value="Rechazada">Rechazada</option>
+                    }
+                    else if (estadoQ == "Aprobada")
+                    {
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Aprobada" selected="selected">Aprobada</option>
+                        <option value="Rechazada">Rechazada</option>
+                    }
+                    else if (estadoQ == "Rechazada")
+                    {
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Aprobada">Aprobada</option>
+                        <option value="Rechazada" selected="selected">Rechazada</option>
+                    }
+                    else
+                    {
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Aprobada">Aprobada</option>
+                        <option value="Rechazada">Rechazada</option>
+                    }
+                </select>
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i>Filtrar
+                </button>
+                <a asp-action="Vacaciones" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i>Limpiar
+                </a>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+@* ================================================
+   KPI CARDS
+   ================================================ *@
+<div class="row g-3 mb-4">
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total solicitudes</div>
+                <div class="kpi-value">@totalSolicitudes</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-sun"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Aprobadas</div>
+                <div class="kpi-value" style="color:var(--green)">@aprobadas</div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Pendientes</div>
+                <div class="kpi-value" style="color:var(--amber)">@pendientes</div>
+            </div>
+            <div class="kpi-icon amber">
+                <i class="bi bi-clock-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Rechazadas</div>
+                <div class="kpi-value" style="color:var(--red)">@rechazadas</div>
+            </div>
+            <div class="kpi-icon red">
+                <i class="bi bi-x-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@* ================================================
+   BOTON EXCEL
+   ================================================ *@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted" style="font-size:0.82rem;">
+        @(Model?.Count ?? 0) solicitud(es) encontrada(s)
+    </span>
+    <a asp-action="ExportarVacacionesExcel"
+       asp-route-colaborador="@colaboradorQ"
+       asp-route-estado="@estadoQ"
+       class="btn btn-success">
+        <i class="bi bi-file-earmark-excel"></i>Exportar Excel
+    </a>
+</div>
+
+@* ================================================
+   TABLA
+   ================================================ *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>Listado de vacaciones
+        </span>
+        <span class="badge badge-info">@(Model?.Count ?? 0) registros</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaVacaciones" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th>Colaborador</th>
+                        <th class="text-center">Solicitud</th>
+                        <th class="text-center">Inicio</th>
+                        <th class="text-center">Fin</th>
+                        <th class="text-center">Dias</th>
+                        <th class="text-center">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            var iniciales = item.NombreColaborador?
+                            .Split(' ')
+                            .Where(s => !string.IsNullOrEmpty(s))
+                            .Take(2)
+                            .Select(s => s[0].ToString())
+                            .Aggregate("", (acc, c) => acc + c)
+                            .ToUpper() ?? "??";
+
+                            string badgeClass = item.Estado switch
+                            {
+                                "Aprobada" => "bg-success",
+                                "Pendiente" => "bg-warning",
+                                _ => "bg-danger"
+                            };
+
+                            string avatarColor = item.Estado switch
+                            {
+                                "Aprobada" => "green",
+                                "Pendiente" => "amber",
+                                _ => "red"
+                            };
+
+                            <tr>
+                                <td>
+                                    <div class="table-avatar">
+                                        <div class="avatar-circle avatar-@avatarColor">
+                                            @iniciales
+                                        </div>
+                                        <div class="avatar-name">@item.NombreColaborador</div>
+                                    </div>
+                                </td>
+                                <td class="text-center td-muted">
+                                    @item.FechaSolicitud.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center td-muted">
+                                    @item.FechaInicio.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center td-muted">
+                                    @item.FechaFin.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center">
+                                    <span class="td-mono"
+                                          style="font-weight:700;color:var(--blue)">
+                                        @item.DiasSolicitados
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge @badgeClass badge-dot">
+                                        @item.Estado
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6">
+                                <div class="table-empty">
+                                    <i class="bi bi-sun"></i>
+                                    <p>No se encontraron registros de vacaciones</p>
+                                    <span class="text-muted" style="font-size:0.82rem;">
+                                        Ajuste los filtros e intente de nuevo
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            if (@((Model != null && Model.Any()).ToString().ToLower())) {
+                var config = Object.assign({}, DataTableConfig, {
+                    order: [[1, 'desc']]
+                });
+                $('#tablaVacaciones').DataTable(config);
+            }
+        });
+    </script>
+}

@@ -1,50 +1,381 @@
 ﻿@model Proyecto1.Models.Colaborador
 
-<h2>Nuevo Colaborador</h2>
+@{
+    ViewData["Title"] = "Crear Colaborador";
+}
 
-<form method="post">
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-person-plus-fill"></i>Nuevo Colaborador
+    </h3>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
 
-    <div class="mb-3">
-        <label>Cédula</label>
-        <input asp-for="Cedula" class="form-control" />
+@* ========== MENSAJE DE ERROR GENERAL ========== *@
+@if (TempData["Error"] != null)
+{
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-10">
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <div class="d-flex align-items-start gap-3">
+                    <i class="bi bi-exclamation-triangle-fill" style="font-size: 1.2rem; flex-shrink: 0; margin-top: 2px;"></i>
+                    <div style="flex: 1;">
+                        <strong>Validación de datos</strong>
+                        <div style="margin-top: 6px; font-size: 0.9rem;">
+                            @TempData["Error"]
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
     </div>
+}
 
-    <div class="mb-3">
-        <label>Nombre</label>
-        <input asp-for="Nombre" class="form-control" />
+<div class="row justify-content-center">
+    <div class="col-xl-8 col-lg-10">
+        <div class="card">
+
+            <div class="card-header">
+                <span class="card-header-title">
+                    <i class="bi bi-person-vcard"></i>Información del colaborador
+                </span>
+            </div>
+
+            <div class="card-body">
+                <form method="post" id="formCrear" novalidate>
+
+                    @* Fila 1: Cédula y Correo *@
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Cédula <span class="required">*</span>
+                            </label>
+                            <input asp-for="Cedula"
+                                   id="inputCedula"
+                                   class="form-control @(ViewBag.Errores != null && ((Dictionary<string, List<string>>)ViewBag.Errores).ContainsKey("Cedula") ? "input-validation-error" : "")"
+                                   placeholder="Ej: 1-2345-6789 o 12-3456-7890-1234"
+                                   maxlength="15" />
+                            @if (ViewBag.Errores != null && ((Dictionary<string, List<string>>)ViewBag.Errores).ContainsKey("Cedula"))
+                            {
+                                <div class="form-error">
+                                    @foreach (var error in ((Dictionary<string, List<string>>)ViewBag.Errores)["Cedula"])
+                                    {
+                                        <div>• @error</div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Correo electrónico</label>
+                            <input asp-for="Correo"
+                                   class="form-control @(ViewBag.Errores != null && ((Dictionary<string, List<string>>)ViewBag.Errores).ContainsKey("Correo") ? "input-validation-error" : "")"
+                                   placeholder="correo@empresa.com"
+                                   type="email" />
+                            @if (ViewBag.Errores != null && ((Dictionary<string, List<string>>)ViewBag.Errores).ContainsKey("Correo"))
+                            {
+                                <div class="form-error">
+                                    @foreach (var error in ((Dictionary<string, List<string>>)ViewBag.Errores)["Correo"])
+                                    {
+                                        <div>• @error</div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    @* Fila 2: Nombre y Apellidos *@
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Nombre <span class="required">*</span>
+                            </label>
+                            <input asp-for="Nombre"
+                                   class="form-control @(ViewBag.Errores != null && ((Dictionary<string, List<string>>)ViewBag.Errores).ContainsKey("Nombre") ? "input-validation-error" : "")"
+                                   placeholder="Nombre"
+                                   id="inputNombre" />
+                            @if (ViewBag.Errores != null && ((Dictionary<string, List<string>>)ViewBag.Errores).ContainsKey("Nombre"))
+                            {
+                                <div class="form-error">
+                                    @foreach (var error in ((Dictionary<string, List<string>>)ViewBag.Errores)["Nombre"])
+                                    {
+                                        <div>• @error</div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Apellidos <span class="required">*</span>
+                            </label>
+                            <input asp-for="Apellidos"
+                                   class="form-control @(ViewBag.Errores != null && ((Dictionary<string, List<string>>)ViewBag.Errores).ContainsKey("Apellidos") ? "input-validation-error" : "")"
+                                   placeholder="Apellidos"
+                                   id="inputApellidos" />
+                            @if (ViewBag.Errores != null && ((Dictionary<string, List<string>>)ViewBag.Errores).ContainsKey("Apellidos"))
+                            {
+                                <div class="form-error">
+                                    @foreach (var error in ((Dictionary<string, List<string>>)ViewBag.Errores)["Apellidos"])
+                                    {
+                                        <div>• @error</div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    @* Fila 3: Puesto y Departamento (DROPDOWNS) *@
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Puesto <span class="required">*</span>
+                            </label>
+                            <select asp-for="Puesto"
+                                    class="form-select @(ViewBag.Errores != null && ((Dictionary<string, List<string>>)ViewBag.Errores).ContainsKey("Puesto") ? "input-validation-error" : "")"
+                                    asp-items="new SelectList(ViewBag.Puestos)">
+                                <option value="">-- Seleccionar puesto --</option>
+                            </select>
+                            @if (ViewBag.Errores != null && ((Dictionary<string, List<string>>)ViewBag.Errores).ContainsKey("Puesto"))
+                            {
+                                <div class="form-error">
+                                    @foreach (var error in ((Dictionary<string, List<string>>)ViewBag.Errores)["Puesto"])
+                                    {
+                                        <div>• @error</div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Departamento <span class="required">*</span>
+                            </label>
+                            <select asp-for="Departamento"
+                                    class="form-select @(ViewBag.Errores != null && ((Dictionary<string, List<string>>)ViewBag.Errores).ContainsKey("Departamento") ? "input-validation-error" : "")"
+                                    asp-items="new SelectList(ViewBag.Departamentos)">
+                                <option value="">-- Seleccionar departamento --</option>
+                            </select>
+                            @if (ViewBag.Errores != null && ((Dictionary<string, List<string>>)ViewBag.Errores).ContainsKey("Departamento"))
+                            {
+                                <div class="form-error">
+                                    @foreach (var error in ((Dictionary<string, List<string>>)ViewBag.Errores)["Departamento"])
+                                    {
+                                        <div>• @error</div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    @* Fila 4: Fecha ingreso y Salario *@
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Fecha de ingreso <span class="required">*</span>
+                            </label>
+                            <input asp-for="FechaIngreso"
+                                   type="date"
+                                   class="form-control @(ViewBag.Errores != null && ((Dictionary<string, List<string>>)ViewBag.Errores).ContainsKey("FechaIngreso") ? "input-validation-error" : "")" />
+                            @if (ViewBag.Errores != null && ((Dictionary<string, List<string>>)ViewBag.Errores).ContainsKey("FechaIngreso"))
+                            {
+                                <div class="form-error">
+                                    @foreach (var error in ((Dictionary<string, List<string>>)ViewBag.Errores)["FechaIngreso"])
+                                    {
+                                        <div>• @error</div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Salario base <span class="required">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">₡</span>
+                                <input asp-for="SalarioBase"
+                                       class="form-control @(ViewBag.Errores != null && ((Dictionary<string, List<string>>)ViewBag.Errores).ContainsKey("SalarioBase") ? "input-validation-error" : "")"
+                                       placeholder="0.00"
+                                       type="number"
+                                       step="0.01"
+                                       min="0.01" />
+                            </div>
+                            @if (ViewBag.Errores != null && ((Dictionary<string, List<string>>)ViewBag.Errores).ContainsKey("SalarioBase"))
+                            {
+                                <div class="form-error">
+                                    @foreach (var error in ((Dictionary<string, List<string>>)ViewBag.Errores)["SalarioBase"])
+                                    {
+                                        <div>• @error</div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <hr class="section-divider" />
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i>Cancelar
+                        </a>
+                        <button type="button" class="btn btn-success" onclick="confirmarGuardar()">
+                            <i class="bi bi-check-circle"></i>Guardar colaborador
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+
+        </div>
     </div>
+</div>
 
-    <div class="mb-3">
-        <label>Apellidos</label>
-        <input asp-for="Apellidos" class="form-control" />
-    </div>
+@section Styles {
+    <style>
+        .required {
+            color: var(--red);
+            margin-left: 2px;
+        }
 
-    <div class="mb-3">
-        <label>Puesto</label>
-        <input asp-for="Puesto" class="form-control" />
-    </div>
+        .alert-warning {
+            background-color: #fffbeb;
+            border: 1px solid #fde68a;
+            color: #92400e;
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 20px;
+        }
 
-    <div class="mb-3">
-        <label>Departamento</label>
-        <input asp-for="Departamento" class="form-control" />
-    </div>
+            .alert-warning strong {
+                font-size: 1rem;
+                display: block;
+                margin-bottom: 6px;
+            }
 
-    <div class="mb-3">
-        <label>Fecha Ingreso</label>
-        <input asp-for="FechaIngreso" type="date" class="form-control" />
-    </div>
+        .form-error {
+            color: var(--red);
+            font-size: 0.78rem;
+            margin-top: 6px;
+            line-height: 1.6;
+        }
 
-    <div class="mb-3">
-        <label>Salario Base</label>
-        <input asp-for="SalarioBase" class="form-control" />
-    </div>
+            .form-error div {
+                margin-bottom: 4px;
+            }
 
-    <div class="mb-3">
-        <label>Correo</label>
-        <input asp-for="Correo" class="form-control" />
-    </div>
+        .input-validation-error {
+            border-color: var(--red) !important;
+            background-color: #fef2f2 !important;
+        }
 
-    <button class="btn btn-success">Guardar</button>
-    <a href="/Colaboradores" class="btn btn-secondary">Cancelar</a>
-</form>
+            .input-validation-error:focus {
+                box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12) !important;
+                border-color: var(--red) !important;
+            }
 
+        .form-select {
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.5rem 0.75rem;
+            font-size: 0.95rem;
+            background-color: var(--white);
+            color: var(--text);
+            cursor: pointer;
+            transition: border-color 0.2s ease;
+        }
+
+            .form-select:hover {
+                border-color: var(--text-3);
+            }
+
+            .form-select:focus {
+                outline: none;
+                border-color: var(--blue);
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            }
+
+            .form-select.input-validation-error:focus {
+                border-color: var(--red) !important;
+                box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12) !important;
+            }
+
+        .input-group-text {
+            background: var(--slate-l);
+            border: 1.5px solid var(--border);
+            border-right: none;
+            color: var(--text-2);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .input-group .form-control {
+            border-left: none;
+        }
+
+            .input-group .form-control:focus {
+                border-left: none;
+                box-shadow: none;
+                border-color: var(--blue);
+            }
+
+        .input-group .input-validation-error {
+            border-right: none !important;
+        }
+
+        .input-group:focus-within .input-group-text {
+            border-color: var(--blue);
+        }
+
+        .input-group:focus-within .input-validation-error + .input-group-text {
+            border-color: var(--red);
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+
+        // ================================================
+        // MÁSCARA AUTOMÁTICA DE CÉDULA
+        // ================================================
+        document.getElementById('inputCedula').addEventListener('input', function () {
+            let val = this.value.replace(/[^\d-]/g, '');
+            this.value = val;
+        });
+
+        // ================================================
+        // SOLO LETRAS EN NOMBRE Y APELLIDOS
+        // ================================================
+        ['inputNombre', 'inputApellidos'].forEach(function (id) {
+            document.getElementById(id).addEventListener('keypress', function (e) {
+                const char = String.fromCharCode(e.which);
+                if (!/[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/.test(char)) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        // ================================================
+        // CONFIRMACIÓN ANTES DE GUARDAR
+        // ================================================
+        function confirmarGuardar() {
+            const nombre    = document.getElementById('inputNombre').value.trim();
+            const apellidos = document.getElementById('inputApellidos').value.trim();
+            const cedula    = document.getElementById('inputCedula').value.trim();
+
+            if (!nombre || !apellidos || !cedula) {
+                Alert.warning('Por favor complete todos los campos obligatorios antes de guardar.');
+                return;
+            }
+
+            Alert.confirm(
+                `Se registrará a ${nombre} ${apellidos} con cédula ${cedula}. ¿Desea continuar?`,
+                () => {
+                    document.getElementById('formCrear').submit();
+                },
+                'question'
+            );
+        }
+
+    </script>
+}

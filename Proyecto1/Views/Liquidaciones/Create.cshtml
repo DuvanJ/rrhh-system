@@ -1,127 +1,252 @@
 ﻿@{
-    ViewData["Title"] = "Generar Liquidación";
+    ViewData["Title"] = "Generar Liquidacion";
 }
 
-<h3 class="fw-bold mb-4">Generar Liquidación</h3>
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-cash-stack"></i>Generar Liquidacion
+    </h3>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
 
-<!-- 🔎 FORMULARIO -->
-<form asp-action="Create" method="post" class="row g-3">
+<div class="row justify-content-center">
+    <div class="col-xl-8 col-lg-10">
 
-    <!-- ID Colaborador -->
-    <div class="col-md-3">
-        <label for="idColaborador" class="form-label">ID Colaborador</label>
-        <input type="number"
-               name="idColaborador"
-               id="idColaborador"
-               class="form-control"
-               placeholder="Ingrese ID" />
+        <form asp-action="Create" method="post" id="formLiquidacion" novalidate>
+
+            @* ================================================
+               PASO 1 — Buscar colaborador
+               ================================================ *@
+            <div class="card mb-4">
+                <div class="card-header">
+                    <span class="card-header-title">
+                        <i class="bi bi-search"></i>Paso 1 — Colaborador
+                    </span>
+                </div>
+                <div class="card-body">
+
+                    <div class="row g-3">
+
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                ID Colaborador <span class="required">*</span>
+                            </label>
+                            <div class="input-group">
+                                <input type="number"
+                                       name="idColaborador"
+                                       id="inputIdColaborador"
+                                       class="form-control"
+                                       placeholder="Ej: 12"
+                                       min="1" />
+                                <button type="button"
+                                        class="btn btn-primary"
+                                        id="btnBuscarColaborador">
+                                    <i class="bi bi-search"></i>Buscar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="col-md-8">
+                            <label class="form-label">Nombre del colaborador</label>
+                            <input type="text"
+                                   id="inputNombreColaborador"
+                                   class="form-control"
+                                   placeholder="Se carga al buscar..."
+                                   readonly
+                                   style="background:var(--slate-ll);" />
+                        </div>
+
+                    </div>
+
+                    <div id="panelColaborador"
+                         class="colaborador-found mt-3"
+                         style="display:none;">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="avatar-circle avatar-green"
+                                 id="avatarColaborador"
+                                 style="width:40px;height:40px;font-size:0.9rem;flex-shrink:0;">
+                                --
+                            </div>
+                            <div id="labelNombrePanel"
+                                 style="font-weight:600;font-size:0.9rem;color:var(--text);">
+                            </div>
+                            <span class="badge bg-success badge-dot ms-auto">
+                                Encontrado
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            @* ================================================
+               PASO 2 — Datos de la liquidacion
+               ================================================ *@
+            <div class="card mb-4">
+                <div class="card-header">
+                    <span class="card-header-title">
+                        <i class="bi bi-cash-stack"></i>Paso 2 — Datos de la liquidacion
+                    </span>
+                </div>
+                <div class="card-body">
+
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Tipo de salida <span class="required">*</span>
+                            </label>
+                            <select name="idTipoSalida"
+                                    id="selectTipoSalida"
+                                    class="form-select">
+                                <option value="">-- Seleccione --</option>
+                                @foreach (var tipo in ViewBag.TiposSalida)
+                                {
+                                    <option value="@tipo.IdTipoSalida">@tipo.Nombre</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Fecha de salida <span class="required">*</span>
+                            </label>
+                            <input type="date"
+                                   name="fechaSalida"
+                                   id="inputFechaSalida"
+                                   class="form-control"
+                                   value="@DateTime.Now.ToString("yyyy-MM-dd")"
+                                   max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            @* Alerta informativa *@
+            <div class="alert alert-warning d-flex align-items-start gap-2 mb-4">
+                <i class="bi bi-exclamation-triangle-fill flex-shrink-0"
+                   style="font-size:1rem;margin-top:2px;"></i>
+                <div style="font-size:0.82rem;">
+                    La liquidacion se calculara automaticamente en base al salario,
+                    anos de servicio y tipo de salida del colaborador.
+                    Esta accion no se puede revertir una vez generada.
+                </div>
+            </div>
+
+            <hr class="section-divider" />
+
+            <div class="d-flex justify-content-end gap-2">
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i>Cancelar
+                </a>
+                <button type="button"
+                        class="btn btn-success"
+                        onclick="confirmarGenerar()">
+                    <i class="bi bi-calculator"></i>Generar liquidacion
+                </button>
+            </div>
+
+        </form>
+
     </div>
+</div>
 
-    <!-- Nombre Colaborador (solo lectura) -->
-    <div class="col-md-5">
-        <label class="form-label">Nombre Colaborador</label>
-        <input type="text"
-               id="nombreColaborador"
-               class="form-control"
-               readonly
-               placeholder="Se llenará automáticamente al buscar" />
-    </div>
+@section Styles {
+    <style>
+        .required {
+            color: var(--red);
+            margin-left: 2px;
+        }
 
-    <!-- Botón buscar -->
-    <div class="col-md-2 align-self-end">
-        <button type="button" class="btn btn-info w-100" id="btnBuscarColaborador">
-            Buscar
-        </button>
-    </div>
-
-    <!-- Tipo de salida -->
-    <div class="col-md-4">
-        <label for="idTipoSalida" class="form-label">Tipo de salida</label>
-        <select name="idTipoSalida" id="idTipoSalida" class="form-select">
-            <option value="">Seleccione...</option>
-            @foreach (var tipo in ViewBag.TiposSalida)
-            {
-                <option value="@tipo.IdTipoSalida">@tipo.Nombre</option>
-            }
-        </select>
-    </div>
-
-    <!-- Fecha de salida -->
-    <div class="col-md-4">
-        <label for="fechaSalida" class="form-label">Fecha de salida</label>
-        <input type="date"
-               name="fechaSalida"
-               id="fechaSalida"
-               class="form-control"
-               value="@DateTime.Now.ToString("yyyy-MM-dd")" />
-    </div>
-
-    <!-- Botón generar -->
-    <div class="col-md-4 align-self-end">
-        <button type="submit" class="btn btn-primary w-100">
-            Generar Liquidación
-        </button>
-    </div>
-</form>
+        .colaborador-found {
+            background: var(--green-l);
+            border: 1px solid #bbf7d0;
+            border-radius: var(--radius);
+            padding: 12px 16px;
+        }
+    </style>
+}
 
 @section Scripts {
     <script>
-        // ================= BUSCAR COLABORADOR =================
-        document.getElementById("btnBuscarColaborador").addEventListener("click", function () {
-            var id = document.getElementById("idColaborador").value;
+
+        // Buscar colaborador
+        document.getElementById('btnBuscarColaborador').addEventListener('click', function () {
+            var id = document.getElementById('inputIdColaborador').value.trim();
+
+            document.getElementById('inputNombreColaborador').value = '';
+            document.getElementById('panelColaborador').style.display = 'none';
+
             if (!id) {
-                alert("Ingrese un ID de colaborador para buscar.");
+                Alert.warning('Ingrese un ID de colaborador para buscar.');
                 return;
             }
 
-            fetch(`/Liquidaciones/BuscarColaborador?id=${id}`)
-                .then(res => res.json())
-                .then(data => {
+            fetch('/Liquidaciones/BuscarColaborador?id=' + id)
+                .then(function (res) { return res.json(); })
+                .then(function (data) {
                     if (data && data.nombre) {
-                        document.getElementById("nombreColaborador").value = data.nombre;
+                        document.getElementById('inputNombreColaborador').value = data.nombre;
+
+                        var iniciales = data.nombre
+                            .split(' ')
+                            .slice(0, 2)
+                            .map(function (n) { return n[0]; })
+                            .join('')
+                            .toUpperCase();
+
+                        document.getElementById('avatarColaborador').textContent  = iniciales;
+                        document.getElementById('labelNombrePanel').textContent   = data.nombre;
+                        document.getElementById('panelColaborador').style.display = 'block';
+
+                        Alert.success('Colaborador encontrado: ' + data.nombre);
                     } else {
-                        document.getElementById("nombreColaborador").value = "";
-                        alert("No se encontró un colaborador activo con ese ID.");
+                        Alert.error('No se encontro un colaborador activo con ese ID.');
                     }
                 })
-                .catch(() => alert("Ocurrió un error al buscar el colaborador."));
+                .catch(function () {
+                    Alert.error('Ocurrio un error al buscar el colaborador.');
+                });
         });
 
-        // ================= MENSAJES TEMPORAL =================
-        // Se usan SweetAlert y Html.Raw + JsonSerializer para mantener acentos y saltos
-        @if (TempData["Success"] != null)
-        {
-                <text>
-                    var mensajeSuccess = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(TempData["Success"]));
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Éxito',
-                        text: mensajeSuccess
-                    });
-                </text>
+        // Confirmar generar
+        function confirmarGenerar() {
+            var id     = document.getElementById('inputIdColaborador').value.trim();
+            var nombre = document.getElementById('inputNombreColaborador').value.trim();
+            var tipo   = document.getElementById('selectTipoSalida');
+            var fecha  = document.getElementById('inputFechaSalida').value;
+            var tipoTexto = tipo.options[tipo.selectedIndex]?.text;
+
+            if (!id || !nombre) {
+                Alert.warning('Debe buscar y seleccionar un colaborador.');
+                return;
+            }
+
+            if (!tipo.value) {
+                Alert.warning('Debe seleccionar el tipo de salida.');
+                return;
+            }
+
+            if (!fecha) {
+                Alert.warning('Debe seleccionar la fecha de salida.');
+                return;
+            }
+
+            Alert.confirm(
+                'Se generara la liquidacion de ' + nombre + ' por ' + tipoTexto + '. Esta accion no se puede revertir. Desea continuar?',
+                function () {
+                    document.getElementById('formLiquidacion').submit();
+                },
+                'warning'
+            );
         }
-        @if (TempData["Warning"] != null)
-        {
-                <text>
-                    var mensajeWarning = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(TempData["Warning"]));
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Atención',
-                        text: mensajeWarning
-                    });
-                </text>
-        }
-        @if (TempData["Error"] != null)
-        {
-                <text>
-                    var mensajeError = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(TempData["Error"]));
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: mensajeError
-                    });
-                </text>
-        }
+
     </script>
 }
-

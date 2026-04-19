@@ -1,0 +1,191 @@
+﻿@model List<Proyecto1.Models.Aguinaldo>
+
+@{
+    ViewData["Title"] = "Consulta de Aguinaldos";
+    var anioActual = ViewBag.Año as int?;
+}
+
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-cash-coin"></i>Consulta de Aguinaldos
+    </h3>
+    <a asp-controller="Consultas" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
+
+@* ================================================
+   KPI CARDS — solo si hay datos
+   ================================================ *@
+@if (Model.Any())
+{
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-4">
+            <div class="kpi-card">
+                <div>
+                    <div class="kpi-label">Total registros</div>
+                    <div class="kpi-value">@Model.Count</div>
+                </div>
+                <div class="kpi-icon blue">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="kpi-card">
+                <div>
+                    <div class="kpi-label">Total aguinaldo</div>
+                    <div class="kpi-value" style="font-size:1.3rem;">
+                        ₡ @Model.Sum(a => a.MontoAguinaldo).ToString("N2")
+                    </div>
+                </div>
+                <div class="kpi-icon green">
+                    <i class="bi bi-cash-stack"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="kpi-card">
+                <div>
+                    <div class="kpi-label">Promedio por colaborador</div>
+                    <div class="kpi-value" style="font-size:1.3rem;">
+                        ₡ @(Model.Count > 0
+                                            ? (Model.Sum(a => a.MontoAguinaldo) / Model.Count).ToString("N2")
+                                            : "0.00")
+                </div>
+            </div>
+            <div class="kpi-icon amber">
+                <i class="bi bi-calculator"></i>
+            </div>
+        </div>
+    </div>
+
+    </div>
+}
+
+@* ================================================
+   FILTROS
+   ================================================ *@
+<div class="filter-card mb-4">
+    <form method="get" asp-action="Aguinaldos" asp-controller="Consultas">
+        <div class="filter-row">
+
+            <div class="filter-group" style="max-width:140px;">
+                <span class="filter-label">Año</span>
+                <input type="number"
+                       name="anio"
+                       class="form-control"
+                       placeholder="@DateTime.Now.Year"
+                       value="@anioActual" />
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i>Filtrar
+                </button>
+                <a asp-action="Aguinaldos"
+                   asp-controller="Consultas"
+                   class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i>Ver todos
+                </a>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+@* ================================================
+   TABLA
+   ================================================ *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>
+            Aguinaldos @(anioActual.HasValue? anioActual.ToString() : "— Todos los periodos")
+        </span>
+        <span class="badge badge-info">@Model.Count registros</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaConsultaAguinaldo" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Colaborador</th>
+                        <th class="text-center">Año</th>
+                        <th class="text-end">Total salarios</th>
+                        <th class="text-end">Monto aguinaldo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        foreach (var a in Model)
+                        {
+                            var iniciales = a.NombreColaborador?
+                            .Split(' ')
+                            .Where(s => !string.IsNullOrEmpty(s))
+                            .Take(2)
+                            .Select(s => s[0].ToString())
+                            .Aggregate("", (acc, c) => acc + c)
+                            .ToUpper() ?? "??";
+
+                            <tr>
+                                <td class="td-mono">@a.IdAguinaldo</td>
+                                <td>
+                                    <div class="table-avatar">
+                                        <div class="avatar-circle avatar-blue">
+                                            @iniciales
+                                        </div>
+                                        <div class="avatar-name">@a.NombreColaborador</div>
+                                    </div>
+                                </td>
+                                <td class="text-center td-mono">@a.Año</td>
+                                <td class="text-end td-mono">
+                                    ₡ @a.TotalSalarios.ToString("N2")
+                                </td>
+                                <td class="text-end td-mono"
+                                    style="font-weight:700;color:var(--green)">
+                                    ₡ @a.MontoAguinaldo.ToString("N2")
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5">
+                                <div class="table-empty">
+                                    <i class="bi bi-cash-coin"></i>
+                                    <p>No se encontraron registros de aguinaldo</p>
+                                    <span class="text-muted" style="font-size:0.82rem;">
+                                        Intente con un año diferente o consulte todos los periodos
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            if (@Model.Any().ToString().ToLower()) {
+                var config = Object.assign({}, DataTableConfig, {
+                    order: [[2, 'desc']]
+                });
+                $('#tablaConsultaAguinaldo').DataTable(config);
+            }
+        });
+    </script>
+}

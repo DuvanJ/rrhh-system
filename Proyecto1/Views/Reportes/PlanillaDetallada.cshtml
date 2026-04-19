@@ -1,0 +1,257 @@
+﻿@model List<Proyecto1.Models.PlanillaDetalleVM>
+
+@{
+    ViewData["Title"] = "Reporte Planilla Detallada";
+    var cultura = System.Globalization.CultureInfo.GetCultureInfo("es-ES");
+
+    var totalBruto = Model.Sum(x => x.SalarioBruto);
+    var totalNeto = Model.Sum(x => x.SalarioNeto);
+    var totalDeducciones = Model.Sum(x => x.Deducciones);
+    var totalHoras = Model.Sum(x => x.HorasExtras);
+}
+
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-receipt-cutoff"></i>Planilla Detallada
+    </h3>
+    <a asp-controller="Reportes" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
+
+@* ================================================
+   KPI CARDS
+   ================================================ *@
+<div class="row g-3 mb-4">
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Colaboradores</div>
+                <div class="kpi-value">@Model.Count</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-people-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total bruto</div>
+                <div class="kpi-value" style="font-size:1.0rem;color:var(--blue)">
+                    ₡ @totalBruto.ToString("N2")
+                </div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-cash-stack"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total neto</div>
+                <div class="kpi-value" style="font-size:1.0rem;color:var(--green)">
+                    ₡ @totalNeto.ToString("N2")
+                </div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-currency-dollar"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total deducciones</div>
+                <div class="kpi-value" style="font-size:1.0rem;color:var(--red)">
+                    ₡ @totalDeducciones.ToString("N2")
+                </div>
+            </div>
+            <div class="kpi-icon red">
+                <i class="bi bi-dash-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@* ================================================
+   BOTON EXCEL
+   ================================================ *@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted" style="font-size:0.82rem;">
+        @Model.Count colaborador(es) en esta planilla
+    </span>
+    <a asp-action="ExportarPlanillaDetalleExcel"
+       asp-route-idPlanilla="@ViewBag.IdPlanilla"
+       class="btn btn-success">
+        <i class="bi bi-file-earmark-excel"></i>Exportar Excel
+    </a>
+</div>
+
+@* ================================================
+   TABLA
+   ================================================ *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>
+            Detalle de planilla
+            @if (ViewBag.IdPlanilla != null)
+            {
+                <span class="td-muted" style="font-size:0.82rem;margin-left:6px;">
+                    #@ViewBag.IdPlanilla
+                </span>
+            }
+        </span>
+        <span class="badge badge-info">@Model.Count registros</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaPlanilla" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th>Colaborador</th>
+                        <th class="text-end">Salario base</th>
+                        <th class="text-center">Dias</th>
+                        <th class="text-center">H. Extra</th>
+                        <th class="text-end">Monto HE</th>
+                        <th class="text-end">Deducciones</th>
+                        <th class="text-end">S. Bruto</th>
+                        <th class="text-end">S. Neto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            var iniciales = item.NombreColaborador?
+                            .Split(' ')
+                            .Where(s => !string.IsNullOrEmpty(s))
+                            .Take(2)
+                            .Select(s => s[0].ToString())
+                            .Aggregate("", (acc, c) => acc + c)
+                            .ToUpper() ?? "??";
+
+                            var colores = new[] { "blue", "green", "amber", "slate" };
+                            var color = colores[item.IdColaborador % colores.Length];
+
+                            <tr>
+                                <td>
+                                    <div class="table-avatar">
+                                        <div class="avatar-circle avatar-@color">
+                                            @iniciales
+                                        </div>
+                                        <div class="avatar-name">@item.NombreColaborador</div>
+                                    </div>
+                                </td>
+                                <td class="text-end td-mono">
+                                    ₡ @item.SalarioBase.ToString("N2")
+                                </td>
+                                <td class="text-center td-mono">
+                                    @item.DiasLaborados
+                                </td>
+                                <td class="text-center td-mono"
+                                    style="color:var(--blue);font-weight:600;">
+                                    @item.HorasExtras.ToString("N2")
+                                </td>
+                                <td class="text-end td-mono">
+                                    ₡ @item.MontoHorasExtras.ToString("N2")
+                                </td>
+                                <td class="text-end td-mono"
+                                    style="color:var(--red);font-weight:600;">
+                                    ₡ @item.Deducciones.ToString("N2")
+                                </td>
+                                <td class="text-end td-mono"
+                                    style="color:var(--blue);font-weight:700;">
+                                    ₡ @item.SalarioBruto.ToString("N2")
+                                </td>
+                                <td class="text-end td-mono"
+                                    style="color:var(--green);font-weight:700;">
+                                    ₡ @item.SalarioNeto.ToString("N2")
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8">
+                                <div class="table-empty">
+                                    <i class="bi bi-receipt-cutoff"></i>
+                                    <p>No hay datos para esta planilla</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+
+                @if (Model.Any())
+                {
+                    <tfoot>
+                        <tr style="background:var(--slate-l);
+                                       border-top:2px solid var(--border);">
+                            <td style="font-weight:700;color:var(--navy);padding:12px 14px;">
+                                <i class="bi bi-calculator me-1"
+                                   style="color:var(--blue)"></i>TOTALES
+                            </td>
+                            <td class="text-end td-mono"
+                                style="font-weight:700;padding:12px 14px;">
+                                ₡ @Model.Sum(x => x.SalarioBase).ToString("N2")
+                            </td>
+                            <td class="text-center td-mono"
+                                style="font-weight:700;padding:12px 14px;">
+                                @Model.Sum(x => x.DiasLaborados)
+                            </td>
+                            <td class="text-center td-mono"
+                                style="font-weight:700;color:var(--blue);padding:12px 14px;">
+                                @totalHoras.ToString("N2")
+                            </td>
+                            <td class="text-end td-mono"
+                                style="font-weight:700;padding:12px 14px;">
+                                ₡ @Model.Sum(x => x.MontoHorasExtras).ToString("N2")
+                            </td>
+                            <td class="text-end td-mono"
+                                style="font-weight:700;color:var(--red);padding:12px 14px;">
+                                ₡ @totalDeducciones.ToString("N2")
+                            </td>
+                            <td class="text-end td-mono"
+                                style="font-weight:700;color:var(--blue);padding:12px 14px;">
+                                ₡ @totalBruto.ToString("N2")
+                            </td>
+                            <td class="text-end td-mono"
+                                style="font-weight:700;color:var(--green);
+                                           font-size:1rem;padding:12px 14px;">
+                                ₡ @totalNeto.ToString("N2")
+                            </td>
+                        </tr>
+                    </tfoot>
+                }
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            if (@Model.Any().ToString().ToLower()) {
+                var config = Object.assign({}, DataTableConfig, {
+                    order:     [[0, 'asc']],
+                    scrollX:   true,
+                    autoWidth: false
+                });
+                $('#tablaPlanilla').DataTable(config);
+            }
+        });
+    </script>
+}

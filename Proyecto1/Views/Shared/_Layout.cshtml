@@ -1,239 +1,504 @@
 ﻿<!DOCTYPE html>
 <html lang="es">
+
 <head>
+
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0f172a" />
+
     <title>@ViewData["Title"] - RRHH System</title>
 
-    <!-- Bootstrap -->
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
 
-    <!-- Icons -->
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" />
-
-    <!-- SweetAlert -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
-
+    @await RenderSectionAsync("Styles", required: false)
 
 </head>
 
 <body>
+
     @{
         var rol = Context.Session.GetString("Perfil");
+        var nombreUsuario = Context.Session.GetString("NombreUsuario") ?? rol;
+        var esLogin = Context.Request.Path.Value?.ToLower().Contains("login") ?? false;
+        var ctrl = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+        var accion = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
     }
 
-    <!-- ===================== NAVBAR ===================== -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow">
-        <div class="container-fluid">
+    @if (!esLogin)
+    {
+        <nav class="navbar navbar-expand-lg navbar-dark navbar-custom shadow-sm fixed-top">
+            <div class="container-fluid px-4">
 
-            <!-- LOGO -->
-            <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">
-                RRHH System
-            </a>
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-buildings-fill me-2"></i>RRHH System
+                </a>
 
-            <button class="navbar-toggler" type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#menuPrincipal">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+                <button class="navbar-toggler border-0"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#menuPrincipal"
+                        aria-controls="menuPrincipal"
+                        aria-expanded="false"
+                        aria-label="Menu">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
 
-            <div class="collapse navbar-collapse" id="menuPrincipal">
+                <div class="collapse navbar-collapse" id="menuPrincipal">
 
-                <!-- MENÚ IZQUIERDO -->
-                <ul class="navbar-nav me-auto">
+                    <ul class="navbar-nav me-auto gap-1">
 
-                    <!-- ================= ADMINISTRADOR ================= -->
-                    @if (rol == "Administrador")
-                    {
-                        <!-- OPERACIONES -->
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                                Operaciones
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="#">Planillas</a></li>
-                                <li><a class="dropdown-item" href="#">Horas Extras</a></li>
-                                <li><a class="dropdown-item" href="#">Aguinaldo</a></li>
-                                <li><a class="dropdown-item" href="#">Incapacidades</a></li>
-                                <li><a class="dropdown-item" href="#">Liquidación</a></li>
-                            </ul>
-                        </li>
+                        @* ================================================
+                           MENU ADMIN Y RRHH
+                           ================================================ *@
+                        @if (rol == "Administrador" || rol == "RRHH")
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle @(new[] { "Planillas", "HorasExtras", "Aguinaldo", "Incapacidades", "Liquidaciones" }.Contains(ctrl) ? "active" : "")"
+                                   href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-gear-fill me-1"></i>Operaciones
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item @(ctrl == "Planillas" ? "active" : "")"
+                                           asp-controller="Planillas" asp-action="Index">
+                                            <i class="bi bi-receipt-cutoff me-2"></i>Planillas
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item @(ctrl == "HorasExtras" ? "active" : "")"
+                                           asp-controller="HorasExtras" asp-action="Index">
+                                            <i class="bi bi-alarm me-2"></i>Horas Extras
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item @(ctrl == "Aguinaldo" ? "active" : "")"
+                                           asp-controller="Aguinaldo" asp-action="Index">
+                                            <i class="bi bi-currency-dollar me-2"></i>Aguinaldo
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item @(ctrl == "Incapacidades" ? "active" : "")"
+                                           asp-controller="Incapacidades" asp-action="Index">
+                                            <i class="bi bi-heart-pulse me-2"></i>Incapacidades
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item @(ctrl == "Liquidaciones" ? "active" : "")"
+                                           asp-controller="Liquidaciones" asp-action="Index">
+                                            <i class="bi bi-cash-stack me-2"></i>Liquidaciones
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
 
-                        <!-- GESTIÓN -->
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                                Gestión
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="/Permisos">Permisos</a></li>
-                                <li><a class="dropdown-item" href="/Vacaciones">Vacaciones</a></li>
-                                <li><a class="dropdown-item" href="/Asistencia">Asistencia</a></li>
-                                <li><a class="dropdown-item" href="#">Entrega de Uniformes</a></li>
-                                <li><a class="dropdown-item" href="#">Evaluar Rendimiento</a></li>
-                            </ul>
-                        </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle @(new[] { "Permisos", "Vacaciones", "Asistencia", "Evaluacion", "Uniformes" }.Contains(ctrl) ? "active" : "")"
+                                   href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-person-lines-fill me-1"></i>Gestion
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item @(ctrl == "Permisos" ? "active" : "")"
+                                           asp-controller="Permisos" asp-action="Index">
+                                            <i class="bi bi-calendar-event me-2"></i>Permisos
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item @(ctrl == "Vacaciones" ? "active" : "")"
+                                           asp-controller="Vacaciones" asp-action="Index">
+                                            <i class="bi bi-sun me-2"></i>Vacaciones
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item @(ctrl == "Asistencia" ? "active" : "")"
+                                           asp-controller="Asistencia" asp-action="Index">
+                                            <i class="bi bi-fingerprint me-2"></i>Asistencia
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item @(ctrl == "Evaluacion" ? "active" : "")"
+                                           asp-controller="Evaluacion" asp-action="Index">
+                                            <i class="bi bi-clipboard-check me-2"></i>Evaluaciones
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item @(ctrl == "Uniformes" ? "active" : "")"
+                                           asp-controller="Uniformes" asp-action="Index">
+                                            <i class="bi bi-bag-check me-2"></i>Uniformes
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
 
-                        <!-- MANTENIMIENTOS -->
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                                Mantenimientos
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="/Usuarios">Usuarios</a></li>
-                                <li><a class="dropdown-item" href="/Colaboradores">Colaboradores</a></li>
-                            </ul>
-                        </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle @(new[] { "Usuarios", "Colaboradores" }.Contains(ctrl) ? "active" : "")"
+                                   href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-tools me-1"></i>Mantenimientos
+                                </a>
+                                <ul class="dropdown-menu">
+                                    @if (rol == "Administrador")
+                                    {
+                                        <li>
+                                            <a class="dropdown-item @(ctrl == "Usuarios" ? "active" : "")"
+                                               asp-controller="Usuarios" asp-action="Index">
+                                                <i class="bi bi-person-gear me-2"></i>Usuarios
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item @(ctrl == "Colaboradores" ? "active" : "")"
+                                               asp-controller="Colaboradores" asp-action="Index">
+                                                <i class="bi bi-people me-2"></i>Colaboradores
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </li>
 
-                        <!-- CONSULTAS -->
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                                <i class="bi bi-search"></i> Consultas
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item" href="/AsistenciaAuditoria">
-                                        <i class="bi bi-shield-lock me-2"></i>
-                                        Auditoría de Asistencia
-                                    </a>
+                            <li class="nav-item">
+                                <a class="nav-link @(ctrl == "Consultas" ? "active" : "")"
+                                   asp-controller="Consultas" asp-action="Index">
+                                    <i class="bi bi-search me-1"></i>Consultas
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link @(ctrl == "Reportes" ? "active" : "")"
+                                   asp-controller="Reportes" asp-action="Index">
+                                    <i class="bi bi-bar-chart-line me-1"></i>Reportes
+                                </a>
+                            </li>
+                        }
+
+                        @* ================================================
+                           MENU COLABORADOR
+                           ================================================ *@
+                        @if (rol == "Colaborador")
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle @(new[] { "Asistencia", "Permisos", "Vacaciones", "HorasExtras" }.Contains(ctrl) ? "active" : "")"
+                                   href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-briefcase me-1"></i>Mi Gestión
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item @(ctrl == "Asistencia" ? "active" : "")"
+                                           asp-controller="Asistencia" asp-action="MiAsistencia">
+                                            <i class="bi bi-calendar-check me-2"></i>Mi Asistencia
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item @(ctrl == "Permisos" ? "active" : "")"
+                                           asp-controller="Permisos" asp-action="MisPermisos">
+                                            <i class="bi bi-calendar-event me-2"></i>Mis Permisos
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item @(ctrl == "Vacaciones" ? "active" : "")"
+                                           asp-controller="Vacaciones" asp-action="MisVacaciones">
+                                            <i class="bi bi-sun me-2"></i>Mis Vacaciones
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item @(ctrl == "HorasExtras" ? "active" : "")"
+                                           asp-controller="HorasExtras" asp-action="MisHorasExtras">
+                                            <i class="bi bi-clock-history me-2"></i>Mis Horas Extras
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle @(ctrl == "Consultas" ? "active" : "")"
+                                   href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-file-earmark me-1"></i>Mis Documentos
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item"
+                                           asp-controller="Consultas" asp-action="MiInformacion">
+                                            <i class="bi bi-person-badge me-2"></i>Mi Información
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item"
+                                           asp-controller="Consultas" asp-action="MisEvaluaciones">
+                                            <i class="bi bi-clipboard-check me-2"></i>Mis Evaluaciones
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item"
+                                           asp-controller="Consultas" asp-action="MisUniformes">
+                                            <i class="bi bi-bag-check me-2"></i>Mis Uniformes
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item"
+                                           asp-controller="Consultas" asp-action="MisIncapacidades">
+                                            <i class="bi bi-heart-pulse me-2"></i>Mis Incapacidades
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+
+                    </ul>
+
+                    <ul class="navbar-nav ms-auto align-items-center gap-2">
+
+                        @if (!string.IsNullOrEmpty(rol))
+                        {
+                            <li class="nav-item">
+                                <span class="navbar-rol-badge">@rol</span>
+                            </li>
+
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle navbar-user d-flex align-items-center gap-2"
+                                   href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span class="navbar-avatar">
+                                        @((!string.IsNullOrEmpty(nombreUsuario) && nombreUsuario.Length > 0)
+                                                                        ? nombreUsuario.Substring(0, 1).ToUpper()
+                                                                        : "U")
+                                                                          </span>
+                                                                          <span class="d-none d-lg-inline">@nombreUsuario</span>
+                                                                      </a>
+                                                                      <ul class="dropdown-menu dropdown-menu-end">
+                                                                          <li>
+                                                                              <div class="d-flex align-items-center gap-2 px-3 py-2">
+                                                                                  <span class="navbar-avatar navbar-avatar-sm">
+                                                @((!string.IsNullOrEmpty(nombreUsuario) && nombreUsuario.Length > 0)
+                                                                                        ? nombreUsuario.Substring(0, 1).ToUpper()
+                                                                                        : "U")
+                                    </span>
+                                    <div>
+                                        <div style="font-size:.85rem;font-weight:600;color:#f1f5f9;">@nombreUsuario</div>
+                                        <div style="font-size:.75rem;color:#64748b;">@rol</div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li><hr class="dropdown-divider" /></li>
+                            <li>
+                                <a class="dropdown-item text-danger"
+                                   asp-controller="Login" asp-action="Logout">
+                                    <i class="bi bi-box-arrow-right me-2"></i>Cerrar sesion
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                                        }
+
+                    </ul>
+
+                </div>
+            </div>
+        </nav>
+
+        @if (accion != "Index" || ctrl == "Home")
+        {
+            <div class="breadcrumb-bar">
+                <div class="container-fluid px-4">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item">
+                                <a asp-controller="Home" asp-action="Index">
+                                    <i class="bi bi-house-fill me-1"></i>Inicio
+                                </a>
+                            </li>
+                            @if (ctrl != "Home")
+                            {
+                                <li class="breadcrumb-item">
+                                    <a asp-controller="@ctrl" asp-action="Index">@ctrl</a>
                                 </li>
+                            }
+                            @if (accion != "Index")
+                            {
+                                <li class="breadcrumb-item active" aria-current="page">
+                                    @(accion == "Create" ? "Crear" :
+                                                            accion == "Edit" ? "Editar" :
+                                                            accion == "Details" ? "Detalles" :
+                                                            accion == "Delete" ? "Eliminar" : accion)
+                    </li>
+                                        }
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        }
+    }
 
-                                <li>
-                                    <a class="dropdown-item" href="/HorasExtras/Consulta">
-                                        Horas Extras
-                                    </a>
-                                </li>
+    <main class="main-content" style="padding-top: @(esLogin ? "0" : "80px");">
+        <div class="container-fluid px-4 py-4">
+            @RenderBody()
+        </div>
+    </main>
 
-                            </ul>
-                        </li>
+    @if (!esLogin)
+    {
+        <footer class="footer">
+            <div class="container-fluid px-4">
+                <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 12px; font-size: 0.78rem;">
 
+                    <!-- Copyright -->
+                    <span>© @DateTime.Now.Year RRHH System</span>
+                    <span class="footer-sep">·</span>
+                    <span>Todos los derechos reservados</span>
 
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Reportes</a>
-                        </li>
-                    }
-
-                    <!-- ================= RRHH ================= -->
-                    @if (rol == "RRHH")
-                    {
-                        <li class="nav-item">
-                            <a class="nav-link" href="/Colaboradores">Colaboradores</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/Asistencia">Asistencia</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/Permisos">Permisos</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/Vacaciones">Vacaciones</a>
-                        </li>
-                    }
-
-                    <!-- ================= COLABORADOR ================= -->
-                    @if (rol == "Colaborador")
-                    {
-                        <li class="nav-item">
-                            <a class="nav-link"
-                               asp-controller="Perfil"
-                               asp-action="Index">
-                                Mi Información
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link"
-                               asp-controller="Asistencia"
-                               asp-action="MiAsistencia">
-                                Mi Asistencia
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link"
-                               asp-controller="Permisos"
-                               asp-action="MisPermisos">
-                                Mis Permisos
-                            </a>
-                        </li>
-                    }
-
-                </ul>
-
-                <!-- MENÚ DERECHO -->
-                <ul class="navbar-nav ms-auto">
                     @if (!string.IsNullOrEmpty(rol))
                     {
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-warning"
-                               href="#" data-bs-toggle="dropdown">
-                                @rol
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li>
-                                    <a class="dropdown-item text-danger"
-                                       href="/Login/Logout">
-                                        Salir
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
+                        <span class="footer-sep">·</span>
+                        <a asp-controller="Home" asp-action="Privacy"
+                           style="color: #64748b; text-decoration: none;"
+                           class="footer-link">
+                            <i class="bi bi-shield-lock"></i>Privacidad
+                        </a>
+                        <span class="footer-sep">·</span>
+                        <a asp-controller="Home" asp-action="SinPermisos"
+                           style="color: #64748b; text-decoration: none;"
+                           class="footer-link">
+                            <i class="bi bi-info-circle"></i>Ayuda
+                        </a>
+                        <span class="footer-sep">·</span>
+                        <span>Sesión: <strong>@nombreUsuario</strong></span>
                     }
-                </ul>
-
+                </div>
             </div>
-        </div>
-    </nav>
-
-    <!-- ===================== ALERTAS ===================== -->
-    @if (TempData["Success"] != null)
-    {
-        <script>
-            Swal.fire({
-                icon: 'success',
-                title: 'Correcto',
-                text: '@TempData["Success"]',
-                confirmButtonText: 'OK'
-            });
-        </script>
+        </footer>
     }
-
-    @if (TempData["Error"] != null)
-    {
-        <script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                html: '@TempData["Error"]',
-                confirmButtonText: 'OK'
-            });
-        </script>
-    }
-
-
-    @if (TempData["Warning"] != null)
-    {
-        <script>
-            Swal.fire({
-                icon: 'warning',
-                title: 'Atención',
-                text: '@TempData["Warning"]',
-                confirmButtonText: 'OK'
-            });
-        </script>
-    }
-
-    <!-- ===================== CONTENIDO ===================== -->
-    <div class="container mt-4">
-        @RenderBody()
-    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    @RenderSection("Scripts", required: false)
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+
+        // ================================================
+        // ALERT SERVICE
+        // ================================================
+
+        const Alert = {
+
+            _toast: Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 4000,
+                timerProgressBar: true
+            }),
+
+            _color(tipo) {
+                const map = { success: '#16a34a', warning: '#d97706', error: '#dc2626', info: '#2563eb' };
+                return map[tipo] ?? '#2563eb';
+            },
+
+            show(tipo, titulo, mensaje, conToast = true) {
+                Swal.fire({
+                    icon: tipo,
+                    title: titulo,
+                    text: mensaje,
+                    confirmButtonColor: this._color(tipo),
+                    confirmButtonText: 'Entendido'
+                }).then(() => {
+                    if (conToast) {
+                        this._toast.fire({ icon: tipo, title: mensaje });
+                    }
+                });
+            },
+
+            success(msg) { this.show('success', 'Operacion exitosa', msg); },
+            warning(msg) { this.show('warning', 'Advertencia', msg); },
+            error(msg)   { this.show('error', 'Error', msg, false); },
+            info(msg)    { this.show('info', 'Informacion', msg); },
+
+            confirm(mensaje, callback, tipo = 'warning') {
+                Swal.fire({
+                    title: 'Confirmar accion',
+                    text: mensaje,
+                    icon: tipo,
+                    showCancelButton: true,
+                    confirmButtonColor: '#16a34a',
+                    cancelButtonColor: '#64748b',
+                    confirmButtonText: 'Si, continuar',
+                    cancelButtonText: 'Cancelar'
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        this.loader('Procesando...');
+                        callback();
+                    }
+                });
+            },
+
+            loader(mensaje = 'Procesando...') {
+                Swal.fire({
+                    title: mensaje,
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+            },
+
+            close() { Swal.close(); }
+        };
+
+
+        // ================================================
+        // DATATABLES CONFIG — reutilizable en todas las vistas
+        // Uso: $('#miTabla').DataTable(DataTableConfig);
+        // ================================================
+
+        const DataTableConfig = {
+            language: {
+                lengthMenu:   'Mostrar _MENU_ registros',
+                zeroRecords:  'No se encontraron resultados',
+                info:         'Mostrando _START_ a _END_ de _TOTAL_ registros',
+                infoEmpty:    'Mostrando 0 a 0 de 0 registros',
+                infoFiltered: '(filtrado de _MAX_ registros totales)',
+                search:       'Buscar:',
+                paginate: {
+                    first:    'Primero',
+                    last:     'Ultimo',
+                    previous: 'Anterior',
+                    next:     'Siguiente'
+                }
+            },
+            searching:    false,
+            lengthChange: false,
+            pageLength:   10,
+            ordering:     true,
+            info:         true,
+            autoWidth:    false
+        };
+
+
+        // ================================================
+        // TEMPDATA — notificaciones al cargar la pagina
+        // ================================================
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const success = @Html.Raw(Json.Serialize(TempData["Success"]));
+            const warning = @Html.Raw(Json.Serialize(TempData["Warning"]));
+            const error   = @Html.Raw(Json.Serialize(TempData["Error"]));
+            const info    = @Html.Raw(Json.Serialize(TempData["Info"]));
+
+            if      (error)   Alert.error(error);
+            else if (warning) Alert.warning(warning);
+            else if (success) Alert.success(success);
+            else if (info)    Alert.info(info);
+
+        });
+
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
 
 </body>
+
 </html>
+

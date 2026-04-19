@@ -1,162 +1,350 @@
 ﻿@model List<Proyecto1.Models.Aguinaldo>
+
 @{
-    int anio = ViewBag.Anio;
-    decimal total = ViewBag.Total;
+    int anio = ViewBag.Anio ?? 0;
+    decimal total = ViewBag.Total ?? 0;
     int? idCol = ViewBag.IdColaborador as int?;
+    ViewData["Title"] = "Gestion de Aguinaldo";
 }
 
-<h2 class="fw-bold mb-3">Gestión de Aguinaldo</h2>
-
-<!-- ================= MENSAJES ================= -->
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show">
-        ✔ @Html.Raw(TempData["Success"])
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-}
-
-@if (TempData["Warning"] != null)
-{
-    <div class="alert alert-warning alert-dismissible fade show">
-        ⚠ @Html.Raw(TempData["Warning"])
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-}
-
-@if (TempData["Info"] != null)
-{
-    <div class="alert alert-info alert-dismissible fade show">
-        ℹ @Html.Raw(TempData["Info"])
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-}
-
-<!-- ================= CONFIRMAR RECALCULAR ================= -->
-@if (TempData["ConfirmRecalcular"] != null)
-{
-    <div class="alert alert-danger fw-bold d-flex justify-content-between align-items-center">
-        <div>
-            ⚠ El aguinaldo de la temporada @anio ya fue calculado.<br />
-            ¿Desea recalcularlo?
-        </div>
-
-        <div class="d-flex gap-2">
-            <!-- BOTÓN NO -->
-            <a asp-action="Index" asp-route-anio="@anio" class="btn btn-secondary btn-sm">
-                ❌ No
-            </a>
-
-            <!-- BOTÓN SÍ -->
-            <form method="post" asp-action="Calcular">
-                <input type="hidden" name="anio" value="@anio" />
-                <input type="hidden" name="recalcular" value="true" />
-                <button class="btn btn-danger btn-sm">
-                    🔄 Sí, recalcular
-                </button>
-            </form>
-        </div>
-    </div>
-}
-
-
-
-<!-- ================= FILTROS ================= -->
-<form method="get" class="row g-2 mb-3">
-
-    <div class="col-md-2">
-        <input type="number" name="anio" value="@anio" class="form-control" placeholder="Año" />
-    </div>
-
-    <div class="col-md-3">
-        <input type="number" name="idColaborador" value="@idCol" class="form-control" placeholder="ID Colaborador" />
-    </div>
-
-    <div class="col-md-2">
-        <button class="btn btn-primary w-100">🔍 Consultar</button>
-    </div>
-
-</form>
-
-<!-- ================= CALCULAR ================= -->
-<form method="post" asp-action="Calcular" class="mb-3">
-    <input type="hidden" name="anio" value="@anio" />
-    <button class="btn btn-success">
-        ➕ Calcular Aguinaldo @anio
-    </button>
-</form>
-
-<!-- ================= RESUMEN ================= -->
-<div class="alert alert-info fw-bold fs-5">
-    💰 Total Aguinaldo @anio: ₡@total.ToString("N2")
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-cash-coin"></i>Gestion de Aguinaldo
+    </h3>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-house"></i>Inicio
+    </a>
 </div>
 
-<!-- ================= TABLA ================= -->
-<table class="table table-bordered table-striped table-hover">
-    <thead class="table-dark">
-        <tr>
-            <th>Colaborador</th>
-            <th>Total Salarios</th>
-            <th>Aguinaldo</th>
-            <th>Estado</th>
-            <th style="width:180px">Acciones</th>
-        </tr>
-    </thead>
+@* ================================================
+   ACCIONES
+   ================================================ *@
+<div class="d-flex gap-2 mb-4 flex-wrap">
 
-    <tbody>
-        @if (!Model.Any())
-        {
-            <tr>
-                <td colspan="5" class="text-center text-muted">
-                    No existen registros de aguinaldo para este período.
-                </td>
-            </tr>
-        }
-        else
-        {
-            foreach (var a in Model)
-            {
-                <tr>
-                    <td>@a.NombreColaborador</td>
-                    <td>₡@a.TotalSalarios.ToString("N2")</td>
-                    <td class="fw-bold text-success">₡@a.MontoAguinaldo.ToString("N2")</td>
+    <form method="post" asp-action="Calcular" id="formCalcular">
+        <input type="hidden" name="anio" value="@anio" />
+        <button type="button" class="btn btn-success"
+                onclick="confirmarCalcular()">
+            <i class="bi bi-calculator"></i>Calcular Aguinaldo
+        </button>
+    </form>
 
-                    <td>
-                        @if (a.Estado == "Pagado")
-                        {
-                            <span class="badge bg-success">✔ Pagado</span>
-                        }
-                        else if (a.Estado == "Aprobado")
-                        {
-                            <span class="badge bg-warning text-dark">Aprobado</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-info text-dark">Calculado</span>
-                        }
-                    </td>
+    <form method="post" asp-action="PagarMasivo" id="formPagarMasivo">
+        <input type="hidden" name="anio" value="@anio" />
+        <button type="button" class="btn btn-primary"
+                onclick="confirmarPagarMasivo()">
+            <i class="bi bi-cash-stack"></i>Pagar Masivo
+        </button>
+    </form>
 
-                    <td>
-                        @if (a.Estado == "Calculado")
-                        {
-                            <form asp-action="Aprobar" method="post" class="d-inline">
-                                <input type="hidden" name="id" value="@a.IdAguinaldo" />
-                                <input type="hidden" name="anio" value="@anio" />
-                                <button class="btn btn-success btn-sm">Aprobar</button>
-                            </form>
-                        }
+    @if (anio != 0 && Model.Any())
+    {
+        <a asp-action="ExportarPdf"
+           asp-route-anio="@anio"
+           class="btn btn-danger">
+            <i class="bi bi-file-earmark-pdf"></i>Exportar PDF
+        </a>
+    }
 
-                        @if (a.Estado == "Aprobado")
+</div>
+
+@* ================================================
+   FILTROS
+   ================================================ *@
+<div class="filter-card mb-4">
+    <form id="formFiltroAguinaldo" method="get" asp-action="Index">
+        <div class="filter-row">
+
+            <div class="filter-group" style="max-width:140px;">
+                <span class="filter-label">Año</span>
+                <input type="number"
+                       id="filtroAnio"
+                       name="anio"
+                       value="@(anio == 0 ? "" : anio.ToString())"
+                       class="form-control"
+                       placeholder="@DateTime.Now.Year" />
+            </div>
+
+            <div class="filter-group" style="max-width:180px;">
+                <span class="filter-label">ID Colaborador</span>
+                <input type="number"
+                       id="filtroColaborador"
+                       name="idColaborador"
+                       value="@idCol"
+                       class="form-control"
+                       placeholder="Opcional" />
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i>Buscar
+                </button>
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        onclick="limpiarFiltros()">
+                    <i class="bi bi-x-circle"></i>Limpiar
+                </button>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+@* ================================================
+   KPI CARDS — solo si hay datos
+   ================================================ *@
+@if (anio != 0 && Model.Any())
+{
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-3">
+            <div class="kpi-card">
+                <div>
+                    <div class="kpi-label">Total aguinaldo</div>
+                    <div class="kpi-value" style="font-size:1.3rem;">
+                        ₡ @total.ToString("N2")
+                    </div>
+                </div>
+                <div class="kpi-icon green">
+                    <i class="bi bi-cash-stack"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="kpi-card">
+                <div>
+                    <div class="kpi-label">Colaboradores</div>
+                    <div class="kpi-value">@Model.Count</div>
+                </div>
+                <div class="kpi-icon blue">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="kpi-card">
+                <div>
+                    <div class="kpi-label">Pagados</div>
+                    <div class="kpi-value" style="color:var(--green)">
+                        @Model.Count(x => x.Estado == "Pagado")
+                    </div>
+                </div>
+                <div class="kpi-icon green">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="kpi-card">
+                <div>
+                    <div class="kpi-label">Pendientes</div>
+                    <div class="kpi-value" style="color:var(--amber)">
+                        @Model.Count(x => x.Estado != "Pagado")
+                    </div>
+                </div>
+                <div class="kpi-icon amber">
+                    <i class="bi bi-clock-fill"></i>
+                </div>
+            </div>
+        </div>
+
+    </div>
+}
+
+@* ================================================
+   ESTADO INICIAL — sin consulta
+   ================================================ *@
+@if (anio == 0)
+{
+    <div class="card">
+        <div class="table-empty">
+            <i class="bi bi-cash-coin"></i>
+            <p>Ingrese un año para consultar el aguinaldo</p>
+            <span class="text-muted" style="font-size:0.82rem;">
+                Use el filtro de arriba para comenzar
+            </span>
+        </div>
+    </div>
+}
+
+@* ================================================
+   TABLA
+   ================================================ *@
+@if (Model.Any())
+{
+    <div class="card">
+        <div class="card-header">
+            <span class="card-header-title">
+                <i class="bi bi-table"></i>Aguinaldo — Temporada @anio
+            </span>
+            <span class="badge badge-info">@Model.Count registros</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table id="tablaAguinaldo" class="tabla-sistema w-100">
+                    <thead>
+                        <tr>
+                            <th>Colaborador</th>
+                            <th class="text-end">Total salarios</th>
+                            <th class="text-end">Monto aguinaldo</th>
+                            <th class="text-center">Estado</th>
+                            <th class="text-center">Fecha calculo</th>
+                            <th class="text-center">Fecha pago</th>
+                            <th class="text-end pe-3">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var a in Model)
                         {
-                            <form asp-action="Pagar" method="post" class="d-inline">
-                                <input type="hidden" name="id" value="@a.IdAguinaldo" />
-                                <input type="hidden" name="anio" value="@anio" />
-                                <button class="btn btn-warning btn-sm">Pagar</button>
-                            </form>
+                            var iniciales = a.NombreColaborador?
+                            .Split(' ')
+                            .Where(s => !string.IsNullOrEmpty(s))
+                            .Take(2)
+                            .Select(s => s[0].ToString())
+                            .Aggregate("", (acc, c) => acc + c)
+                            .ToUpper() ?? "??";
+
+                            var estadoBadge = a.Estado switch
+                            {
+                                "Pagado" => "bg-success",
+                                "Aprobado" => "bg-warning",
+                                _ => "bg-secondary"
+                            };
+
+                            <tr>
+                                <td>
+                                    <div class="table-avatar">
+                                        <div class="avatar-circle avatar-blue">
+                                            @iniciales
+                                        </div>
+                                        <div class="avatar-name">@a.NombreColaborador</div>
+                                    </div>
+                                </td>
+                                <td class="text-end td-mono">
+                                    ₡ @a.TotalSalarios.ToString("N2")
+                                </td>
+                                <td class="text-end td-mono"
+                                    style="font-weight:700;color:var(--green)">
+                                    ₡ @a.MontoAguinaldo.ToString("N2")
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge @estadoBadge badge-dot">@a.Estado</span>
+                                </td>
+                                <td class="text-center td-muted">
+                                    @a.FechaCalculo?.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center">
+                                    @if (a.FechaPago != null)
+                                    {
+                                        <span class="td-mono" style="color:var(--green);font-weight:600;">
+                                            @a.FechaPago.Value.ToString("dd/MM/yyyy")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="td-muted">Pendiente</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="td-actions">
+                                        <a asp-action="Details"
+                                           asp-route-id="@a.IdAguinaldo"
+                                           asp-route-anio="@anio"
+                                           asp-route-idColaborador="@idCol"
+                                           class="btn btn-primary btn-sm">
+                                            <i class="bi bi-eye"></i>Detalle
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
                         }
-                    </td>
-                </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+
+        $(document).ready(function () {
+            if (@Model.Any().ToString().ToLower()) {
+                var config = Object.assign({}, DataTableConfig, { order: [[2, 'desc']] });
+                $('#tablaAguinaldo').DataTable(config);
             }
+        });
+
+        function confirmarCalcular() {
+            var anio = document.querySelector('#formCalcular input[name="anio"]').value;
+            if (!anio || anio == 0) {
+                Alert.warning('Debe consultar un año antes de calcular el aguinaldo.');
+                return;
+            }
+            Alert.confirm(
+                'Se calculara el aguinaldo para la temporada ' + anio + '. Si ya existe informacion sera recalculada. Desea continuar?',
+                function () { document.getElementById('formCalcular').submit(); },
+                'question'
+            );
         }
-    </tbody>
-</table>
+
+        function confirmarPagarMasivo() {
+            var anio = document.querySelector('#formPagarMasivo input[name="anio"]').value;
+            if (!anio || anio == 0) {
+                Alert.warning('Debe consultar un año antes de realizar el pago masivo.');
+                return;
+            }
+            Alert.confirm(
+                'Se pagaran todos los aguinaldos aprobados de la temporada ' + anio + '. Esta accion no se puede revertir. Desea continuar?',
+                function () { document.getElementById('formPagarMasivo').submit(); },
+                'warning'
+            );
+        }
+
+        var KEY = 'filtros_aguinaldo';
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var form   = document.getElementById('formFiltroAguinaldo');
+            var anioIn = document.getElementById('filtroAnio');
+            var colIn  = document.getElementById('filtroColaborador');
+
+            var urlParams = new URLSearchParams(window.location.search);
+            var urlAnio   = urlParams.get('anio');
+            var urlCol    = urlParams.get('idColaborador');
+
+            if (urlAnio || urlCol) {
+                localStorage.setItem(KEY, JSON.stringify({
+                    anio: urlAnio || '',
+                    idColaborador: urlCol || ''
+                }));
+            } else {
+                var guardados = localStorage.getItem(KEY);
+                if (guardados) {
+                    var f = JSON.parse(guardados);
+                    if (!anioIn.value) anioIn.value = f.anio;
+                    if (!colIn.value)  colIn.value  = f.idColaborador;
+                    if (!window.location.search && f.anio) form.submit();
+                }
+            }
+
+            form.addEventListener('submit', function () {
+                localStorage.setItem(KEY, JSON.stringify({
+                    anio: anioIn.value,
+                    idColaborador: colIn.value
+                }));
+            });
+        });
+
+        function limpiarFiltros() {
+            localStorage.removeItem(KEY);
+            window.location.href = '/Aguinaldo';
+        }
+
+    </script>
+}

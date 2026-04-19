@@ -1,100 +1,261 @@
 ﻿@model List<Proyecto1.Models.LiquidacionVM>
 
-<h3 class="fw-bold mb-4">Gestión de Liquidaciones</h3>
+@{
+    ViewData["Title"] = "Gestion de Liquidaciones";
+    var idColActual = Context.Request.Query["idColaborador"].ToString();
 
-<!-- ➕ Botón Generar Liquidación y Buscador -->
-<div class="d-flex justify-content-between align-items-center mb-3">
+    var pendientes = Model?.Count(l => l.Estado == "Pendiente") ?? 0;
+    var aprobadas = Model?.Count(l => l.Estado == "Aprobada") ?? 0;
+    var pagadas = Model?.Count(l => l.Estado == "Pagada") ?? 0;
+    var totalMonto = Model?.Where(l => l.Estado == "Aprobada" || l.Estado == "Pagada")
+                          .Sum(l => l.Total) ?? 0;
+}
 
-    <!-- Botón Generar Liquidación -->
-    <a asp-action="Create" class="btn btn-success">
-        <i class="bi bi-plus-circle"></i> Generar Liquidación
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-cash-stack"></i>Gestion de Liquidaciones
+    </h3>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-house"></i>Inicio
     </a>
+</div>
 
-    <!-- Buscador -->
-    <form method="get" asp-action="Index" class="d-flex">
-        <input type="number"
-               name="idColaborador"
-               class="form-control me-2"
-               placeholder="Buscar por ID de colaborador"
-               value="@Context.Request.Query["idColaborador"]" />
-        <button type="submit" class="btn btn-primary">Buscar</button>
-        <a asp-action="Index" class="btn btn-secondary ms-2">Limpiar</a>
+<div class="row g-3 mb-4">
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total liquidaciones</div>
+                <div class="kpi-value">@(Model?.Count ?? 0)</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-cash-stack"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Pendientes</div>
+                <div class="kpi-value" style="color:var(--amber)">@pendientes</div>
+            </div>
+            <div class="kpi-icon amber">
+                <i class="bi bi-clock-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Aprobadas</div>
+                <div class="kpi-value" style="color:var(--green)">@aprobadas</div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Monto total</div>
+                <div class="kpi-value" style="font-size:1.1rem;color:var(--green)">
+                    ₡ @totalMonto.ToString("N2")
+                </div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-currency-dollar"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="filter-card mb-4">
+    <form method="get" asp-action="Index">
+        <div class="filter-row">
+
+            <div class="filter-group" style="max-width:200px;">
+                <span class="filter-label">ID Colaborador</span>
+                <input type="number"
+                       name="idColaborador"
+                       class="form-control"
+                       placeholder="Ingrese ID..."
+                       value="@idColActual" />
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i>Buscar
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i>Limpiar
+                </a>
+            </div>
+
+        </div>
     </form>
 </div>
 
-<!-- 📢 Mensajes -->
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
-@if (TempData["Warning"] != null)
-{
-    <div class="alert alert-warning">@TempData["Warning"]</div>
-}
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted" style="font-size:0.82rem;">
+        @(Model?.Count ?? 0) liquidacion(es) encontrada(s)
+    </span>
+    <a asp-action="Create" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i>Generar liquidacion
+    </a>
+</div>
 
-<!-- 📋 Tabla de liquidaciones -->
-<table class="table table-bordered table-hover">
-    <thead class="table-light">
-        <tr>
-            <th>ID</th>
-            <th>ID Colaborador</th>
-            <th>Colaborador</th>
-            <th>Tipo Salida</th>
-            <th>Fecha Salida</th>
-            <th>Total</th>
-            <th>Estado</th>
-            <th class="text-center">Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model.Any())
-        {
-            foreach (var l in Model)
-            {
-                <tr>
-                    <td>@l.IdLiquidacion</td>
-                    <td>@l.IdColaborador</td>
-                    <td>@l.Colaborador</td>
-                    <td>@l.TipoSalida</td>
-                    <td>@l.FechaSalida.ToShortDateString()</td>
-                    <td>@l.Total.ToString("C")</td>
-                    <td>
-                        <span class="badge
-                                    @(l.Estado == "Pendiente" ? "bg-warning" :
-                                                            l.Estado == "Aprobada" ? "bg-success" :
-                                                            "bg-secondary")">
-                    @l.Estado
-                </span>
-            </td>
-            <td class="text-center">
-                <a asp-action="Detalle" asp-route-id="@l.IdLiquidacion" class="btn btn-info btn-sm">Detalle</a>
-
-                @if (l.Estado == "Pendiente")
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>Listado de liquidaciones
+        </span>
+        <span class="badge badge-info">@(Model?.Count ?? 0) registros</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaLiquidaciones" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Colaborador</th>
+                        <th>Tipo salida</th>
+                        <th class="text-center">Fecha salida</th>
+                        <th class="text-end">Total</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-end pe-3">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var l in Model)
                         {
-                            <a asp-action="Aprobar" asp-route-id="@l.IdLiquidacion" class="btn btn-success btn-sm ms-1">
-                                Aprobar
-                            </a>
-                        }
+                            var iniciales = l.Colaborador?
+                            .Split(' ')
+                            .Where(s => !string.IsNullOrEmpty(s))
+                            .Take(2)
+                            .Select(s => s[0].ToString())
+                            .Aggregate("", (acc, c) => acc + c)
+                            .ToUpper() ?? "??";
 
-                        @if (l.Estado == "Aprobada")
-                        {
-                            <a asp-action="Pagar" asp-route-id="@l.IdLiquidacion" class="btn btn-primary btn-sm ms-1">
-                                Pagar
-                            </a>
+                            string badgeClass = l.Estado switch
+                            {
+                                "Aprobada" => "bg-success",
+                                "Pendiente" => "bg-warning",
+                                "Pagada" => "bg-info",
+                                _ => "bg-secondary"
+                            };
+
+                            string avatarColor = l.Estado switch
+                            {
+                                "Aprobada" => "green",
+                                "Pendiente" => "amber",
+                                "Pagada" => "blue",
+                                _ => "slate"
+                            };
+
+                            <tr>
+                                <td class="td-mono">@l.IdLiquidacion</td>
+                                <td>
+                                    <div class="table-avatar">
+                                        <div class="avatar-circle avatar-@avatarColor">
+                                            @iniciales
+                                        </div>
+                                        <div>
+                                            <div class="avatar-name">@l.Colaborador</div>
+                                            <div class="avatar-sub">ID: @l.IdColaborador</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>@l.TipoSalida</td>
+                                <td class="text-center td-muted">
+                                    @l.FechaSalida.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-end td-mono"
+                                    style="font-weight:700;color:var(--green)">
+                                    ₡ @l.Total.ToString("N2")
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge @badgeClass badge-dot">@l.Estado</span>
+                                </td>
+                                <td>
+                                    <div class="td-actions">
+                                        <a asp-action="Detalle"
+                                           asp-route-id="@l.IdLiquidacion"
+                                           class="btn btn-primary btn-sm">
+                                            <i class="bi bi-eye"></i>Detalle
+                                        </a>
+                                        @if (l.Estado == "Pendiente")
+                                        {
+                                            <button type="button"
+                                                    class="btn btn-success btn-sm"
+                                                    onclick="confirmarAprobar(@l.IdLiquidacion, '@l.Colaborador')">
+                                                <i class="bi bi-check-circle"></i>Aprobar
+                                            </button>
+                                        }
+                                        @if (l.Estado == "Aprobada")
+                                        {
+                                            <button type="button"
+                                                    class="btn btn-warning btn-sm"
+                                                    onclick="confirmarPagar(@l.IdLiquidacion, '@l.Colaborador', '@l.Total.ToString("N2")')">
+                                                <i class="bi bi-cash-coin"></i>Pagar
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
                         }
-                    </td>
-                </tr>
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7">
+                                <div class="table-empty">
+                                    <i class="bi bi-cash-stack"></i>
+                                    <p>No hay liquidaciones para mostrar</p>
+                                    <a asp-action="Create" class="btn btn-success btn-sm">
+                                        <i class="bi bi-plus-circle"></i>Generar primera
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+
+        $(document).ready(function () {
+            if (@((Model != null && Model.Any()).ToString().ToLower())) {
+                var config = Object.assign({}, DataTableConfig, { order: [[0, 'desc']] });
+                $('#tablaLiquidaciones').DataTable(config);
             }
+        });
+
+        function confirmarAprobar(id, nombre) {
+            Alert.confirm(
+                'Se aprobara la liquidacion de ' + nombre + '. Desea continuar?',
+                function () { window.location.href = '/Liquidaciones/Aprobar/' + id; },
+                'question'
+            );
         }
-        else
-        {
-            <tr>
-                <td colspan="8" class="text-center text-muted">No hay liquidaciones para mostrar</td>
-            </tr>
+
+        function confirmarPagar(id, nombre, monto) {
+            Alert.confirm(
+                'Se registrara el pago de ₡' + monto + ' a ' + nombre + '. Esta accion no se puede revertir. Desea continuar?',
+                function () { window.location.href = '/Liquidaciones/Pagar/' + id; },
+                'warning'
+            );
         }
-    </tbody>
-</table>
+
+    </script>
+}

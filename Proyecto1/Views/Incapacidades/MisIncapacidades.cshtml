@@ -2,37 +2,228 @@
 
 @{
     ViewData["Title"] = "Mis Incapacidades";
+
+    var activas = Model?.Count(i => i.Estado == "Activa") ?? 0;
+    var cerradas = Model?.Count(i => i.Estado == "Cerrada") ?? 0;
+    var totalDias = Model?.Sum(i => i.DiasIncapacidad) ?? 0;
+    var remuneradas = Model?.Count(i => i.EsRemunerada) ?? 0;
 }
 
-<h2>Mis Incapacidades</h2>
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-heart-pulse"></i>Mis Incapacidades
+    </h3>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-house"></i>Inicio
+    </a>
+</div>
 
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
+@* ================================================
+   KPI CARDS
+   ================================================ *@
+<div class="row g-3 mb-4">
 
-<table class="table table-bordered table-striped">
-    <thead class="table-dark">
-        <tr>
-            <th>Tipo</th>
-            <th>Inicio</th>
-            <th>Fin</th>
-            <th>Días</th>
-            <th>Remunerada</th>
-            <th>Estado</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var i in Model)
-        {
-            <tr>
-                <td>@i.TipoIncapacidad</td>
-                <td>@i.FechaInicio.ToString("dd/MM/yyyy")</td>
-                <td>@i.FechaFin.ToString("dd/MM/yyyy")</td>
-                <td>@i.DiasIncapacidad</td>
-                <td>@(i.EsRemunerada ? "Sí" : "No")</td>
-                <td>@i.Estado</td>
-            </tr>
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total registros</div>
+                <div class="kpi-value">@(Model?.Count ?? 0)</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-heart-pulse"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Activas</div>
+                <div class="kpi-value" style="color:var(--red)">@activas</div>
+            </div>
+            <div class="kpi-icon red">
+                <i class="bi bi-activity"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total dias</div>
+                <div class="kpi-value" style="color:var(--amber)">@totalDias</div>
+            </div>
+            <div class="kpi-icon amber">
+                <i class="bi bi-calendar-range"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Remuneradas</div>
+                <div class="kpi-value" style="color:var(--green)">@remuneradas</div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-cash-coin"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@* ================================================
+   TABLA
+   ================================================ *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>Historial de incapacidades
+        </span>
+        <div class="d-flex align-items-center gap-3">
+            <select id="filtroEstado"
+                    class="form-select form-select-sm"
+                    style="width:140px;">
+                <option value="">Todas</option>
+                <option value="Activa">Activas</option>
+                <option value="Cerrada">Cerradas</option>
+            </select>
+            <span class="badge badge-info" id="badgeContador">
+                @(Model?.Count ?? 0) registros
+            </span>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaIncapacidades" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th class="text-center">Inicio</th>
+                        <th class="text-center">Fin</th>
+                        <th class="text-center">Dias</th>
+                        <th class="text-center">Remunerada</th>
+                        <th class="text-center">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var i in Model.OrderByDescending(i => i.FechaInicio))
+                        {
+                            var esActiva = i.Estado == "Activa";
+
+                            <tr data-estado="@i.Estado"
+                                class="@(esActiva ? "fila-activa" : "")">
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        @if (esActiva)
+                                        {
+                                            <span class="badge bg-danger"
+                                                  style="font-size:0.65rem;">ACTIVA</span>
+                                        }
+                                        <span style="font-weight:500;">
+                                            @i.TipoIncapacidad
+                                        </span>
+                                    </div>
+                                </td>
+                                <td class="text-center td-mono">
+                                    @i.FechaInicio.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center td-mono">
+                                    @i.FechaFin.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center">
+                                    <span class="td-mono"
+                                          style="font-weight:700;color:var(--amber)">
+                                        @i.DiasIncapacidad
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    @if (i.EsRemunerada)
+                                    {
+                                        <span class="badge bg-success badge-dot">Si</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary badge-dot">No</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (esActiva)
+                                    {
+                                        <span class="badge bg-danger badge-dot">Activa</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary badge-dot">Cerrada</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6">
+                                <div class="table-empty">
+                                    <i class="bi bi-heart-pulse"></i>
+                                    <p>No tienes incapacidades registradas</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .fila-activa {
+            background: #fff5f5 !important;
         }
-    </tbody>
-</table>
+
+            .fila-activa:hover {
+                background: #ffe8e8 !important;
+            }
+    </style>
+}
+
+@section Scripts {
+    <script>
+
+        $(document).ready(function () {
+            if (@((Model != null && Model.Any()).ToString().ToLower())) {
+                var config = Object.assign({}, DataTableConfig, {
+                    order: [[1, 'desc']]
+                });
+                $('#tablaIncapacidades').DataTable(config);
+            }
+        });
+
+        var filtroEstado  = document.getElementById('filtroEstado');
+        var badgeContador = document.getElementById('badgeContador');
+
+        filtroEstado.addEventListener('change', function () {
+            var estado = this.value;
+            var table  = $('#tablaIncapacidades').DataTable();
+
+            table.rows().every(function () {
+                var fila       = this.node();
+                var filaEstado = fila.getAttribute('data-estado');
+                var ok         = estado === '' || filaEstado === estado;
+                $(fila).toggle(ok);
+            });
+
+            var visibles = $('#tablaIncapacidades tbody tr:visible').length;
+            badgeContador.textContent = visibles + ' registros';
+        });
+
+    </script>
+}

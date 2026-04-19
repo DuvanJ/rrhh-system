@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Proyecto1.BLL;
+using QuestPDF.Fluent;
+using QuestPDF.Infrastructure;
 
 namespace Proyecto1.Controllers
 {
@@ -44,6 +46,48 @@ namespace Proyecto1.Controllers
             return View(detalle);
         }
 
+
+        // ================= EXPORTAR PDF GENERAL =================
+        public async Task<IActionResult> ExportarPdf(int idPlanilla)
+        {
+            var datos = await _service.ObtenerDetallePdfAsync(idPlanilla);
+            var planilla = await _service.ObtenerPlanillaAsync(idPlanilla);
+
+            if (planilla == null)
+                return NotFound();
+
+            string periodo = $"{planilla.Mes}/{planilla.Año}";
+
+            var document = new PlanillaEmpresaPdf(
+                datos,
+                "Ferretería Novex",
+                periodo
+            );
+
+            var pdf = document.GeneratePdf();
+
+            return File(pdf, "application/pdf", $"Planilla_{periodo}.pdf");
+        }
+
+
+
+        public async Task<IActionResult> ExportarPdfColaborador(int idPlanilla, int idColaborador)
+        {
+            var detalle = await _service.ObtenerDetalleColaboradorAsync(idPlanilla, idColaborador);
+
+            if (detalle == null)
+                return NotFound();
+
+            var document = new PlanillaColaboradorPdf(detalle);
+
+            var pdf = document.GeneratePdf();
+
+            return File(pdf, "application/pdf",
+                $"Colilla_{detalle.NombreColaborador}_{idPlanilla}.pdf");
+        }
+
+
+
         // ================= ANULAR =================
         [HttpPost]
         public async Task<IActionResult> Anular(int idPlanilla)
@@ -59,6 +103,10 @@ namespace Proyecto1.Controllers
             var detalle = await _service.ObtenerDetalleColaboradorAsync(idPlanilla, idColaborador);
             return View(detalle);
         }
+
+
+
+
 
     }
 }

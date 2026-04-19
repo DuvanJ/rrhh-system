@@ -1,115 +1,281 @@
 ﻿@model Proyecto1.Models.EvaluacionVM
 
 @{
-    ViewData["Title"] = "Editar Evaluación de Rendimiento";
+    ViewData["Title"] = "Editar Evaluacion";
+
+    var iniciales = Model.NombreColaborador?
+        .Split(' ')
+        .Where(s => !string.IsNullOrEmpty(s))
+        .Take(2)
+        .Select(s => s[0].ToString())
+        .Aggregate("", (acc, c) => acc + c)
+        .ToUpper() ?? "??";
+
+    string desempeno;
+    string badgeClass;
+    string avatarColor;
+
+    if (Model.PuntajeTotal >= 90)
+    {
+        desempeno = "Excelente";
+        badgeClass = "bg-success";
+        avatarColor = "green";
+    }
+    else if (Model.PuntajeTotal >= 70)
+    {
+        desempeno = "Bueno";
+        badgeClass = "bg-info";
+        avatarColor = "blue";
+    }
+    else if (Model.PuntajeTotal >= 50)
+    {
+        desempeno = "Regular";
+        badgeClass = "bg-warning";
+        avatarColor = "amber";
+    }
+    else
+    {
+        desempeno = "Deficiente";
+        badgeClass = "bg-danger";
+        avatarColor = "red";
+    }
 }
 
-<h2>Editar Evaluación de Rendimiento</h2>
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-pencil-square"></i>Editar Evaluacion
+    </h3>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
 
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
+<form asp-action="Edit" method="post" id="formEditar" novalidate>
 
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
-
-<form asp-action="Edit" method="post">
-
-    <!-- ID Evaluación (oculto) -->
     <input asp-for="IdEvaluacion" type="hidden" />
     <input asp-for="IdColaborador" type="hidden" />
 
-    <!-- Datos del colaborador -->
-    <div class="form-group mb-3">
-        <label>Colaborador</label>
-        <input type="text"
-               class="form-control"
-               value="@Model.NombreColaborador"
-               readonly />
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-10">
+
+            @* Tarjeta de identidad *@
+            <div class="card mb-3">
+                <div class="card-body py-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="avatar-circle avatar-@avatarColor"
+                             style="width:48px;height:48px;font-size:1rem;flex-shrink:0;">
+                            @iniciales
+                        </div>
+                        <div>
+                            <div style="font-size:1rem;font-weight:700;color:var(--navy);">
+                                @Model.NombreColaborador
+                            </div>
+                            <div style="font-size:0.82rem;color:var(--text-3);">
+                                ID: @Model.IdColaborador
+                                &nbsp;·&nbsp;
+                                Evaluacion #@Model.IdEvaluacion
+                                &nbsp;·&nbsp;
+                                @Model.FechaEvaluacion.ToString("dd/MM/yyyy")
+                            </div>
+                        </div>
+                        <div class="ms-auto">
+                            <span class="badge @badgeClass badge-dot">@desempeno</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* ================================================
+               DATOS GENERALES
+               ================================================ *@
+            <div class="card mb-4">
+                <div class="card-header">
+                    <span class="card-header-title">
+                        <i class="bi bi-calendar-check"></i>Datos de la evaluacion
+                    </span>
+                </div>
+                <div class="card-body">
+
+                    <div class="row g-3">
+
+                        <div class="col-md-4">
+                            <label class="form-label">Fecha de evaluacion</label>
+                            <input asp-for="FechaEvaluacion"
+                                   type="date"
+                                   class="form-control"
+                                   readonly
+                                   style="background:var(--slate-ll);cursor:not-allowed;" />
+                            <span class="form-text">La fecha no puede modificarse</span>
+                        </div>
+
+                        <div class="col-md-8">
+                            <label class="form-label">Comentarios generales</label>
+                            <textarea asp-for="ComentariosGenerales"
+                                      id="inputComentarios"
+                                      class="form-control"
+                                      rows="3"
+                                      placeholder="Observaciones generales sobre el desempeno..."
+                                      style="resize:vertical;"></textarea>
+                            <div class="d-flex justify-content-between mt-1">
+                                <span asp-validation-for="ComentariosGenerales"
+                                      class="form-error"></span>
+                                <span id="contadorComentarios"
+                                      class="form-text ms-auto">
+                                    @(Model.ComentariosGenerales?.Length ?? 0) / 500
+                                </span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            @* ================================================
+               CRITERIOS
+               ================================================ *@
+            <div class="card mb-4">
+                <div class="card-header">
+                    <span class="card-header-title">
+                        <i class="bi bi-list-check"></i>Criterios de evaluacion
+                    </span>
+                    <span id="badgePuntaje" class="badge @badgeClass">
+                        Puntaje promedio: @Model.PuntajeTotal?.ToString("N1") / 100
+                    </span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="tabla-sistema w-100">
+                            <thead>
+                                <tr>
+                                    <th>Criterio</th>
+                                    <th class="text-center" style="width:160px;">
+                                        Puntaje (0-100)
+                                    </th>
+                                    <th>Observacion</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < Model.Detalles.Count; i++)
+                                {
+                                    <tr>
+                                        <td style="font-weight:500;">
+                                            @Model.Detalles[i].NombreCriterio
+                                            <input type="hidden" asp-for="Detalles[i].IdCriterio" />
+                                            <input type="hidden" asp-for="Detalles[i].NombreCriterio" />
+                                        </td>
+                                        <td class="text-center">
+                                            <input asp-for="Detalles[i].Puntaje"
+                                                   type="number"
+                                                   min="0"
+                                                   max="100"
+                                                   class="form-control text-center puntaje-input"
+                                                   style="max-width:90px;margin:0 auto;" />
+                                            <span asp-validation-for="Detalles[i].Puntaje"
+                                                  class="form-error d-block"></span>
+                                        </td>
+                                        <td>
+                                            <input asp-for="Detalles[i].Observacion"
+                                                   class="form-control"
+                                                   placeholder="Observacion opcional..." />
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="section-divider" />
+
+            <div class="d-flex justify-content-end gap-2">
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i>Cancelar
+                </a>
+                <button type="button"
+                        class="btn btn-warning"
+                        onclick="confirmarGuardar()">
+                    <i class="bi bi-check-circle"></i>Guardar cambios
+                </button>
+            </div>
+
+        </div>
     </div>
 
-    <div class="form-group mb-3">
-        <label>Fecha de evaluación</label>
-        <input asp-for="FechaEvaluacion"
-               type="date"
-               class="form-control"
-               readonly />
-    </div>
-
-    <!-- Comentarios generales -->
-    <div class="form-group mb-4">
-        <label>Comentarios Generales</label>
-        <textarea asp-for="ComentariosGenerales"
-                  class="form-control"
-                  rows="3"></textarea>
-        <span asp-validation-for="ComentariosGenerales"
-              class="text-danger"></span>
-    </div>
-
-    <hr />
-
-    <h4>Criterios de Evaluación</h4>
-
-    <table class="table table-bordered">
-        <thead class="table-light">
-            <tr>
-                <th style="width:35%">Criterio</th>
-                <th style="width:20%">Puntaje (0-100)</th>
-                <th>Observación</th>
-            </tr>
-        </thead>
-        <tbody>
-            @for (int i = 0; i < Model.Detalles.Count; i++)
-            {
-                <tr>
-                    <td>
-                        @{
-                            var criterio = Model.Criterios
-                            .FirstOrDefault(c => c.IdCriterio == Model.Detalles[i].IdCriterio);
-                        }
-
-                        @criterio?.NombreCriterio
-
-                        <input type="hidden"
-                               asp-for="Detalles[@i].IdCriterio" />
-                    </td>
-
-
-                    <td>
-                        <input asp-for="Detalles[@i].Puntaje"
-                               type="number"
-                               min="0"
-                               max="100"
-                               class="form-control" />
-                        <span asp-validation-for="Detalles[@i].Puntaje"
-                              class="text-danger"></span>
-                    </td>
-
-                    <td>
-                        <input asp-for="Detalles[@i].Observacion"
-                               class="form-control" />
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-
-    <br />
-
-    <button type="submit" class="btn btn-primary">
-        Guardar cambios
-    </button>
-
-    <a asp-action="Index" class="btn btn-secondary">
-        Cancelar
-    </a>
 </form>
 
+@section Styles {
+    <style>
+        .puntaje-input {
+            font-family: 'Consolas', monospace;
+            font-weight: 600;
+        }
+
+        .field-validation-error {
+            color: var(--red);
+            font-size: 0.78rem;
+        }
+
+        .input-validation-error {
+            border-color: var(--red) !important;
+        }
+    </style>
+}
+
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+
+        // Contador comentarios con valor inicial
+        var comentarios = document.getElementById('inputComentarios');
+        var contador    = document.getElementById('contadorComentarios');
+
+        comentarios.addEventListener('input', function () {
+            var len = comentarios.value.length;
+            contador.textContent = len + ' / 500';
+            contador.style.color = len > 500 ? 'var(--red)' : 'var(--text-3)';
+            if (len > 500) comentarios.value = comentarios.value.substring(0, 500);
+        });
+
+        // Calcular puntaje promedio en tiempo real
+        function calcularPuntaje() {
+            var inputs  = document.querySelectorAll('.puntaje-input');
+            var suma    = 0;
+            var count   = 0;
+
+            inputs.forEach(function (input) {
+                var val = parseFloat(input.value);
+                if (!isNaN(val)) {
+                    suma += val;
+                    count++;
+                }
+            });
+
+            var promedio = count > 0 ? (suma / count).toFixed(1) : 0;
+            var badge    = document.getElementById('badgePuntaje');
+            badge.textContent = 'Puntaje promedio: ' + promedio + ' / 100';
+
+            if      (promedio >= 90) badge.className = 'badge bg-success';
+            else if (promedio >= 70) badge.className = 'badge bg-info';
+            else if (promedio >= 50) badge.className = 'badge bg-warning';
+            else                     badge.className = 'badge bg-danger';
+        }
+
+        document.querySelectorAll('.puntaje-input').forEach(function (input) {
+            input.addEventListener('input', calcularPuntaje);
+        });
+
+        // Confirmar guardar
+        function confirmarGuardar() {
+            Alert.confirm(
+                'Se guardaran los cambios en la evaluacion de @Model.NombreColaborador. Desea continuar?',
+                function () {
+                    document.getElementById('formEditar').submit();
+                },
+                'question'
+            );
+        }
+
+    </script>
 }

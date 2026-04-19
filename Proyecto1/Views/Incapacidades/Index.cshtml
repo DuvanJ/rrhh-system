@@ -1,96 +1,277 @@
 ﻿@model List<Proyecto1.Models.IncapacidadAdminVM>
 
 @{
-    ViewData["Title"] = "Gestión de Incapacidades";
+    ViewData["Title"] = "Gestion de Incapacidades";
+    var idColActual = Context.Request.Query["idColaborador"].ToString();
+
+    var activas = Model?.Count(i => i.Estado == "Activa") ?? 0;
+    var cerradas = Model?.Count(i => i.Estado == "Cerrada") ?? 0;
+    var totalDias = Model?.Sum(i => i.DiasIncapacidad) ?? 0;
+    var remuneradas = Model?.Count(i => i.EsRemunerada) ?? 0;
 }
 
-<h2 class="mb-3">Gestión de Incapacidades</h2>
-
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h3 class="fw-bold mb-0">Gestión de Incapacidades</h3>
-
-    <a asp-action="Create"
-       class="btn btn-success">
-        <i class="bi bi-plus-circle me-1"></i>
-        Registrar Incapacidad
-    </a>
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-heart-pulse"></i>Gestion de Incapacidades
+    </h3>
+    <div class="d-flex gap-2">
+   
+        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-house"></i>Inicio
+        </a>
+    </div>
 </div>
 
+@* ================================================
+   KPI CARDS
+   ================================================ *@
+<div class="row g-3 mb-4">
 
-<form method="get" class="row g-2 mb-3">
     <div class="col-md-3">
-        <input type="number"
-               name="idColaborador"
-               class="form-control"
-               placeholder="ID Colaborador" />
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total registros</div>
+                <div class="kpi-value">@(Model?.Count ?? 0)</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-heart-pulse"></i>
+            </div>
+        </div>
     </div>
-    <div class="col-md-2">
-        <button type="submit" class="btn btn-primary">
-            Buscar
-        </button>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Activas</div>
+                <div class="kpi-value" style="color:var(--red)">@activas</div>
+            </div>
+            <div class="kpi-icon red">
+                <i class="bi bi-activity"></i>
+            </div>
+        </div>
     </div>
-</form>
 
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
-@if (TempData["Warning"] != null)
-{
-    <div class="alert alert-warning">@TempData["Warning"]</div>
-}
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total dias</div>
+                <div class="kpi-value" style="color:var(--amber)">@totalDias</div>
+            </div>
+            <div class="kpi-icon amber">
+                <i class="bi bi-calendar-range"></i>
+            </div>
+        </div>
+    </div>
 
-<table class="table table-bordered table-striped">
-    <thead class="table-dark">
-        <tr>
-            <th>ID</th>
-            <th>Colaborador</th>
-            <th>Tipo</th>
-            <th>Inicio</th>
-            <th>Fin</th>
-            <th>Días</th>
-            <th>Remunerada</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var i in Model)
-        {
-            <tr>
-                <td>@i.IdIncapacidad</td>
-                <td>@i.NombreColaborador</td>
-                <td>@i.TipoIncapacidad</td>
-                <td>@i.FechaInicio.ToString("dd/MM/yyyy")</td>
-                <td>@i.FechaFin.ToString("dd/MM/yyyy")</td>
-                <td>@i.DiasIncapacidad</td>
-                <td>@(i.EsRemunerada ? "Sí" : "No")</td>
-                <td>@i.Estado</td>
-                <td>
-                    @if (i.Estado == "Activa")
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Remuneradas</div>
+                <div class="kpi-value" style="color:var(--green)">@remuneradas</div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-cash-coin"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@* ================================================
+   FILTROS
+   ================================================ *@
+<div class="filter-card mb-4">
+    <form method="get" asp-action="Index">
+        <div class="filter-row">
+
+            <div class="filter-group" style="max-width:200px;">
+                <span class="filter-label">ID Colaborador</span>
+                <input type="number"
+                       name="idColaborador"
+                       class="form-control"
+                       placeholder="Ingrese ID..."
+                       value="@idColActual" />
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i>Buscar
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i>Limpiar
+                </a>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+@* ================================================
+   BOTON REGISTRAR + CONTADOR
+   ================================================ *@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted" style="font-size:0.82rem;">
+        @(Model?.Count ?? 0) incapacidad(es) encontrada(s)
+    </span>
+    <a asp-action="Create" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i>Registrar incapacidad
+    </a>
+
+</div>
+
+@* ================================================
+   TABLA
+   ================================================ *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>Listado de incapacidades
+        </span>
+        <span class="badge badge-info">@(Model?.Count ?? 0) registros</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaIncapacidades" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Colaborador</th>
+                        <th>Tipo</th>
+                        <th class="text-center">Inicio</th>
+                        <th class="text-center">Fin</th>
+                        <th class="text-center">Dias</th>
+                        <th class="text-center">Remunerada</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-end pe-3">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
                     {
-                        <form asp-action="CambiarEstado"
-                              method="post"
-                              class="d-inline">
-                            <input type="hidden" name="id" value="@i.IdIncapacidad" />
-                            <input type="hidden" name="estado" value="Cerrada" />
-                            <button class="btn btn-sm btn-danger">
-                                Cerrar
-                            </button>
-                        </form>
-                    }
+                        foreach (var i in Model)
+                        {
+                            var iniciales = i.NombreColaborador?
+                            .Split(' ')
+                            .Where(s => !string.IsNullOrEmpty(s))
+                            .Take(2)
+                            .Select(s => s[0].ToString())
+                            .Aggregate("", (acc, c) => acc + c)
+                            .ToUpper() ?? "??";
 
-                    <a asp-action="Detalle"
-                       asp-route-id="@i.IdIncapacidad"
-                       class="btn btn-sm btn-info">
-                        Detalle
-                    </a>
-                </td>
-            </tr>
+                            string estadoBadge = i.Estado == "Activa"
+                            ? "bg-danger" : "bg-secondary";
+
+                            <tr>
+                                <td class="td-mono">@i.IdIncapacidad</td>
+                                <td>
+                                    <div class="table-avatar">
+                                        <div class="avatar-circle avatar-@(i.Estado == "Activa" ? "red" : "slate")">
+                                            @iniciales
+                                        </div>
+                                        <div class="avatar-name">@i.NombreColaborador</div>
+                                    </div>
+                                </td>
+                                <td>@i.TipoIncapacidad</td>
+                                <td class="text-center td-muted">
+                                    @i.FechaInicio.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center td-muted">
+                                    @i.FechaFin.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center">
+                                    <span class="td-mono"
+                                          style="font-weight:700;color:var(--amber)">
+                                        @i.DiasIncapacidad
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    @if (i.EsRemunerada)
+                                    {
+                                        <span class="badge bg-success badge-dot">Si</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary badge-dot">No</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge @estadoBadge badge-dot">
+                                        @i.Estado
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="td-actions">
+                                        <a asp-action="Detalle"
+                                           asp-route-id="@i.IdIncapacidad"
+                                           class="btn btn-primary btn-sm">
+                                            <i class="bi bi-eye"></i>Detalle
+                                        </a>
+                                        @if (i.Estado == "Activa")
+                                        {
+                                            <form asp-action="CambiarEstado"
+                                                  method="post"
+                                                  id="formCerrar_@i.IdIncapacidad"
+                                                  class="d-inline">
+                                                <input type="hidden" name="id"
+                                                       value="@i.IdIncapacidad" />
+                                                <input type="hidden" name="estado"
+                                                       value="Cerrada" />
+                                                <button type="button"
+                                                        class="btn btn-danger btn-sm"
+                                                        onclick="confirmarCerrar(@i.IdIncapacidad, '@i.NombreColaborador')">
+                                                    <i class="bi bi-x-circle"></i>Cerrar
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="9">
+                                <div class="table-empty">
+                                    <i class="bi bi-heart-pulse"></i>
+                                    <p>No hay incapacidades registradas</p>
+                                    <a asp-action="Create" class="btn btn-success btn-sm">
+                                        <i class="bi bi-plus-circle"></i>Registrar primera
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+
+        $(document).ready(function () {
+            if (@((Model != null && Model.Any()).ToString().ToLower())) {
+                var config = Object.assign({}, DataTableConfig, {
+                    order: [[3, 'desc']]
+                });
+                $('#tablaIncapacidades').DataTable(config);
+            }
+        });
+
+        function confirmarCerrar(id, nombre) {
+            Alert.confirm(
+                'Se cerrara la incapacidad de ' + nombre + '. Desea continuar?',
+                function () {
+                    document.getElementById('formCerrar_' + id).submit();
+                },
+                'warning'
+            );
         }
-    </tbody>
-</table>
+
+    </script>
+}

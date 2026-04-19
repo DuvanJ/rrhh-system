@@ -1,0 +1,299 @@
+﻿@model List<Proyecto1.Models.LiquidacionVM>
+
+@{
+    ViewData["Title"] = "Reporte de Liquidaciones";
+
+    var colaboradorQ = Context.Request.Query["colaborador"].ToString();
+    var fechaInicioQ = Context.Request.Query["fechaInicio"].ToString();
+    var fechaFinQ = Context.Request.Query["fechaFin"].ToString();
+    var estadoQ = Context.Request.Query["estado"].ToString();
+
+    var totalRegistros = (int)(ViewBag.TotalRegistros ?? 0);
+    var totalPendientes = (int)(ViewBag.TotalPendientes ?? 0);
+    var totalAprobadas = (int)(ViewBag.TotalAprobadas ?? 0);
+    var totalPagadas = (int)(ViewBag.TotalPagadas ?? 0);
+    var totalMonto = (decimal)(ViewBag.TotalMonto ?? 0m);
+}
+
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-cash-stack"></i>Reporte de Liquidaciones
+    </h3>
+    <a asp-controller="Reportes" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
+
+@* ================================================
+   FILTROS
+   ================================================ *@
+<div class="filter-card mb-4">
+    <form method="get" asp-action="Liquidaciones">
+        <div class="filter-row flex-wrap">
+
+            <div class="filter-group" style="max-width:220px;">
+                <span class="filter-label">Colaborador</span>
+                <input type="text"
+                       name="colaborador"
+                       value="@colaboradorQ"
+                       class="form-control"
+                       placeholder="Nombre..." />
+            </div>
+
+            <div class="filter-group" style="max-width:160px;">
+                <span class="filter-label">Fecha inicio</span>
+                <input type="date"
+                       name="fechaInicio"
+                       value="@fechaInicioQ"
+                       class="form-control" />
+            </div>
+
+            <div class="filter-group" style="max-width:160px;">
+                <span class="filter-label">Fecha fin</span>
+                <input type="date"
+                       name="fechaFin"
+                       value="@fechaFinQ"
+                       class="form-control" />
+            </div>
+
+            <div class="filter-group" style="max-width:150px;">
+                <span class="filter-label">Estado</span>
+                <select name="estado" class="form-select">
+                    <option value="">Todos</option>
+                    @if (estadoQ == "Pendiente")
+                    {
+                        <option value="Pendiente" selected="selected">Pendiente</option>
+                        <option value="Aprobada">Aprobada</option>
+                        <option value="Pagada">Pagada</option>
+                    }
+                    else if (estadoQ == "Aprobada")
+                    {
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Aprobada" selected="selected">Aprobada</option>
+                        <option value="Pagada">Pagada</option>
+                    }
+                    else if (estadoQ == "Pagada")
+                    {
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Aprobada">Aprobada</option>
+                        <option value="Pagada" selected="selected">Pagada</option>
+                    }
+                    else
+                    {
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Aprobada">Aprobada</option>
+                        <option value="Pagada">Pagada</option>
+                    }
+                </select>
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i>Filtrar
+                </button>
+                <a asp-action="Liquidaciones" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i>Limpiar
+                </a>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+@* ================================================
+   KPI CARDS
+   ================================================ *@
+<div class="row g-3 mb-4">
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total registros</div>
+                <div class="kpi-value">@totalRegistros</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-cash-stack"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Pendientes</div>
+                <div class="kpi-value" style="color:var(--amber)">@totalPendientes</div>
+            </div>
+            <div class="kpi-icon amber">
+                <i class="bi bi-clock-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Aprobadas</div>
+                <div class="kpi-value" style="color:var(--blue)">@totalAprobadas</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Pagadas</div>
+                <div class="kpi-value" style="color:var(--green)">@totalPagadas</div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-currency-dollar"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@* KPI monto total *@
+<div class="kpi-card mb-4">
+    <div>
+        <div class="kpi-label">Monto total liquidaciones</div>
+        <div class="kpi-value" style="font-size:1.6rem;color:var(--green)">
+            ₡ @totalMonto.ToString("N2")
+        </div>
+        <div style="font-size:0.72rem;color:var(--text-3);margin-top:4px;">
+            Suma de todas las liquidaciones del periodo
+        </div>
+    </div>
+    <div class="kpi-icon green">
+        <i class="bi bi-cash-stack"></i>
+    </div>
+</div>
+
+@* ================================================
+   BOTON EXCEL
+   ================================================ *@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted" style="font-size:0.82rem;">
+        @(Model?.Count ?? 0) registro(s) encontrado(s)
+    </span>
+    <a asp-action="ExportarLiquidacionesExcel"
+       asp-route-colaborador="@colaboradorQ"
+       asp-route-fechaInicio="@fechaInicioQ"
+       asp-route-fechaFin="@fechaFinQ"
+       asp-route-estado="@estadoQ"
+       class="btn btn-success">
+        <i class="bi bi-file-earmark-excel"></i>Exportar Excel
+    </a>
+</div>
+
+@* ================================================
+   TABLA
+   ================================================ *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>Listado de liquidaciones
+        </span>
+        <span class="badge badge-info">@(Model?.Count ?? 0) registros</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaLiquidaciones" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th>Colaborador</th>
+                        <th>Tipo salida</th>
+                        <th class="text-center">Fecha salida</th>
+                        <th class="text-end">Total</th>
+                        <th class="text-center">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model.OrderByDescending(x => x.FechaSalida))
+                        {
+                            var iniciales = item.Colaborador?
+                            .Split(' ')
+                            .Where(s => !string.IsNullOrEmpty(s))
+                            .Take(2)
+                            .Select(s => s[0].ToString())
+                            .Aggregate("", (acc, c) => acc + c)
+                            .ToUpper() ?? "??";
+
+                            string badgeClass = item.Estado switch
+                            {
+                                "Pendiente" => "bg-warning",
+                                "Aprobada" => "bg-info",
+                                "Pagada" => "bg-success",
+                                _ => "bg-secondary"
+                            };
+
+                            string avatarColor = item.Estado switch
+                            {
+                                "Pendiente" => "amber",
+                                "Aprobada" => "blue",
+                                "Pagada" => "green",
+                                _ => "slate"
+                            };
+
+                            <tr>
+                                <td>
+                                    <div class="table-avatar">
+                                        <div class="avatar-circle avatar-@avatarColor">
+                                            @iniciales
+                                        </div>
+                                        <div class="avatar-name">@item.Colaborador</div>
+                                    </div>
+                                </td>
+                                <td>@item.TipoSalida</td>
+                                <td class="text-center td-muted">
+                                    @item.FechaSalida.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-end td-mono"
+                                    style="font-weight:700;color:var(--green)">
+                                    ₡ @item.Total.ToString("N2")
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge @badgeClass badge-dot">@item.Estado</span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5">
+                                <div class="table-empty">
+                                    <i class="bi bi-cash-stack"></i>
+                                    <p>No se encontraron registros de liquidaciones</p>
+                                    <span class="text-muted" style="font-size:0.82rem;">
+                                        Ajuste los filtros e intente de nuevo
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            if (@((Model != null && Model.Any()).ToString().ToLower())) {
+                var config = Object.assign({}, DataTableConfig, {
+                    order: [[2, 'desc']]
+                });
+                $('#tablaLiquidaciones').DataTable(config);
+            }
+        });
+    </script>
+}

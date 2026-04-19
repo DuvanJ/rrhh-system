@@ -3,6 +3,9 @@ using Proyecto1.BLL;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using QuestPDF.Fluent;
+using QuestPDF.Infrastructure;
+
 
 namespace Proyecto1.Controllers
 {
@@ -125,6 +128,22 @@ namespace Proyecto1.Controllers
                 return Json(new { nombre = "" });
 
             return Json(new { nombre = $"{c.Nombre} {c.Apellidos}" });
+        }
+
+
+        // ================= EXPORTAR PDF =================
+        public async Task<IActionResult> ExportarPdf(int id)
+        {
+            var detalle = await _service.ObtenerDetalleAsync(id);
+
+            if (!detalle.Any())
+                return NotFound();
+
+            var document = new LiquidacionPdf(detalle, id);
+
+            var pdf = document.GeneratePdf();
+
+            return File(pdf, "application/pdf", $"Liquidacion_{id}.pdf");
         }
     }
 }

@@ -13,38 +13,79 @@ namespace Proyecto1.Controllers
             _service = service;
         }
 
-        // 📌 LISTADO GENERAL (RRHH / ADMIN)
-        public async Task<IActionResult> Index(int? idColaborador)
-        {
-            var lista = await _service.ListarAsync(); // siempre cargamos todo
 
+        // 📌 LISTADO GENERAL (RRHH / ADMIN)
+        public async Task<IActionResult> Index(int? idColaborador, DateTime? fechaInicio, DateTime? fechaFin)
+        {
+            var listaRaw = await _service.ListarAsync();
+
+            // Convertir a ViewModel con Estado calculado
+            var lista = listaRaw.Select(a => new AsistenciaReporteVM
+            {
+                IdAsistencia = a.IdAsistencia,
+                IdColaborador = a.IdColaborador,
+                NombreColaborador = a.NombreColaborador,  // ← Ya viene lleno del Service
+                Fecha = a.Fecha,
+                HoraEntrada = a.HoraEntrada,
+                HoraSalida = a.HoraSalida,
+                Estado = a.HoraEntrada == null ? "Falta" :
+                         a.HoraEntrada > new TimeSpan(8, 0, 0) ? "Tardanza" :
+                         "Presente"
+            }).ToList();
+
+            // 🔹 FILTRO POR COLABORADOR
             if (idColaborador.HasValue)
             {
+                // ❌ ID inválido (0 o negativo)
+                if (idColaborador.Value <= 0)
+                {
+                    TempData["Error"] = "Debe ingresar un ID de colaborador válido.";
+                    return View(lista);
+                }
+
+                // 🔎 Validar existencia
                 bool existe = await _service.ColaboradorExisteAsync(idColaborador.Value);
 
                 if (!existe)
                 {
                     TempData["Error"] = $"No existe ningún colaborador con ID {idColaborador.Value}.";
-                    return View(lista); // ✅ mostramos tabla completa
+                    return View(lista);
                 }
 
-                var filtrada = lista
+                // 🔍 Filtrar
+                lista = lista
                     .Where(a => a.IdColaborador == idColaborador.Value)
                     .ToList();
 
-                if (!filtrada.Any())
+                if (!lista.Any())
                 {
-                    TempData["Warning"] = "El colaborador existe, pero no tiene registros de asistencia.";
-                    return View(lista); // ✅ tabla completa
+                    TempData["Warning"] = "El colaborador existe, pero no tiene registros.";
                 }
-
-                TempData["Success"] = "Asistencias encontradas correctamente.";
-                return View(filtrada); // ✅ solo cuando sí hay resultados
+                else
+                {
+                    TempData["Success"] = $"Mostrando asistencia del colaborador ID {idColaborador.Value}.";
+                }
             }
+
+            // 🔹 FILTRO POR FECHAS
+            if (fechaInicio.HasValue)
+                lista = lista.Where(a => a.Fecha >= fechaInicio.Value).ToList();
+
+            if (fechaFin.HasValue)
+                lista = lista.Where(a => a.Fecha <= fechaFin.Value).ToList();
+
+            // 🔹 KPIs
+            ViewBag.Total = lista.Count;
+            ViewBag.Puntuales = lista.Count(a => a.Estado == "Presente");
+            ViewBag.Tardias = lista.Count(a => a.Estado == "Tardanza");
+
+            // 🔹 mantener filtros
+            ViewBag.IdColaborador = idColaborador;
+            ViewBag.FechaInicio = fechaInicio?.ToString("yyyy-MM-dd");
+            ViewBag.FechaFin = fechaFin?.ToString("yyyy-MM-dd");
 
             return View(lista);
         }
-
 
 
         // 📌 EDITAR (AJUSTES RRHH)
@@ -61,12 +102,22 @@ namespace Proyecto1.Controllers
             return View(asistencia);
         }
 
+
+
         [HttpPost]
         public async Task<IActionResult> Edit(Asistencia a)
         {
+            // 🔥 VALIDAR MOTIVO PRIMERO (ANTES DE ModelState)
+            if (string.IsNullOrWhiteSpace(a.Motivo))
+            {
+                TempData["Warning"] = "Debe ingresar el motivo del ajuste.";
+                return View(a);
+            }
+
+            // 🔥 VALIDACIONES GENERALES
             if (!ModelState.IsValid)
             {
-                TempData["Error"] = "Debe completar correctamente todos los campos.";
+                TempData["Error"] = "Debe completar correctamente los campos.";
                 return View(a);
             }
 
@@ -81,14 +132,16 @@ namespace Proyecto1.Controllers
                 );
 
                 TempData["Success"] = "Asistencia ajustada correctamente.";
+
                 return RedirectToAction(nameof(Index));
             }
-            catch (Exception ex)
+            catch
             {
-                TempData["Error"] = ex.Message;
-                return View(a);
+                TempData["Error"] = "Ocurrió un error al ajustar la asistencia.";
+                return RedirectToAction(nameof(Index));
             }
         }
+
 
         public async Task<IActionResult> MiAsistencia()
         {

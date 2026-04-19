@@ -1,91 +1,278 @@
 ﻿@model IEnumerable<Proyecto1.Models.UsuarioListado>
 
-
 @{
     ViewData["Title"] = "Usuarios";
 }
 
-<h2>Usuarios del Sistema</h2>
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-person-gear"></i>Usuarios del Sistema
+    </h3>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-house"></i>Inicio
+    </a>
+</div>
 
-<a asp-action="Create" class="btn btn-success mb-3">Nuevo Usuario</a>
+@* ================================================
+   KPI CARDS
+   ================================================ *@
+@{
+    var total = Model.Count();
+    var activos = Model.Count(u => u.Estado);
+    var inactivos = Model.Count(u => !u.Estado);
+    var admins = Model.Count(u => u.NombrePerfil == "Administrador");
+}
 
-<form method="get" class="row g-2 mb-3">
-    <div class="col-md-4">
-        <input type="text"
-               name="buscar"
-               value="@ViewBag.Buscar"
-               class="form-control"
-               placeholder="Buscar por nombre de usuario" />
+<div class="row g-3 mb-4">
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total usuarios</div>
+                <div class="kpi-value">@total</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-people-fill"></i>
+            </div>
+        </div>
     </div>
 
-    <div class="col-md-2">
-        <button type="submit" class="btn btn-primary">
-            Buscar
-        </button>
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Activos</div>
+                <div class="kpi-value" style="color:var(--green)">@activos</div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+        </div>
     </div>
 
-    <div class="col-md-2">
-        <a asp-action="Index" class="btn btn-secondary">
-            Limpiar
-        </a>
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Inactivos</div>
+                <div class="kpi-value" style="color:var(--red)">@inactivos</div>
+            </div>
+            <div class="kpi-icon red">
+                <i class="bi bi-x-circle-fill"></i>
+            </div>
+        </div>
     </div>
-</form>
 
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Administradores</div>
+                <div class="kpi-value">@admins</div>
+            </div>
+            <div class="kpi-icon amber">
+                <i class="bi bi-shield-fill"></i>
+            </div>
+        </div>
+    </div>
 
+</div>
 
-<table class="table table-bordered table-striped">
-    <thead class="table-dark">
-        <tr>
-            <th>Usuario</th>
-            <th>Correo</th>
-            <th>Perfil</th>
-            <th>Estado</th>
-            <th style="width:180px">Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var u in Model)
-        {
-            <tr>
-                <td>@u.NombreUsuario</td>
-                <td>@u.Correo</td>
-                <td>@u.NombrePerfil</td>
-                <td>
-                    @if (u.Estado)
+@* ================================================
+   FILTROS
+   ================================================ *@
+<div class="filter-card mb-3">
+    <form method="get" asp-action="Index">
+        <div class="filter-row">
+
+            <div class="filter-group" style="max-width:280px;">
+                <span class="filter-label">Nombre de usuario</span>
+                <input type="text"
+                       name="buscar"
+                       value="@ViewBag.Buscar"
+                       class="form-control"
+                       placeholder="Buscar usuario..." />
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i>Buscar
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i>Limpiar
+                </a>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+@* ================================================
+   BOTON CREAR
+   ================================================ *@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted" style="font-size:0.82rem;">
+        @total usuario(s) registrado(s)
+    </span>
+    <a asp-action="Create" class="btn btn-success">
+        <i class="bi bi-person-plus"></i>Nuevo usuario
+    </a>
+</div>
+
+@* ================================================
+   TABLA
+   ================================================ *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>Listado de usuarios
+        </span>
+        <span class="badge badge-info">@total registros</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaUsuarios" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Correo</th>
+                        <th>Perfil</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-end pe-3">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
                     {
-                        <span class="badge bg-success">Activo</span>
+                        <tr>
+                            <td colspan="5">
+                                <div class="table-empty">
+                                    <i class="bi bi-person-gear"></i>
+                                    <p>No hay usuarios registrados</p>
+                                    <a asp-action="Create" class="btn btn-success btn-sm">
+                                        <i class="bi bi-person-plus"></i>Crear el primero
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
                     }
                     else
                     {
-                        <span class="badge bg-danger">Inactivo</span>
-                    }
-                </td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@u.IdUsuario"
-                       class="btn btn-warning btn-sm">Editar</a>
+                        foreach (var u in Model)
+                        {
+                            var inicial = u.NombreUsuario?.Substring(0, 1).ToUpper() ?? "U";
+                            var perfilColor = u.NombrePerfil switch
+                            {
+                                "Administrador" => "amber",
+                                "RRHH" => "blue",
+                                _ => "slate"
+                            };
+                            var perfilBadge = u.NombrePerfil switch
+                            {
+                                "Administrador" => "badge-warning",
+                                "RRHH" => "badge-info",
+                                _ => "badge-secondary"
+                            };
 
-                    <a asp-action="CambiarEstado" asp-route-id="@u.IdUsuario"
-                       class="btn btn-secondary btn-sm">
-                        Cambiar estado
-                    </a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+                            <tr>
+                                <td>
+                                    <div class="table-avatar">
+                                        <div class="avatar-circle avatar-@perfilColor">
+                                            @inicial
+                                        </div>
+                                        <div>
+                                            <div class="avatar-name">@u.NombreUsuario</div>
+                                            <div class="avatar-sub">ID: @u.IdUsuario</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="td-muted">
+                                    @if (!string.IsNullOrEmpty(u.Correo))
+                                    {
+                                        <a href="mailto:@u.Correo"
+                                           style="color:var(--blue);text-decoration:none;font-size:0.875rem;">
+                                            @u.Correo
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span style="font-style:italic;color:var(--text-3);">Sin correo</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge @perfilBadge">
+                                        @u.NombrePerfil
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    @if (u.Estado)
+                                    {
+                                        <span class="badge bg-success badge-dot">Activo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger badge-dot">Inactivo</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="td-actions">
+                                        <a asp-action="Edit"
+                                           asp-route-id="@u.IdUsuario"
+                                           class="btn btn-warning btn-sm">
+                                            <i class="bi bi-pencil"></i>Editar
+                                        </a>
+                                        @if (u.Estado)
+                                        {
+                                            <button class="btn btn-danger btn-sm"
+                                                    onclick="cambiarEstado(@u.IdUsuario, '@u.NombreUsuario', true)">
+                                                <i class="bi bi-x-circle"></i>Desactivar
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-success btn-sm"
+                                                    onclick="cambiarEstado(@u.IdUsuario, '@u.NombreUsuario', false)">
+                                                <i class="bi bi-check-circle"></i>Activar
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
     <script>
-        const sinResultados = @((ViewBag.SinResultados ?? false).ToString().ToLower());
 
-        if (sinResultados) {
-            Swal.fire({
-                icon: 'info',
-                title: 'Sin resultados',
-                text: 'No se encontraron usuarios con ese criterio.',
-                confirmButtonText: 'OK'
-            });
+                $(document).ready(function () {
+            if (@Model.Any().ToString().ToLower()) {
+                $('#tablaUsuarios').DataTable(DataTableConfig);
+            }
+        });
+
+        // Cambiar estado con confirmacion
+        function cambiarEstado(id, nombre, estadoActual) {
+            const accion  = estadoActual ? 'desactivar' : 'activar';
+            const tipo    = estadoActual ? 'warning' : 'question';
+            const mensaje = `Se va a ${accion} al usuario ${nombre}. Desea continuar?`;
+
+            Alert.confirm(mensaje, () => {
+                window.location.href = `/Usuarios/CambiarEstado/${id}`;
+            }, tipo);
         }
+
+        // Sin resultados
+        @if (ViewBag.SinResultados == true)
+        {
+                <text>
+                Alert.info('No se encontraron usuarios con ese criterio de busqueda.');
+                </text>
+        }
+
     </script>
 }
-

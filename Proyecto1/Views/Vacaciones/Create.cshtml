@@ -2,48 +2,258 @@
 
 @{
     ViewData["Title"] = "Solicitar Vacaciones";
+    var diasDisponibles = (int)(ViewBag.DiasDisponibles ?? 0);
 }
 
-<h2>Solicitar Vacaciones</h2>
-
-<!-- 🔹 Mostrar días disponibles -->
-<div class="alert alert-info">
-    <strong>Días disponibles:</strong> @ViewBag.DiasDisponibles
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-sun"></i>Solicitar Vacaciones
+    </h3>
+    <a asp-action="MisVacaciones" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
 </div>
 
-<form asp-action="Create" method="post">
-    @Html.AntiForgeryToken()
+<div class="row justify-content-center">
+    <div class="col-xl-6 col-lg-8">
 
-    <!-- 🔴 Mensajes de validación generales -->
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        @* KPI días disponibles *@
+        <div class="kpi-card mb-4">
+            <div>
+                <div class="kpi-label">Días disponibles</div>
+                <div class="kpi-value"
+                     style="font-size:2rem;color:@(diasDisponibles > 0 ? "var(--green)" : "var(--red)")">
+                    @diasDisponibles
+                </div>
+                <div style="font-size:0.72rem;color:var(--text-3);margin-top:4px;">
+                    @(diasDisponibles > 0
+                                        ? "Puede solicitar hasta " + diasDisponibles + " día(s)"
+                                        : "No tiene días disponibles para solicitar")
+                </div>
+            </div>
+            <div class="kpi-icon @(diasDisponibles > 0 ? "green" : "red")">
+                <i class="bi bi-calendar-check"></i>
+            </div>
+        </div>
 
-    <!-- Fecha Inicio -->
-    <div class="form-group mb-3">
-        <label asp-for="FechaInicio" class="form-label"></label>
-        <input asp-for="FechaInicio" type="date" class="form-control" />
-        <span asp-validation-for="FechaInicio" class="text-danger"></span>
+        <div class="card">
+            <div class="card-header">
+                <span class="card-header-title">
+                    <i class="bi bi-send"></i>Nueva solicitud de vacaciones
+                </span>
+            </div>
+            <div class="card-body">
+
+                <form asp-action="Create"
+                      method="post"
+                      id="formVacaciones"
+                      novalidate>
+
+                    @Html.AntiForgeryToken()
+
+                    @* Fechas *@
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Fecha inicio <span class="required">*</span>
+                            </label>
+                            <input asp-for="FechaInicio"
+                                   type="date"
+                                   class="form-control"
+                                   id="inputFechaInicio" />
+                            <span asp-validation-for="FechaInicio"
+                                  class="form-error d-block"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Fecha fin <span class="required">*</span>
+                            </label>
+                            <input asp-for="FechaFin"
+                                   type="date"
+                                   class="form-control"
+                                   id="inputFechaFin" />
+                            <span id="msgFechas" class="form-text"
+                                  style="display:none;"></span>
+                            <span asp-validation-for="FechaFin"
+                                  class="form-error d-block"></span>
+                        </div>
+                    </div>
+
+                    @* Días calculados *@
+                    <div class="mb-4">
+                        <div class="detail-field">
+                            <span class="detail-label">
+                                <i class="bi bi-calendar-range"></i>Días solicitados
+                            </span>
+                            <span id="diasCalculados"
+                                  style="font-size:1.1rem;font-weight:700;
+                                         color:var(--blue);font-family:'Consolas',monospace;">
+                                —
+                            </span>
+                        </div>
+                    </div>
+
+                    @* Alerta informativa *@
+                    <div class="alert alert-info d-flex align-items-start gap-2 mb-4">
+                        <i class="bi bi-info-circle-fill flex-shrink-0"
+                           style="font-size:1rem;margin-top:2px;"></i>
+                        <div style="font-size:0.82rem;">
+                            Su solicitud será revisada por el departamento de RRHH.
+                            Recibirá una notificación cuando sea aprobada o rechazada.
+                        </div>
+                    </div>
+
+                    <hr class="section-divider" />
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a asp-action="MisVacaciones" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i>Cancelar
+                        </a>
+                        <button type="button"
+                                class="btn btn-success"
+                                onclick="confirmarSolicitud()"
+                                @(diasDisponibles == 0 ? "disabled" : "")>
+                            <i class="bi bi-send"></i>Enviar solicitud
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
     </div>
+</div>
 
-    <!-- Fecha Fin -->
-    <div class="form-group mb-3">
-        <label asp-for="FechaFin" class="form-label"></label>
-        <input asp-for="FechaFin" type="date" class="form-control" />
-        <span asp-validation-for="FechaFin" class="text-danger"></span>
-    </div>
+@section Styles {
+    <style>
+        .required {
+            color: var(--red);
+            margin-left: 2px;
+        }
 
-    <!-- Botones -->
-    <div class="form-group">
-        <button type="submit" class="btn btn-primary">
-            Enviar solicitud
-        </button>
+        .detail-field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 12px 14px;
+            background: var(--slate-ll);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
 
-        <a asp-action="MisVacaciones" class="btn btn-secondary ms-2">
-            Cancelar
-        </a>
-    </div>
-</form>
+        .detail-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-3);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+            .detail-label i {
+                font-size: 0.75rem;
+            }
+
+        .field-validation-error {
+            color: var(--red);
+            font-size: 0.78rem;
+            margin-top: 4px;
+        }
+
+        .input-validation-error {
+            border-color: var(--red) !important;
+        }
+    </style>
+}
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-}
+    <script>
 
+        var inputInicio = document.getElementById('inputFechaInicio');
+        var inputFin    = document.getElementById('inputFechaFin');
+        var diasSpan    = document.getElementById('diasCalculados');
+        var msgFechas   = document.getElementById('msgFechas');
+        var disponibles = @diasDisponibles;
+
+        function calcularDias() {
+            var inicio = inputInicio.value;
+            var fin    = inputFin.value;
+
+            if (!inicio || !fin) {
+                diasSpan.textContent    = '—';
+                diasSpan.style.color    = 'var(--blue)';
+                msgFechas.style.display = 'none';
+                return;
+            }
+
+            var d1   = new Date(inicio);
+            var d2   = new Date(fin);
+            var diff = Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
+
+            if (diff <= 0) {
+                diasSpan.textContent       = '—';
+                msgFechas.style.display    = 'block';
+                msgFechas.style.color      = 'var(--red)';
+                msgFechas.textContent      = 'La fecha fin debe ser posterior a la fecha inicio';
+                inputFin.style.borderColor = 'var(--red)';
+            } else if (diff > disponibles) {
+                diasSpan.textContent       = diff + ' día(s)';
+                diasSpan.style.color       = 'var(--red)';
+                msgFechas.style.display    = 'block';
+                msgFechas.style.color      = 'var(--red)';
+                msgFechas.textContent      = 'Supera los ' + disponibles + ' días disponibles';
+                inputFin.style.borderColor = 'var(--red)';
+            } else {
+                diasSpan.textContent       = diff + ' día(s)';
+                diasSpan.style.color       = 'var(--green)';
+                msgFechas.style.display    = 'block';
+                msgFechas.style.color      = 'var(--green)';
+                msgFechas.textContent      = diff + ' día(s) solicitados de ' + disponibles + ' disponibles';
+                inputFin.style.borderColor = 'var(--green)';
+            }
+        }
+
+        inputInicio.addEventListener('change', calcularDias);
+        inputFin.addEventListener('change', calcularDias);
+
+        function confirmarSolicitud() {
+            var inicio = inputInicio.value;
+            var fin    = inputFin.value;
+
+            if (!inicio || !fin) {
+                Alert.warning('Debe seleccionar las fechas de inicio y fin.');
+                return;
+            }
+
+            var d1   = new Date(inicio);
+            var d2   = new Date(fin);
+            var diff = Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
+
+            if (diff <= 0) {
+                Alert.warning('La fecha fin debe ser posterior a la fecha inicio.');
+                return;
+            }
+
+            if (diff > disponibles) {
+                Alert.error('Los días solicitados (' + diff + ') superan los días disponibles (' + disponibles + ').');
+                return;
+            }
+
+            Alert.confirm(
+                'Se enviará la solicitud de ' + diff + ' día(s) de vacaciones. ¿Desea continuar?',
+                function () {
+                    document.getElementById('formVacaciones').submit();
+                },
+                'question'
+            );
+        }
+
+    </script>
+}

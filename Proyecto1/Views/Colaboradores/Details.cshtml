@@ -1,17 +1,240 @@
 ﻿@model Proyecto1.Models.Colaborador
 
-<h2>Detalles del Colaborador</h2>
+@{
+    ViewData["Title"] = "Detalles del Colaborador";
+    var iniciales = $"{Model.Nombre?.Substring(0, 1)}{Model.Apellidos?.Substring(0, 1)}".ToUpper();
+    var colores = new[] { "blue", "green", "amber", "slate" };
+    var color = colores[Model.IdColaborador % colores.Length];
+}
 
-<table class="table table-bordered">
-    <tr><th>Cédula</th><td>@Model.Cedula</td></tr>
-    <tr><th>Nombre</th><td>@Model.Nombre</td></tr>
-    <tr><th>Apellidos</th><td>@Model.Apellidos</td></tr>
-    <tr><th>Puesto</th><td>@Model.Puesto</td></tr>
-    <tr><th>Departamento</th><td>@Model.Departamento</td></tr>
-    <tr><th>Fecha Ingreso</th><td>@Model.FechaIngreso.ToString("yyyy-MM-dd")</td></tr>
-    <tr><th>Salario Base</th><td>@Model.SalarioBase</td></tr>
-    <tr><th>Correo</th><td>@Model.Correo</td></tr>
-</table>
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-person-lines-fill"></i>Detalles del Colaborador
+    </h3>
+    <div class="d-flex gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.IdColaborador" class="btn btn-warning">
+            <i class="bi bi-pencil"></i>Editar
+        </a>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i>Volver
+        </a>
+    </div>
+</div>
 
-<a href="/Colaboradores" class="btn btn-secondary">Volver</a>
-<a href="/Colaboradores/Edit/@Model.IdColaborador" class="btn btn-warning">Editar</a>
+<div class="row justify-content-center">
+    <div class="col-xl-8 col-lg-10">
+
+        @* ================================================
+           PERFIL DEL COLABORADOR
+           ================================================ *@
+        <div class="card mb-4">
+            <div class="card-body py-4">
+                <div class="d-flex align-items-center gap-4">
+
+                    @* Avatar grande *@
+                    <div class="avatar-circle avatar-@color"
+                         style="width:72px;height:72px;font-size:1.5rem;flex-shrink:0;">
+                        @iniciales
+                    </div>
+
+                    @* Info principal *@
+                    <div class="flex-grow-1">
+                        <h4 style="font-weight:700;color:var(--navy);margin-bottom:4px;">
+                            @Model.Nombre @Model.Apellidos
+                        </h4>
+                        <div style="font-size:0.875rem;color:var(--text-3);margin-bottom:10px;">
+                            @Model.Puesto &nbsp;·&nbsp; @Model.Departamento
+                        </div>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            @if (Model.Estado)
+                            {
+                                <span class="badge bg-success badge-dot">Activo</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger badge-dot">Inactivo</span>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.Correo))
+                            {
+                                <span style="font-size:0.82rem;color:var(--text-3);">
+                                    <i class="bi bi-envelope me-1"></i>@Model.Correo
+                                </span>
+                            }
+                        </div>
+                    </div>
+
+                    @* ID badge *@
+                    <div class="text-end" style="flex-shrink:0;">
+                        <div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;
+                                    letter-spacing:.5px;color:var(--text-3);margin-bottom:4px;">
+                            ID Colaborador
+                        </div>
+                        <div style="font-size:1.4rem;font-weight:700;color:var(--navy);
+                                    font-family:'Consolas',monospace;">
+                            #@Model.IdColaborador
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        @* ================================================
+           DETALLE DE CAMPOS
+           ================================================ *@
+        <div class="card">
+            <div class="card-header">
+                <span class="card-header-title">
+                    <i class="bi bi-card-list"></i>Información completa
+                </span>
+            </div>
+            <div class="card-body">
+
+                <div class="row g-4">
+
+                    <div class="col-md-6">
+                        <div class="detail-field">
+                            <span class="detail-label">
+                                <i class="bi bi-card-text"></i>Cédula
+                            </span>
+                            <span class="detail-value td-mono">@Model.Cedula</span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="detail-field">
+                            <span class="detail-label">
+                                <i class="bi bi-envelope"></i>Correo electrónico
+                            </span>
+                            <span class="detail-value">
+                                @if (!string.IsNullOrEmpty(Model.Correo))
+                                {
+                                    <a href="mailto:@Model.Correo"
+                                       style="color:var(--blue);text-decoration:none;">
+                                        @Model.Correo
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span style="color:var(--text-3);font-style:italic;">
+                                        Sin correo registrado
+                                    </span>
+                                }
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="detail-field">
+                            <span class="detail-label">
+                                <i class="bi bi-person"></i>Nombre
+                            </span>
+                            <span class="detail-value">@Model.Nombre</span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="detail-field">
+                            <span class="detail-label">
+                                <i class="bi bi-person"></i>Apellidos
+                            </span>
+                            <span class="detail-value">@Model.Apellidos</span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="detail-field">
+                            <span class="detail-label">
+                                <i class="bi bi-briefcase"></i>Puesto
+                            </span>
+                            <span class="detail-value">@Model.Puesto</span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="detail-field">
+                            <span class="detail-label">
+                                <i class="bi bi-building"></i>Departamento
+                            </span>
+                            <span class="detail-value">@Model.Departamento</span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="detail-field">
+                            <span class="detail-label">
+                                <i class="bi bi-calendar-event"></i>Fecha de ingreso
+                            </span>
+                            <span class="detail-value td-mono">
+                                @Model.FechaIngreso.ToString("dd/MM/yyyy")
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="detail-field">
+                            <span class="detail-label">
+                                <i class="bi bi-cash-coin"></i>Salario base
+                            </span>
+                            <span class="detail-value" style="color:var(--green);font-weight:700;">
+                                ₡ @Model.SalarioBase.ToString("N2")
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="card-footer d-flex justify-content-end gap-2"
+                 style="background:transparent;border-top:1px solid var(--border);padding:16px 20px;">
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i>Volver al listado
+                </a>
+                <a asp-action="Edit"
+                   asp-route-id="@Model.IdColaborador"
+                   class="btn btn-warning">
+                    <i class="bi bi-pencil"></i>Editar colaborador
+                </a>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .detail-field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 14px 16px;
+            background: var(--slate-ll);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            height: 100%;
+        }
+
+        .detail-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-3);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+            .detail-label i {
+                font-size: 0.75rem;
+            }
+
+        .detail-value {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+    </style>
+}

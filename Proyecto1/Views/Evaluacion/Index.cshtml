@@ -2,80 +2,340 @@
 
 @{
     ViewData["Title"] = "Evaluaciones de Rendimiento";
+    var idColActual = Context.Request.Query["idColaborador"].ToString();
+
+    var excelentes = Model.Count(e => e.PuntajeTotal >= 90);
+    var buenos = Model.Count(e => e.PuntajeTotal >= 70 && e.PuntajeTotal < 90);
+    var regulares = Model.Count(e => e.PuntajeTotal >= 50 && e.PuntajeTotal < 70);
+    var deficientes = Model.Count(e => e.PuntajeTotal < 50);
 }
 
-<h3 class="fw-bold mb-4">Evaluaciones de Rendimiento</h3>
-
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <!-- Botón Crear Evaluación -->
-    <a asp-action="Create" class="btn btn-success">
-        <i class="bi bi-plus-circle"></i> Nueva Evaluación
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-clipboard-check"></i>Evaluaciones de Rendimiento
+    </h3>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-house"></i>Inicio
     </a>
+</div>
 
-    <!-- Buscador pequeño -->
-    <form method="get" asp-action="Index" class="d-flex align-items-center">
-        <input type="number"
-               name="idColaborador"
-               class="form-control form-control-sm me-2"
-               placeholder="ID Colaborador"
-               value="@Context.Request.Query["idColaborador"]" />
-        <button type="submit" class="btn btn-primary btn-sm">Buscar</button>
-        <a asp-action="Index" class="btn btn-secondary btn-sm ms-2">Limpiar</a>
+@* ================================================
+   KPI CARDS
+   ================================================ *@
+<div class="row g-3 mb-4">
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total evaluaciones</div>
+                <div class="kpi-value">@Model.Count</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-clipboard-check"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Excelentes</div>
+                <div class="kpi-value" style="color:var(--green)">@excelentes</div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-star-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Buenos</div>
+                <div class="kpi-value" style="color:var(--blue)">@buenos</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-hand-thumbs-up-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Requieren atencion</div>
+                <div class="kpi-value" style="color:var(--red)">
+                    @(regulares + deficientes)
+                </div>
+            </div>
+            <div class="kpi-icon red">
+                <i class="bi bi-exclamation-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@* ================================================
+   FILTROS
+   ================================================ *@
+<div class="filter-card mb-3">
+    <form method="get" asp-action="Index">
+        <div class="filter-row">
+
+            <div class="filter-group" style="max-width:160px;">
+                <span class="filter-label">ID Colaborador</span>
+                <input type="number"
+                       name="idColaborador"
+                       class="form-control"
+                       placeholder="Ej: 12"
+                       value="@idColActual" />
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i>Buscar
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i>Limpiar
+                </a>
+            </div>
+
+        </div>
     </form>
 </div>
 
-<!-- Mensajes -->
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
-@if (TempData["Warning"] != null)
-{
-    <div class="alert alert-warning">@TempData["Warning"]</div>
-}
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
+@* ================================================
+   BOTON CREAR
+   ================================================ *@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted" style="font-size:0.82rem;">
+        @Model.Count evaluacion(es) encontrada(s)
+    </span>
+    <a asp-action="Create" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i>Nueva evaluacion
+    </a>
+</div>
+
+@* ================================================
+   TABLA
+   ================================================ *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>Listado de evaluaciones
+        </span>
+        <span class="badge badge-info">@Model.Count registros</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaEvaluaciones" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th>ID Eval.</th>
+                        <th>ID Colab.</th>
+                        <th>Colaborador</th>
+                        <th class="text-center">Fecha</th>
+                        <th class="text-center">Puntaje</th>
+                        <th>Comentarios</th>
+                        <th class="text-end pe-3">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        foreach (var e in Model)
+                        {
+                            var iniciales = e.NombreColaborador?
+                            .Split(' ')
+                            .Where(s => !string.IsNullOrEmpty(s))
+                            .Take(2)
+                            .Select(s => s[0].ToString())
+                            .Aggregate("", (acc, c) => acc + c)
+                            .ToUpper() ?? "??";
+
+                            string desempeno;
+                            string badgeClass;
+                            string avatarColor;
+
+                            if (e.PuntajeTotal >= 90)
+                            {
+                                desempeno = "Excelente";
+                                badgeClass = "bg-success";
+                                avatarColor = "green";
+                            }
+                            else if (e.PuntajeTotal >= 70)
+                            {
+                                desempeno = "Bueno";
+                                badgeClass = "bg-info";
+                                avatarColor = "blue";
+                            }
+                            else if (e.PuntajeTotal >= 50)
+                            {
+                                desempeno = "Regular";
+                                badgeClass = "bg-warning";
+                                avatarColor = "amber";
+                            }
+                            else
+                            {
+                                desempeno = "Deficiente";
+                                badgeClass = "bg-danger";
+                                avatarColor = "red";
+                            }
+
+                            <tr>
+                                <td class="td-mono">@e.IdEvaluacion</td>
+                                <td class="td-mono">@e.IdColaborador</td>
+                                <td>
+                                    <div class="table-avatar">
+                                        <div class="avatar-circle avatar-@avatarColor">
+                                            @iniciales
+                                        </div>
+                                        <div class="avatar-name">@e.NombreColaborador</div>
+                                    </div>
+                                </td>
+                                <td class="text-center td-muted">
+                                    @e.FechaEvaluacion.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center">
+                                    @if (e.PuntajeTotal.HasValue)
+                                    {
+                                        <div class="puntaje-bar">
+                                            <span class="puntaje-valor">
+                                                @e.PuntajeTotal.Value.ToString("N1")
+                                            </span>
+                                            <div class="puntaje-track">
+                                                <div class="puntaje-fill @avatarColor"
+                                                     style="width:@e.PuntajeTotal%"></div>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="td-muted">—</span>
+                                    }
+                        </td>
+                        <td class="td-muted" style="max-width:200px;">
+                            @(e.ComentariosGenerales?.Length > 50
+                                                        ? e.ComentariosGenerales.Substring(0, 50) + "..."
+                                                        : e.ComentariosGenerales)
+                        </td>
+                        <td>
+                            <div class="td-actions">
+                                <a asp-action="Details"
+                                   asp-route-id="@e.IdEvaluacion"
+                                   class="btn btn-primary btn-sm">
+                                    <i class="bi bi-eye"></i>Detalles
+                                </a>
+                                <a asp-action="Edit"
+                                   asp-route-id="@e.IdEvaluacion"
+                                   class="btn btn-warning btn-sm">
+                                    <i class="bi bi-pencil"></i>Editar
+                                </a>
+                                <button class="btn btn-danger btn-sm"
+                                        onclick="confirmarEliminar(@e.IdEvaluacion, '@e.NombreColaborador')">
+                                    <i class="bi bi-trash"></i>Eliminar
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7">
+                                <div class="table-empty">
+                                    <i class="bi bi-clipboard-x"></i>
+                                    <p>No hay evaluaciones para mostrar</p>
+                                    <a asp-action="Create" class="btn btn-success btn-sm">
+                                        <i class="bi bi-plus-circle"></i>Nueva evaluacion
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .puntaje-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .puntaje-valor {
+            font-family: 'Consolas', monospace;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--text);
+            min-width: 32px;
+            text-align: right;
+        }
+
+        .puntaje-track {
+            flex: 1;
+            max-width: 80px;
+            height: 6px;
+            background: var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .puntaje-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width .3s ease;
+        }
+
+            .puntaje-fill.green {
+                background: var(--green);
+            }
+
+            .puntaje-fill.blue {
+                background: var(--blue);
+            }
+
+            .puntaje-fill.amber {
+                background: var(--amber);
+            }
+
+            .puntaje-fill.red {
+                background: var(--red);
+            }
+    </style>
 }
 
-<!-- Tabla de evaluaciones -->
-<table class="table table-bordered table-hover">
-    <thead class="table-light">
-        <tr>
-            <th>ID Evaluación</th>
-            <th>ID Colaborador</th>
-            <th>Colaborador</th>
-            <th>Fecha Evaluación</th>
-            <th>Puntaje Total</th>
-            <th>Comentarios Generales</th>
-            <th class="text-center">Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model.Any())
-        {
-            foreach (var e in Model)
-            {
-                <tr>
-                    <td>@e.IdEvaluacion</td>
-                    <td>@e.IdColaborador</td>
-                    <td>@e.NombreColaborador</td>
-                    <td>@e.FechaEvaluacion.ToShortDateString()</td>
-                    <td>@(e.PuntajeTotal.HasValue? e.PuntajeTotal.Value.ToString("N2") : "-")</td>
-                    <td>@e.ComentariosGenerales</td>
-                    <td class="text-center">
-                        <a asp-action="Detalle" asp-route-id="@e.IdColaborador" class="btn btn-info btn-sm">
-                            Ver Detalle
-                        </a>
-                    </td>
-                </tr>
+@section Scripts {
+    <script>
+
+        $(document).ready(function () {
+            if (@Model.Any().ToString().ToLower()) {
+                var config = Object.assign({}, DataTableConfig, {
+                    order: [[0, 'desc']]
+                });
+                $('#tablaEvaluaciones').DataTable(config);
             }
+        });
+
+        function confirmarEliminar(id, nombre) {
+            Alert.confirm(
+                'Se eliminara la evaluacion de ' + nombre + '. Esta accion no se puede revertir. Desea continuar?',
+                function () {
+                    window.location.href = '/Evaluacion/Delete/' + id;
+                },
+                'warning'
+            );
         }
-        else
-        {
-            <tr>
-                <td colspan="7" class="text-center text-muted">No hay evaluaciones para mostrar</td>
-            </tr>
-        }
-    </tbody>
-</table>
+
+    </script>
+}

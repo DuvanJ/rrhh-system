@@ -2,92 +2,274 @@
 
 @{
     ViewData["Title"] = "Detalle de Planilla";
+    var lista = Model.ToList();
 }
 
-<h3 class="fw-bold mb-4">Detalle de Planilla</h3>
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-receipt"></i>Detalle de Planilla
+    </h3>
+    <div class="d-flex gap-2">
+        <a asp-action="ExportarPdf"
+           asp-route-idPlanilla="@ViewBag.IdPlanilla"
+           class="btn btn-danger">
+            <i class="bi bi-file-earmark-pdf"></i>Descargar PDF
+        </a>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i>Volver
+        </a>
+    </div>
+</div>
 
-<table class="table table-striped table-bordered shadow-sm">
-    <thead class="table-dark">
-        <tr>
-            <th>Colaborador</th>
-            <th>Salario Base</th>
-            <th>Días Trabajados</th>
-            <th>Horas Ordinarias</th>
-            <th>Horas Extras</th>
-            <th>Monto HE</th>
-            <th>Deducciones</th>
-            <th>Salario Bruto</th>
-            <th>Salario Neto</th>
-            <th>Acciones</th> <!-- ✅ NUEVO -->
-        </tr>
-    </thead>
-    <tbody>
-        @if (!Model.Any())
-        {
-            <tr>
-                <td colspan="10" class="text-center text-muted">
-                    No hay datos de planilla.
-                </td>
-            </tr>
-        }
-        else
-        {
-            foreach (var p in Model)
-            {
-                <tr>
-                    <td>@p.NombreColaborador</td>
+@* ================================================
+   KPI CARDS
+   ================================================ *@
+<div class="row g-3 mb-4">
 
-                    <td>₡ @String.Format("{0:N2}", p.SalarioBase)</td>
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Salario bruto total</div>
+                <div class="kpi-value" style="font-size:1.1rem;">
+                    ₡ @lista.Sum(x => x.SalarioBruto).ToString("N2")
+                </div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-cash-stack"></i>
+            </div>
+        </div>
+    </div>
 
-                    <td>@p.DiasLaborados</td>
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Salario neto total</div>
+                <div class="kpi-value" style="font-size:1.1rem;color:var(--green)">
+                    ₡ @lista.Sum(x => x.SalarioNeto).ToString("N2")
+                </div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-currency-dollar"></i>
+            </div>
+        </div>
+    </div>
 
-                    <td>@String.Format("{0:N2}", p.HorasOrdinarias)</td>
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total deducciones</div>
+                <div class="kpi-value" style="font-size:1.1rem;color:var(--red)">
+                    ₡ @lista.Sum(x => x.Deducciones).ToString("N2")
+                </div>
+            </div>
+            <div class="kpi-icon red">
+                <i class="bi bi-dash-circle-fill"></i>
+            </div>
+        </div>
+    </div>
 
-                    <td>@String.Format("{0:N2}", p.HorasExtras)</td>
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Pago feriados</div>
+                <div class="kpi-value" style="font-size:1.1rem;color:var(--amber)">
+                    ₡ @lista.Sum(x => x.MontoFeriado ?? 0).ToString("N2")
+                </div>
+            </div>
+            <div class="kpi-icon amber">
+                <i class="bi bi-calendar-heart"></i>
+            </div>
+        </div>
+    </div>
 
-                    <td>₡ @String.Format("{0:N2}", p.MontoHorasExtras)</td>
+</div>
 
-                    <td>₡ @String.Format("{0:N2}", p.Deducciones)</td>
+@* ================================================
+   TABLA
+   ================================================ *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>Detalle por colaborador
+        </span>
+        <span class="badge badge-info">@lista.Count colaboradores</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaDetalle" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th>Colaborador</th>
+                        <th class="text-end">Salario base</th>
+                        <th class="text-center">Dias</th>
+                        <th class="text-end">H. Ord.</th>
+                        <th class="text-end">H. Extra</th>
+                        <th class="text-end">H. Feriado</th>
+                        <th class="text-end">Monto HE</th>
+                        <th class="text-end">Monto Feriado</th>
+                        <th class="text-end">Deducciones</th>
+                        <th class="text-end">S. Bruto</th>
+                        <th class="text-end">S. Neto</th>
+                        <th class="text-end pe-3">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!lista.Any())
+                    {
+                        <tr>
+                            <td colspan="12">
+                                <div class="table-empty">
+                                    <i class="bi bi-receipt"></i>
+                                    <p>No hay datos de planilla</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var p in lista)
+                        {
+                            var iniciales = p.NombreColaborador?
+                            .Split(' ')
+                            .Where(s => !string.IsNullOrEmpty(s))
+                            .Take(2)
+                            .Select(s => s[0].ToString())
+                            .Aggregate("", (acc, c) => acc + c)
+                            .ToUpper() ?? "??";
 
-                    <td class="fw-bold text-primary">
-                        ₡ @String.Format("{0:N2}", p.SalarioBruto)
-                    </td>
+                            var colores = new[] { "blue", "green", "amber", "slate" };
+                            var color = colores[p.IdColaborador % colores.Length];
 
-                    <td class="fw-bold text-success">
-                        ₡ @String.Format("{0:N2}", p.SalarioNeto)
-                    </td>
+                            <tr>
+                                <td>
+                                    <div class="table-avatar">
+                                        <div class="avatar-circle avatar-@color">
+                                            @iniciales
+                                        </div>
+                                        <div class="avatar-name">
+                                            @p.NombreColaborador
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-end td-mono">
+                                    ₡ @p.SalarioBase.ToString("N2")
+                                </td>
+                                <td class="text-center td-mono">
+                                    @p.DiasLaborados
+                                </td>
+                                <td class="text-end td-mono">
+                                    @p.HorasOrdinarias.ToString("N2")
+                                </td>
+                                <td class="text-end td-mono"
+                                    style="color:var(--blue);font-weight:600;">
+                                    @p.HorasExtras.ToString("N2")
+                                </td>
+                                <td class="text-end td-mono"
+                                    style="color:var(--amber);font-weight:600;">
+                                    @p.HorasFeriado.GetValueOrDefault().ToString("N2")
+                                </td>
+                                <td class="text-end td-mono">
+                                    ₡ @p.MontoHorasExtras.ToString("N2")
+                                </td>
+                                <td class="text-end td-mono"
+                                    style="color:var(--amber);font-weight:600;">
+                                    ₡ @p.MontoFeriado.GetValueOrDefault().ToString("N2")
+                                </td>
+                                <td class="text-end td-mono"
+                                    style="color:var(--red);font-weight:600;">
+                                    ₡ @p.Deducciones.ToString("N2")
+                                </td>
+                                <td class="text-end td-mono"
+                                    style="font-weight:700;color:var(--blue)">
+                                    ₡ @p.SalarioBruto.ToString("N2")
+                                </td>
+                                <td class="text-end td-mono"
+                                    style="font-weight:700;color:var(--green)">
+                                    ₡ @p.SalarioNeto.ToString("N2")
+                                </td>
+                                <td>
+                                    <div class="td-actions">
+                                        <a asp-action="DetalleColaborador"
+                                           asp-route-idPlanilla="@p.IdPlanilla"
+                                           asp-route-idColaborador="@p.IdColaborador"
+                                           class="btn btn-primary btn-sm">
+                                            <i class="bi bi-person-lines-fill"></i>Detalle
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
 
-                    <!-- ✅ BOTÓN DETALLE COLABORADOR -->
-                    <td>
-                        <a asp-action="DetalleColaborador"
-                           asp-route-idPlanilla="@p.IdPlanilla"
-                           asp-route-idColaborador="@p.IdColaborador"
-                           class="btn btn-sm btn-primary">
-                            <i class="bi bi-person-lines-fill"></i> Detalle
-                        </a>
-                    </td>
-                </tr>
+                @* Fila de totales *@
+                @if (lista.Any())
+                {
+                    <tfoot>
+                        <tr style="background:var(--slate-l);border-top:2px solid var(--border);">
+                            <td style="font-weight:700;color:var(--navy);padding:12px 14px;">
+                                <i class="bi bi-calculator me-1"
+                                   style="color:var(--blue)"></i>TOTALES
+                            </td>
+                            <td class="text-end td-mono" style="font-weight:700;">
+                                ₡ @lista.Sum(x => x.SalarioBase).ToString("N2")
+                            </td>
+                            <td class="text-center td-mono" style="font-weight:700;">
+                                @lista.Sum(x => x.DiasLaborados)
+                            </td>
+                            <td class="text-end td-mono" style="font-weight:700;">
+                                @lista.Sum(x => x.HorasOrdinarias).ToString("N2")
+                            </td>
+                            <td class="text-end td-mono"
+                                style="font-weight:700;color:var(--blue)">
+                                @lista.Sum(x => x.HorasExtras).ToString("N2")
+                            </td>
+                            <td class="text-end td-mono"
+                                style="font-weight:700;color:var(--amber)">
+                                @lista.Sum(x => x.HorasFeriado ?? 0).ToString("N2")
+                            </td>
+                            <td class="text-end td-mono" style="font-weight:700;">
+                                ₡ @lista.Sum(x => x.MontoHorasExtras).ToString("N2")
+                            </td>
+                            <td class="text-end td-mono"
+                                style="font-weight:700;color:var(--amber)">
+                                ₡ @lista.Sum(x => x.MontoFeriado ?? 0).ToString("N2")
+                            </td>
+                            <td class="text-end td-mono"
+                                style="font-weight:700;color:var(--red)">
+                                ₡ @lista.Sum(x => x.Deducciones).ToString("N2")
+                            </td>
+                            <td class="text-end td-mono"
+                                style="font-weight:700;color:var(--blue)">
+                                ₡ @lista.Sum(x => x.SalarioBruto).ToString("N2")
+                            </td>
+                            <td class="text-end td-mono"
+                                style="font-weight:700;color:var(--green);font-size:1rem;">
+                                ₡ @lista.Sum(x => x.SalarioNeto).ToString("N2")
+                            </td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                }
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            if (@lista.Any().ToString().ToLower()) {
+                var config = Object.assign({}, DataTableConfig, {
+                    order:      [[0, 'asc']],
+                    scrollX:    true,
+                    autoWidth:  false
+                });
+                $('#tablaDetalle').DataTable(config);
             }
-        }
-    </tbody>
-
-    <!-- ================= TOTALES ================= -->
-    <tfoot class="table-secondary fw-bold">
-        <tr>
-            <td>TOTALES</td>
-            <td>₡ @Model.Sum(x => x.SalarioBase).ToString("N2")</td>
-            <td>@Model.Sum(x => x.DiasLaborados)</td>
-            <td>@Model.Sum(x => x.HorasOrdinarias).ToString("N2")</td>
-            <td>@Model.Sum(x => x.HorasExtras).ToString("N2")</td>
-            <td>₡ @Model.Sum(x => x.MontoHorasExtras).ToString("N2")</td>
-            <td>₡ @Model.Sum(x => x.Deducciones).ToString("N2")</td>
-            <td>₡ @Model.Sum(x => x.SalarioBruto).ToString("N2")</td>
-            <td>₡ @Model.Sum(x => x.SalarioNeto).ToString("N2")</td>
-            <td></td>
-        </tr>
-    </tfoot>
-</table>
-
-<a asp-action="Index" class="btn btn-secondary mt-3">
-    <i class="bi bi-arrow-left"></i> Volver
-</a>
+        });
+    </script>
+}

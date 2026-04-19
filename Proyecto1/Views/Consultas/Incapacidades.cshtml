@@ -1,0 +1,433 @@
+﻿@model List<Proyecto1.Models.IncapacidadAdminVM>
+
+@{
+    ViewData["Title"] = "Consulta de Incapacidades";
+
+    var tipos = Model.Select(x => x.TipoIncapacidad).Distinct().OrderBy(t => t).ToList();
+    var activas = Model.Count(x => x.Estado == "Activa");
+    var finalizadas = Model.Count(x => x.Estado == "Finalizada");
+    var anuladas = Model.Count(x => x.Estado == "Anulada");
+    var totalDias = Model.Sum(x => x.DiasIncapacidad);
+}
+
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-heart-pulse"></i>Consulta de Incapacidades
+    </h3>
+    <a asp-controller="Consultas" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
+
+@* ================================================
+   KPI CARDS
+   ================================================ *@
+<div class="row g-3 mb-4">
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total registros</div>
+                <div class="kpi-value">@Model.Count</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-heart-pulse"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Activas</div>
+                <div class="kpi-value" style="color:var(--red)">@activas</div>
+            </div>
+            <div class="kpi-icon red">
+                <i class="bi bi-activity"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total dias</div>
+                <div class="kpi-value" style="color:var(--amber)">@totalDias</div>
+            </div>
+            <div class="kpi-icon amber">
+                <i class="bi bi-calendar-range"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Finalizadas</div>
+                <div class="kpi-value" style="color:var(--green)">@finalizadas</div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-calendar-check"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@* ================================================
+   FILTROS
+   ================================================ *@
+<div class="filter-card mb-4">
+    <div class="filter-row flex-wrap">
+
+        <div class="filter-group" style="max-width:240px;">
+            <span class="filter-label">Buscar</span>
+            <input type="text"
+                   id="inputBuscar"
+                   class="form-control"
+                   placeholder="Nombre, tipo..." />
+        </div>
+
+        <div class="filter-group" style="max-width:200px;">
+            <span class="filter-label">Tipo</span>
+            <select id="filtroTipo" class="form-select">
+                <option value="">Todos</option>
+                @foreach (var t in tipos)
+                {
+                    <option value="@t">@t</option>
+                }
+            </select>
+        </div>
+
+        <div class="filter-group" style="max-width:160px;">
+            <span class="filter-label">Estado</span>
+            <select id="filtroEstado" class="form-select">
+                <option value="">Todos</option>
+                <option value="Activa">Activa</option>
+                <option value="Finalizada">Finalizada</option>
+                <option value="Anulada">Anulada</option>
+            </select>
+        </div>
+
+        <div class="filter-group" style="max-width:160px;">
+            <span class="filter-label">Fecha inicio desde</span>
+            <input type="date" id="filtroFechaInicio" class="form-control" />
+        </div>
+
+        <div class="filter-group" style="max-width:160px;">
+            <span class="filter-label">Fecha inicio hasta</span>
+            <input type="date" id="filtroFechaFin" class="form-control" />
+        </div>
+
+        <div class="filter-actions">
+            <button type="button"
+                    class="btn btn-outline-secondary"
+                    onclick="limpiarFiltros()">
+                <i class="bi bi-x-circle"></i>Limpiar
+            </button>
+        </div>
+
+    </div>
+</div>
+
+@* Contador *@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted" style="font-size:0.82rem;">
+        Mostrando <strong id="contadorVisible">@Model.Count</strong>
+        de @Model.Count registros
+    </span>
+</div>
+
+@* ================================================
+   TABLA
+   ================================================ *@
+<div class="card mb-4">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>Listado de incapacidades
+        </span>
+        <span class="badge badge-info" id="badgeTotal">@Model.Count registros</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaIncapacidades" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th>Colaborador</th>
+                        <th>Tipo</th>
+                        <th class="text-center">Inicio</th>
+                        <th class="text-center">Fin</th>
+                        <th class="text-center">Dias</th>
+                        <th class="text-center">Remunerada</th>
+                        <th class="text-center">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        foreach (var item in Model.OrderByDescending(x => x.FechaInicio))
+                        {
+                            var iniciales = item.NombreColaborador?
+                            .Split(' ')
+                            .Where(s => !string.IsNullOrEmpty(s))
+                            .Take(2)
+                            .Select(s => s[0].ToString())
+                            .Aggregate("", (acc, c) => acc + c)
+                            .ToUpper() ?? "??";
+
+                            string estadoBadge = item.Estado switch
+                            {
+                                "Activa" => "bg-danger",
+                                "Finalizada" => "bg-secondary",
+                                _ => "bg-warning"
+                            };
+
+                            string avatarColor = item.Estado switch
+                            {
+                                "Activa" => "red",
+                                "Finalizada" => "slate",
+                                _ => "amber"
+                            };
+
+                            var fechaData = item.FechaInicio.ToString("yyyy-MM-dd");
+
+                            <tr data-buscar="@item.NombreColaborador @item.TipoIncapacidad"
+                                data-tipo="@item.TipoIncapacidad"
+                                data-estado="@item.Estado"
+                                data-fecha="@fechaData">
+                                <td>
+                                    <div class="table-avatar">
+                                        <div class="avatar-circle avatar-@avatarColor">
+                                            @iniciales
+                                        </div>
+                                        <div class="avatar-name">@item.NombreColaborador</div>
+                                    </div>
+                                </td>
+                                <td>@item.TipoIncapacidad</td>
+                                <td class="text-center td-muted">
+                                    @item.FechaInicio.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center td-muted">
+                                    @item.FechaFin.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center">
+                                    <span class="td-mono"
+                                          style="font-weight:700;
+                                                         color:@(item.DiasIncapacidad > 5 ? "var(--red)" : "var(--amber)")">
+                                        @item.DiasIncapacidad
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    @if (item.EsRemunerada)
+                                    {
+                                        <span class="badge bg-success badge-dot">Si</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary badge-dot">No</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge @estadoBadge badge-dot">@item.Estado</span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7">
+                                <div class="table-empty">
+                                    <i class="bi bi-heart-pulse"></i>
+                                    <p>No hay registros de incapacidades</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@* ================================================
+   GRAFICOS
+   ================================================ *@
+<div class="row g-4">
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-header-title">
+                    <i class="bi bi-bar-chart-fill"></i>Incapacidades por tipo
+                </span>
+            </div>
+            <div class="card-body">
+                <canvas id="graficoTipo" height="120"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-header-title">
+                    <i class="bi bi-graph-up"></i>Incapacidades por mes
+                </span>
+            </div>
+            <div class="card-body">
+                <canvas id="graficoMes" height="120"></canvas>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+
+        var inputBuscar       = document.getElementById('inputBuscar');
+        var filtroTipo        = document.getElementById('filtroTipo');
+        var filtroEstado      = document.getElementById('filtroEstado');
+        var filtroFechaInicio = document.getElementById('filtroFechaInicio');
+        var filtroFechaFin    = document.getElementById('filtroFechaFin');
+        var filas             = document.querySelectorAll('#tablaIncapacidades tbody tr');
+        var contadorVisible   = document.getElementById('contadorVisible');
+        var badgeTotal        = document.getElementById('badgeTotal');
+
+        function filtrarTabla() {
+            var texto  = inputBuscar.value.toLowerCase();
+            var tipo   = filtroTipo.value;
+            var estado = filtroEstado.value;
+            var desde  = filtroFechaInicio.value;
+            var hasta  = filtroFechaFin.value;
+            var count  = 0;
+
+            filas.forEach(function (fila) {
+                var contenido  = fila.getAttribute('data-buscar').toLowerCase();
+                var filaTipo   = fila.getAttribute('data-tipo');
+                var filaEstado = fila.getAttribute('data-estado');
+                var filaFecha  = fila.getAttribute('data-fecha');
+
+                var coincideFecha = true;
+                if (desde) coincideFecha = filaFecha >= desde;
+                if (hasta) coincideFecha = coincideFecha && filaFecha <= hasta;
+
+                var ok = contenido.includes(texto)          &&
+                         (tipo   === '' || filaTipo   === tipo)   &&
+                         (estado === '' || filaEstado === estado) &&
+                         coincideFecha;
+
+                fila.style.display = ok ? '' : 'none';
+                if (ok) count++;
+            });
+
+            contadorVisible.textContent = count;
+            badgeTotal.textContent      = count + ' registros';
+        }
+
+        function limpiarFiltros() {
+            inputBuscar.value       = '';
+            filtroTipo.value        = '';
+            filtroEstado.value      = '';
+            filtroFechaInicio.value = '';
+            filtroFechaFin.value    = '';
+            filtrarTabla();
+        }
+
+        inputBuscar.addEventListener('keyup', filtrarTabla);
+        filtroTipo.addEventListener('change', filtrarTabla);
+        filtroEstado.addEventListener('change', filtrarTabla);
+        filtroFechaInicio.addEventListener('change', filtrarTabla);
+        filtroFechaFin.addEventListener('change', filtrarTabla);
+
+        // Grafico por tipo
+        var labelsTipo = [@Html.Raw(string.Join(",",
+                    Model.GroupBy(x => x.TipoIncapacidad)
+                              .Select(g => $"'{g.Key}'")))];
+
+    var dataTipo = [@string.Join(",",
+                Model.GroupBy(x => x.TipoIncapacidad)
+                          .Select(g => g.Count()))];
+
+    new Chart(document.getElementById('graficoTipo'), {
+        type: 'bar',
+        data: {
+            labels: labelsTipo,
+            datasets: [{
+                label: 'Cantidad',
+                data: dataTipo,
+                backgroundColor: '#2563eb',
+                borderRadius: 6,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: '#f1f5f9' },
+                    ticks: { color: '#94a3b8', font: { size: 11 } }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#64748b', font: { size: 11 } }
+                }
+            }
+        }
+    });
+
+        // Grafico por mes
+        var nombresMeses = ['Ene','Feb','Mar','Abr','May','Jun',
+                            'Jul','Ago','Sep','Oct','Nov','Dic'];
+
+        var labelsMes = [@Html.Raw(string.Join(",",
+                Model.GroupBy(x => x.FechaInicio.Month)
+                          .OrderBy(g => g.Key)
+                          .Select(g => $"'{new System.Globalization.CultureInfo("es-ES").DateTimeFormat.GetAbbreviatedMonthName(g.Key)}'")))];
+
+    var dataMes = [@string.Join(",",
+                Model.GroupBy(x => x.FechaInicio.Month)
+                          .OrderBy(g => g.Key)
+                          .Select(g => g.Count()))];
+
+    new Chart(document.getElementById('graficoMes'), {
+        type: 'line',
+        data: {
+            labels: labelsMes,
+            datasets: [{
+                label: 'Incapacidades',
+                data: dataMes,
+                borderColor: '#2563eb',
+                backgroundColor: 'rgba(37,99,235,0.08)',
+                borderWidth: 2,
+                pointRadius: 4,
+                pointBackgroundColor: '#2563eb',
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: '#f1f5f9' },
+                    ticks: { color: '#94a3b8', font: { size: 11 } }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#64748b', font: { size: 11 } }
+                }
+            }
+        }
+    });
+
+    </script>
+}

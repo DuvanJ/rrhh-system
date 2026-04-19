@@ -1,0 +1,436 @@
+﻿@model List<Proyecto1.Models.EvaluacionVM>
+
+@{
+    ViewData["Title"] = "Consulta de Evaluaciones";
+    var colaboradores = Model.Select(x => x.NombreColaborador).Distinct().OrderBy(c => c).ToList();
+    var anios = Model.Select(x => x.FechaEvaluacion.Year).Distinct().OrderByDescending(a => a).ToList();
+
+    var excelentes = Model.Count(x => x.PuntajeTotal >= 90);
+    var buenos = Model.Count(x => x.PuntajeTotal >= 70 && x.PuntajeTotal < 90);
+    var regulares = Model.Count(x => x.PuntajeTotal >= 50 && x.PuntajeTotal < 70);
+    var deficientes = Model.Count(x => x.PuntajeTotal < 50);
+    var promedio = Model.Any() ? Model.Average(x => x.PuntajeTotal) : 0;
+}
+
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-clipboard-check"></i>Consulta de Evaluaciones
+    </h3>
+    <a asp-controller="Consultas" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
+
+@* ================================================
+   KPI CARDS
+   ================================================ *@
+<div class="row g-3 mb-4">
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total evaluaciones</div>
+                <div class="kpi-value">@Model.Count</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-clipboard-check"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Puntaje promedio</div>
+                <div class="kpi-value" style="color:var(--blue)">
+                    @promedio?.ToString("N1")
+                </div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-bar-chart-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Excelentes</div>
+                <div class="kpi-value" style="color:var(--green)">@excelentes</div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-star-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Requieren atencion</div>
+                <div class="kpi-value" style="color:var(--red)">
+                    @(regulares + deficientes)
+                </div>
+            </div>
+            <div class="kpi-icon red">
+                <i class="bi bi-exclamation-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@* ================================================
+   FILTROS
+   ================================================ *@
+<div class="filter-card mb-4">
+    <div class="filter-row flex-wrap">
+
+        <div class="filter-group" style="max-width:240px;">
+            <span class="filter-label">Buscar</span>
+            <input type="text"
+                   id="inputBuscar"
+                   class="form-control"
+                   placeholder="Nombre, ID..." />
+        </div>
+
+        <div class="filter-group" style="max-width:220px;">
+            <span class="filter-label">Colaborador</span>
+            <select id="filtroColaborador" class="form-select">
+                <option value="">Todos</option>
+                @foreach (var c in colaboradores)
+                {
+                    <option value="@c">@c</option>
+                }
+            </select>
+        </div>
+
+        <div class="filter-group" style="max-width:130px;">
+            <span class="filter-label">Año</span>
+            <select id="filtroAnio" class="form-select">
+                <option value="">Todos</option>
+                @foreach (var a in anios)
+                {
+                    <option value="@a">@a</option>
+                }
+            </select>
+        </div>
+
+        <div class="filter-group" style="max-width:160px;">
+            <span class="filter-label">Desempeno</span>
+            <select id="filtroDesempeno" class="form-select">
+                <option value="">Todos</option>
+                <option value="Excelente">Excelente</option>
+                <option value="Bueno">Bueno</option>
+                <option value="Regular">Regular</option>
+                <option value="Deficiente">Deficiente</option>
+            </select>
+        </div>
+
+        <div class="filter-actions">
+            <button type="button"
+                    class="btn btn-outline-secondary"
+                    onclick="limpiarFiltros()">
+                <i class="bi bi-x-circle"></i>Limpiar
+            </button>
+        </div>
+
+    </div>
+</div>
+
+@* Contador dinamico *@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted" style="font-size:0.82rem;">
+        Mostrando <strong id="contadorVisible">@Model.Count</strong>
+        de @Model.Count evaluaciones
+    </span>
+</div>
+
+@* ================================================
+   TABLA
+   ================================================ *@
+<div class="card mb-4">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>Listado de evaluaciones
+        </span>
+        <span class="badge badge-info" id="badgeTotal">@Model.Count registros</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaEvaluaciones" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Colaborador</th>
+                        <th class="text-center">Fecha evaluacion</th>
+                        <th class="text-center">Puntaje</th>
+                        <th class="text-center">Desempeno</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            var iniciales = item.NombreColaborador?
+                            .Split(' ')
+                            .Where(s => !string.IsNullOrEmpty(s))
+                            .Take(2)
+                            .Select(s => s[0].ToString())
+                            .Aggregate("", (acc, c) => acc + c)
+                            .ToUpper() ?? "??";
+
+                            string desempeno;
+                            string badgeClass;
+                            string avatarColor;
+
+                            if (item.PuntajeTotal >= 90)
+                            {
+                                desempeno = "Excelente";
+                                badgeClass = "bg-success";
+                                avatarColor = "green";
+                            }
+                            else if (item.PuntajeTotal >= 70)
+                            {
+                                desempeno = "Bueno";
+                                badgeClass = "bg-info";
+                                avatarColor = "blue";
+                            }
+                            else if (item.PuntajeTotal >= 50)
+                            {
+                                desempeno = "Regular";
+                                badgeClass = "bg-warning";
+                                avatarColor = "amber";
+                            }
+                            else
+                            {
+                                desempeno = "Deficiente";
+                                badgeClass = "bg-danger";
+                                avatarColor = "red";
+                            }
+
+                            <tr data-colaborador="@item.NombreColaborador"
+                                data-anio="@item.FechaEvaluacion.Year"
+                                data-desempeno="@desempeno">
+                                <td class="td-mono">@item.IdColaborador</td>
+                                <td>
+                                    <div class="table-avatar">
+                                        <div class="avatar-circle avatar-@avatarColor">
+                                            @iniciales
+                                        </div>
+                                        <div class="avatar-name">@item.NombreColaborador</div>
+                                    </div>
+                                </td>
+                                <td class="text-center td-muted">
+                                    @item.FechaEvaluacion.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center">
+                                    <div class="puntaje-bar">
+                                        <span class="puntaje-valor">@item.PuntajeTotal</span>
+                                        <div class="puntaje-track">
+                                            <div class="puntaje-fill @avatarColor"
+                                                 style="width:@item.PuntajeTotal%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge @badgeClass badge-dot">@desempeno</span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5">
+                                <div class="table-empty">
+                                    <i class="bi bi-clipboard-x"></i>
+                                    <p>No hay evaluaciones registradas</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@* ================================================
+   GRAFICO
+   ================================================ *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-bar-chart-fill"></i>Desempeno por colaborador
+        </span>
+    </div>
+    <div class="card-body">
+        <canvas id="graficoEvaluaciones" height="80"></canvas>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .puntaje-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .puntaje-valor {
+            font-family: 'Consolas', monospace;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--text);
+            min-width: 28px;
+            text-align: right;
+        }
+
+        .puntaje-track {
+            flex: 1;
+            max-width: 80px;
+            height: 6px;
+            background: var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .puntaje-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width .3s ease;
+        }
+
+            .puntaje-fill.green {
+                background: var(--green);
+            }
+
+            .puntaje-fill.blue {
+                background: var(--blue);
+            }
+
+            .puntaje-fill.amber {
+                background: var(--amber);
+            }
+
+            .puntaje-fill.red {
+                background: var(--red);
+            }
+    </style>
+}
+
+@section Scripts {
+    <script>
+
+        var inputBuscar       = document.getElementById('inputBuscar');
+        var filtroColaborador = document.getElementById('filtroColaborador');
+        var filtroAnio        = document.getElementById('filtroAnio');
+        var filtroDesempeno   = document.getElementById('filtroDesempeno');
+        var filas             = document.querySelectorAll('#tablaEvaluaciones tbody tr');
+        var contadorVisible   = document.getElementById('contadorVisible');
+        var badgeTotal        = document.getElementById('badgeTotal');
+
+        function filtrarTabla() {
+            var texto       = inputBuscar.value.toLowerCase();
+            var colaborador = filtroColaborador.value;
+            var anio        = filtroAnio.value;
+            var desempeno   = filtroDesempeno.value;
+            var count       = 0;
+
+            filas.forEach(function (fila) {
+                var contenido     = fila.innerText.toLowerCase();
+                var filaColab     = fila.getAttribute('data-colaborador');
+                var filaAnio      = fila.getAttribute('data-anio');
+                var filaDesempeno = fila.getAttribute('data-desempeno');
+
+                var ok = contenido.includes(texto) &&
+                         (colaborador === '' || filaColab     === colaborador) &&
+                         (anio        === '' || filaAnio      === anio)        &&
+                         (desempeno   === '' || filaDesempeno === desempeno);
+
+                fila.style.display = ok ? '' : 'none';
+                if (ok) count++;
+            });
+
+            contadorVisible.textContent = count;
+            badgeTotal.textContent      = count + ' registros';
+        }
+
+        function limpiarFiltros() {
+            inputBuscar.value       = '';
+            filtroColaborador.value = '';
+            filtroAnio.value        = '';
+            filtroDesempeno.value   = '';
+            filtrarTabla();
+        }
+
+        inputBuscar.addEventListener('keyup', filtrarTabla);
+        filtroColaborador.addEventListener('change', filtrarTabla);
+        filtroAnio.addEventListener('change', filtrarTabla);
+        filtroDesempeno.addEventListener('change', filtrarTabla);
+
+        // Grafico
+        var nombres  = [];
+        var puntajes = [];
+        var colores  = [];
+
+        @foreach (var item in Model)
+        {
+                var colorGrafico = item.PuntajeTotal >= 90 ? "#16a34a" :
+                                                      item.PuntajeTotal >= 70 ? "#2563eb" :
+                                                      item.PuntajeTotal >= 50 ? "#d97706" : "#dc2626";
+                var nombreSeguro = (item.NombreColaborador ?? "").Replace("'", "\\'");
+                <text>
+                nombres.push('@nombreSeguro');
+                puntajes.push(@item.PuntajeTotal.ToString());
+                colores.push('@colorGrafico');
+                </text>
+        }
+
+        new Chart(document.getElementById('graficoEvaluaciones'), {
+            type: 'bar',
+            data: {
+                labels: nombres,
+                datasets: [{
+                    label: 'Puntaje',
+                    data: puntajes,
+                    backgroundColor: colores,
+                    borderRadius: 6,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function (ctx) {
+                                return ' Puntaje: ' + ctx.raw + ' / 100';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: { color: '#f1f5f9' },
+                        ticks: { color: '#94a3b8', font: { size: 11 } }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#64748b', font: { size: 11 } }
+                    }
+                }
+            }
+        });
+
+    </script>
+}

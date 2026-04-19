@@ -49,45 +49,68 @@ namespace Proyecto1.Controllers
 
         // ================= COLABORADOR =================
         [HttpGet]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            int? idColaborador = HttpContext.Session.GetInt32("IdColaborador");
-
-            if (!idColaborador.HasValue)
-                return RedirectToAction("Index", "Login");
+            var tipos = await _service.ObtenerTiposActivosAsync();
+            ViewBag.TiposIncapacidad = tipos;
 
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Incapacidad model)
+        public async Task<IActionResult> Create(Incapacidad model, string accion)
         {
+            var tipos = await _service.ObtenerTiposActivosAsync();
+            ViewBag.TiposIncapacidad = tipos;
+
+            // ================= BUSCAR =================
+            if (accion == "buscar")
+            {
+                ModelState.Clear(); // 🔥 evita que valide todo
+
+                var colab = await _service.ObtenerInfoColaboradorAsync(model.IdColaborador);
+
+                if (colab == null)
+                {
+                    ModelState.AddModelError(nameof(model.IdColaborador),
+                        "No existe un colaborador activo con ese ID.");
+                    return View(model);
+                }
+
+                ViewBag.NombreColaborador = $"{colab.Nombre} {colab.Apellidos}";
+                return View(model);
+            }
+
+            // ================= GUARDAR =================
+
+            var colaborador = await _service.ObtenerInfoColaboradorAsync(model.IdColaborador);
+
+            if (colaborador == null)
+            {
+                ModelState.AddModelError(nameof(model.IdColaborador),
+                    "Debe buscar y validar un colaborador válido.");
+            }
+            else
+            {
+                ViewBag.NombreColaborador = $"{colaborador.Nombre} {colaborador.Apellidos}";
+            }
+
             if (model.FechaFin < model.FechaInicio)
             {
-                ModelState.AddModelError(
-                    "",
-                    "La fecha final no puede ser menor que la fecha inicial."
-                );
+                ModelState.AddModelError("",
+                    "La fecha final no puede ser menor que la fecha inicial.");
             }
 
             if (!ModelState.IsValid)
-            {
-                // 🔁 RECONSTRUIR COLABORADOR
-                var colab = await _service.ObtenerInfoColaboradorAsync(model.IdColaborador);
-                if (colab != null)
-                {
-                    ViewBag.NombreColaborador = $"{colab.Nombre} {colab.Apellidos}";
-                }
-
                 return View(model);
-            }
 
             model.Estado = "Activa";
 
             await _service.RegistrarAsync(model);
 
             TempData["Success"] = "Incapacidad registrada correctamente.";
+
             return RedirectToAction(nameof(Index));
         }
 

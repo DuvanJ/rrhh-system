@@ -4,6 +4,7 @@ using Proyecto1.DAL;
 using Proyecto1.Models;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -127,14 +128,17 @@ namespace Proyecto1.BLL
         {
             var param = new SqlParameter("@IdEvaluacion", idEvaluacion);
 
-            var evaluacion = await _context.Set<EvaluacionVM>()
+            // ===== CABECERA =====
+            var evaluacion = (await _context.Set<EvaluacionVM>()
                 .FromSqlRaw("EXEC sp_Evaluacion_ObtenerPorId @IdEvaluacion", param)
                 .AsNoTracking()
-                .FirstOrDefaultAsync();
+                .ToListAsync())
+                .FirstOrDefault();
 
             if (evaluacion == null)
                 return null;
 
+            // ===== DETALLES =====
             var detalles = await _context.Set<DetalleEvaluacionVM>()
                 .FromSqlRaw("EXEC sp_Evaluacion_ObtenerDetalles @IdEvaluacion", param)
                 .AsNoTracking()
@@ -146,38 +150,57 @@ namespace Proyecto1.BLL
         }
 
 
+
+
+
+
         public async Task ActualizarEvaluacionAsync(EvaluacionVM vm)
         {
-            if (vm == null || vm.Detalles == null || vm.Detalles.Count == 0)
-                throw new ArgumentException("Datos inválidos para actualizar.");
+            using var conn = _context.Database.GetDbConnection();
+            await conn.OpenAsync();
 
-            var total = vm.Detalles.Sum(d => d.Puntaje);
+            // ===== Actualizar cabecera =====
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "sp_Evaluacion_Actualizar";
+                cmd.CommandType = CommandType.StoredProcedure;
 
-            var p1 = new SqlParameter("@IdEvaluacion", vm.IdEvaluacion);
-            var p2 = new SqlParameter("@ComentariosGenerales",
-                (object?)vm.ComentariosGenerales ?? DBNull.Value);
-            var p3 = new SqlParameter("@PuntajeTotal", total);
+                cmd.Parameters.Add(new SqlParameter("@IdEvaluacion", vm.IdEvaluacion));
+                cmd.Parameters.Add(new SqlParameter("@ComentariosGenerales", vm.ComentariosGenerales ?? ""));
+                cmd.Parameters.Add(new SqlParameter("@PuntajeTotal", vm.PuntajeTotal ?? 0));
 
-            await _context.Database.ExecuteSqlRawAsync(
-                "EXEC sp_Evaluacion_Actualizar @IdEvaluacion, @ComentariosGenerales, @PuntajeTotal",
-                p1, p2, p3
-            );
+                await cmd.ExecuteNonQueryAsync();
+            }
 
-            // Actualizar detalles
+            // ===== Actualizar detalles =====
             foreach (var d in vm.Detalles)
             {
-                var dp1 = new SqlParameter("@IdEvaluacion", vm.IdEvaluacion);
-                var dp2 = new SqlParameter("@IdCriterio", d.IdCriterio);
-                var dp3 = new SqlParameter("@Puntaje", d.Puntaje);
-                var dp4 = new SqlParameter("@Observacion",
-                    (object?)d.Observacion ?? DBNull.Value);
+                using var cmd = conn.CreateCommand();
+                cmd.CommandText = "sp_Evaluacion_ActualizarDetalle";
+                cmd.CommandType = CommandType.StoredProcedure;
 
-                await _context.Database.ExecuteSqlRawAsync(
-                    "EXEC sp_Evaluacion_ActualizarDetalle @IdEvaluacion, @IdCriterio, @Puntaje, @Observacion",
-                    dp1, dp2, dp3, dp4
-                );
+                cmd.Parameters.Add(new SqlParameter("@IdEvaluacion", vm.IdEvaluacion));
+                cmd.Parameters.Add(new SqlParameter("@IdCriterio", d.IdCriterio));
+                cmd.Parameters.Add(new SqlParameter("@Puntaje", d.Puntaje ?? 0));
+                cmd.Parameters.Add(new SqlParameter("@Observacion", d.Observacion ?? ""));
+
+                await cmd.ExecuteNonQueryAsync();
             }
         }
+
+        public async Task EliminarEvaluacionAsync(int idEvaluacion)
+        {
+            var param = new SqlParameter("@IdEvaluacion", idEvaluacion);
+
+            await _context.Database.ExecuteSqlRawAsync(
+                "EXEC sp_Evaluacion_Eliminar @IdEvaluacion",
+                param
+            );
+        }
+
+
+
+
 
 
 

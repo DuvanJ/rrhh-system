@@ -1,0 +1,205 @@
+﻿@model List<UniformeHistorialVM>
+
+@{
+    ViewData["Title"] = "Mis Uniformes";
+}
+
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <div>
+        <h3 class="page-title">
+            <i class="bi bi-bag-check"></i>Mis Uniformes
+        </h3>
+        <small class="text-muted">
+            Historial de uniformes asignados &middot; @DateTime.Now.ToString("dd MMMM yyyy")
+        </small>
+    </div>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
+
+@* ================================================
+   ESTADO VACIO
+   ================================================ *@
+@if (!Model.Any())
+{
+    <div class="card">
+        <div class="table-empty">
+            <i class="bi bi-bag-check"></i>
+            <p>No tienes uniformes asignados</p>
+            <span class="text-muted" style="font-size:0.82rem;">
+                Los uniformes se mostrarán aquí cuando sean asignados
+            </span>
+        </div>
+    </div>
+}
+
+@* ================================================
+   LISTADO DE UNIFORMES
+   ================================================ *@
+@if (Model.Any())
+{
+    <div class="row g-3 mb-5">
+        @foreach (var uniforme in Model.OrderByDescending(u => u.FechaEntrega))
+        {
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <span class="card-header-title">
+                            <i class="bi bi-bag"></i>@uniforme.NombreTipo
+                        </span>
+                        <span class="badge bg-blue badge-dot">
+                            <i class="bi bi-calendar-event"></i> @uniforme.FechaEntrega.ToString("dd/MM/yyyy")
+                        </span>
+                    </div>
+                    <div class="card-body">
+
+                        <!-- Información principal -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+
+                            <!-- Talla -->
+                            <div>
+                                <label class="form-label" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                                    Talla
+                                </label>
+                                <p style="margin: 0; font-weight: 600; color: var(--text); font-size: 1.2rem;">
+                                    @uniforme.Talla
+                                </p>
+                            </div>
+
+                            <!-- Cantidad -->
+                            <div>
+                                <label class="form-label" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                                    Cantidad
+                                </label>
+                                <p style="margin: 0; font-weight: 600; color: var(--blue); font-size: 1.2rem;">
+                                    @uniforme.Cantidad <span style="font-size: 0.8rem; color: var(--text-3);">unid.</span>
+                                </p>
+                            </div>
+
+                        </div>
+
+                        <!-- Separador -->
+                        <hr style="border: none; border-top: 1px solid var(--border); margin: 20px 0;">
+
+                        <!-- Información de pago -->
+                        <div style="margin-bottom: 20px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+
+                                <!-- Costo -->
+                                @if (uniforme.Costo.HasValue)
+                                {
+                                    <div>
+                                        <label class="form-label" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                                            Costo
+                                        </label>
+                                        <p style="margin: 0; font-weight: 600; color: var(--green); font-size: 1.1rem;">
+                                            ₡ @uniforme.Costo.Value.ToString("N2")
+                                        </p>
+                                    </div>
+                                }
+
+                                <!-- Forma de cobro -->
+                                <div>
+                                    <label class="form-label" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        Forma de Cobro
+                                    </label>
+                                    @if (uniforme.CobrarEnPlanilla)
+                                    {
+                                        <span class="badge bg-warning badge-dot">
+                                            <i class="bi bi-receipt"></i> En Planilla
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success badge-dot">
+                                            <i class="bi bi-check-circle-fill"></i> Sin Cobro
+                                        </span>
+                                    }
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- Observaciones -->
+                        @if (!string.IsNullOrEmpty(uniforme.Observaciones))
+                        {
+                            <div style="background: #f8fafc; padding: 12px; border-radius: var(--radius); border-left: 3px solid var(--slate); margin-bottom: 16px;">
+                                <p style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-2); margin: 0 0 4px 0;">
+                                    Observaciones
+                                </p>
+                                <p style="margin: 0; color: var(--text); font-size: 0.9rem;">
+                                    @uniforme.Observaciones
+                                </p>
+                            </div>
+                        }
+
+                        <!-- Información de entrega -->
+                        <div style="background: #f0f4f8; padding: 12px; border-radius: var(--radius); border-left: 3px solid var(--blue);">
+                            <p style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-2); margin: 0 0 4px 0;">
+                                Fecha de Entrega
+                            </p>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <p style="margin: 0; font-weight: 600; color: var(--text); font-size: 1rem;">
+                                    @uniforme.FechaEntrega.ToString("dd/MM/yyyy")
+                                </p>
+                                <span style="font-size: 0.8rem; color: var(--text-3);">
+                                    Hace @((DateTime.Today - uniforme.FechaEntrega).Days) días
+                                </span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<!-- Resumen de uniformes -->
+@if (Model.Any())
+{
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <div style="background: #f8fafc; padding: 16px; border-radius: var(--radius); border: 1px solid var(--border); text-align: center;">
+            <p style="margin: 0 0 8px 0; font-size: 0.8rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.5px;">
+                Total de Entregas
+            </p>
+            <p style="margin: 0; font-weight: 700; font-size: 1.8rem; color: var(--blue);">
+                @Model.Count
+            </p>
+        </div>
+
+        <div style="background: #f8fafc; padding: 16px; border-radius: var(--radius); border: 1px solid var(--border); text-align: center;">
+            <p style="margin: 0 0 8px 0; font-size: 0.8rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.5px;">
+                Total Prendas
+            </p>
+            <p style="margin: 0; font-weight: 700; font-size: 1.8rem; color: var(--blue);">
+                @Model.Sum(u => u.Cantidad)
+            </p>
+        </div>
+
+        @{
+            decimal costoTotal = Model.Where(u => u.Costo.HasValue).Sum(u => u.Costo ?? 0);
+        }
+
+        <div style="background: #f8fafc; padding: 16px; border-radius: var(--radius); border: 1px solid var(--border); text-align: center;">
+            <p style="margin: 0 0 8px 0; font-size: 0.8rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.5px;">
+                Costo Total
+            </p>
+            <p style="margin: 0; font-weight: 700; font-size: 1.8rem; color: var(--green);">
+                ₡ @costoTotal.ToString("N2")
+            </p>
+        </div>
+    </div>
+}
+
+<!-- Información adicional -->
+<div style="background: #e7f5ff; border-left: 4px solid var(--blue); padding: 16px; border-radius: var(--radius-lg);">
+    <p style="color: var(--blue-t); font-size: 0.9rem; margin: 0;">
+        <i class="bi bi-info-circle" style="margin-right: 8px;"></i>
+        Estos uniformes han sido asignados por el Departamento de Recursos Humanos. Si tienes dudas sobre tu asignación o necesitas cambios de talla, contacta a RRHH.
+    </p>
+</div>

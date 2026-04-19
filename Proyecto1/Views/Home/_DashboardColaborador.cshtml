@@ -1,43 +1,228 @@
 ﻿@{
     ViewData["Title"] = "Mi Dashboard";
+    var nombre = ViewBag.Usuario?.ToString() ?? "Colaborador";
 }
 
-<h3 class="mb-4">Bienvenido a tu panel de gestión</h3>
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <div>
+        <h3 class="page-title">
+            <i class="bi bi-person-circle"></i>Bienvenido, @nombre
+        </h3>
+        <small class="text-muted">
+            Panel personal &middot; @DateTime.Now.ToString("dd MMMM yyyy")
+        </small>
+    </div>
+</div>
 
-<div class="row g-4">
+@* ================================================
+   KPI CARDS PERSONALES - 4 KPIs PARA COLABORADOR
+   ================================================ *@
+<div class="row g-3 mb-5">
 
-    <div class="col-12">
-        <h4 class="fw-bold mb-3">Mi Gestión</h4>
+    <div class="col-xl-3 col-md-6">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Asistencia este mes</div>
+                <div class="kpi-value text-success">@(ViewBag.AsistenciaPresente ?? 0) días</div>
+                <div class="kpi-trend" style="font-size: 0.75rem; margin-top: 6px; color: var(--text-3);">
+                    <i class="bi bi-exclamation-circle" style="color: var(--amber); margin-right: 3px;"></i>
+                    Tardanzas: @(ViewBag.AsistenciaTardanzas ?? 0) | Faltas: @(ViewBag.AsistenciaFaltas ?? 0)
+                </div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+        </div>
     </div>
 
-    @{
-        var colaborador = new[]
-        {
-        new { T = "Asistencia",    I = "bi-calendar-check",  C = "Asistencia",   A = "MiAsistencia" },
-        new { T = "Horas Extras",  I = "bi-clock-history",  C = "HorasExtras",  A = "MisHorasExtras" },
-        new { T = "Permisos",      I = "bi-journal-check",  C = "Permisos",     A = "MisPermisos" },
-        new { T = "Vacaciones",    I = "bi-sun",            C = "Vacaciones",   A = "MisVacaciones" },
-        new { T = "Incapacidades",  I = "bi-heart-pulse",    C = "Incapacidades", A = "MisIncapacidades" }
-        };
-    }
-
-    @foreach (var m in colaborador)
-    {
-        <div class="col-md-3 col-sm-6">
-            <a asp-controller="@m.C"
-               asp-action="@m.A"
-               class="text-decoration-none">
-                <div class="card shadow-sm h-100 dashboard-card">
-                    <div class="card-body text-center">
-                        <i class="bi @m.I fs-1 text-success"></i>
-                        <h6 class="mt-3 fw-semibold">@m.T</h6>
-                    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Mis permisos aprobados</div>
+                <div class="kpi-value">@(ViewBag.PermisosAprobados ?? 0)</div>
+                <div class="kpi-trend" style="font-size: 0.75rem; margin-top: 6px; color: var(--text-3);">
+                    <i class="bi bi-clock" style="color: var(--amber); margin-right: 3px;"></i>
+                    Pendientes: @(ViewBag.PermisosPendientes ?? 0)
                 </div>
-            </a>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-calendar-event"></i>
+            </div>
         </div>
-    }
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Vacaciones disponibles</div>
+                <div class="kpi-value text-success">@(ViewBag.VacacionesDisponibles ?? 0)</div>
+                <div class="kpi-trend" style="font-size: 0.75rem; margin-top: 6px; color: var(--text-3);">
+                    <i class="bi bi-check-circle" style="color: var(--green); margin-right: 3px;"></i>
+                    Usadas: @(ViewBag.VacacionesUsadas ?? 0) días
+                </div>
+            </div>
+            <div class="kpi-icon amber">
+                <i class="bi bi-sun"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Horas extras aprobadas</div>
+                <div class="kpi-value">@(ViewBag.HorasExtrasAprobadas ?? 0)</div>
+                <div class="kpi-trend" style="font-size: 0.75rem; margin-top: 6px; color: var(--text-3);">
+                    <i class="bi bi-clock" style="color: var(--amber); margin-right: 3px;"></i>
+                    Pendientes: @(ViewBag.HorasExtrasPendientes ?? 0)
+                </div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-alarm"></i>
+            </div>
+        </div>
+    </div>
 
 </div>
 
+@* ================================================
+   SECCION: MI INFORMACIÓN PERSONAL
+   ================================================ *@
+<div class="dashboard-section-header">
+    <div class="dashboard-section-icon slate">
+        <i class="bi bi-person-vcard"></i>
+    </div>
+    <div>
+        <h5 class="dashboard-section-title">Mi Información</h5>
+        <span class="dashboard-section-sub">Datos personales y laborales</span>
+    </div>
+</div>
 
+<div class="row g-3 mb-5">
 
+    <div class="col-xl-2 col-lg-3 col-md-4 col-6">
+        <a asp-controller="Consultas" asp-action="MiInformacion" class="dashboard-card">
+            <div class="dashboard-card-icon slate">
+                <i class="bi bi-person-badge"></i>
+            </div>
+            <span class="dashboard-card-label">Mi Perfil</span>
+        </a>
+    </div>
+
+</div>
+
+@* ================================================
+   SECCION: MI GESTIÓN PERSONAL
+   ================================================ *@
+<div class="dashboard-section-header">
+    <div class="dashboard-section-icon green">
+        <i class="bi bi-briefcase"></i>
+    </div>
+    <div>
+        <h5 class="dashboard-section-title">Mi Gestión</h5>
+        <span class="dashboard-section-sub">Accesos directos a tu información laboral</span>
+    </div>
+</div>
+
+<div class="row g-3 mb-5">
+
+    <div class="col-xl-2 col-lg-3 col-md-4 col-6">
+        <a asp-controller="Asistencia" asp-action="MiAsistencia" class="dashboard-card">
+            <div class="dashboard-card-icon green">
+                <i class="bi bi-calendar-check"></i>
+            </div>
+            <span class="dashboard-card-label">Mi Asistencia</span>
+            @if ((ViewBag.AsistenciaPresente ?? 0) > 0)
+            {
+                <span class="dashboard-card-badge">@ViewBag.AsistenciaPresente</span>
+            }
+        </a>
+    </div>
+
+    <div class="col-xl-2 col-lg-3 col-md-4 col-6">
+        <a asp-controller="Permisos" asp-action="MisPermisos" class="dashboard-card">
+            <div class="dashboard-card-icon green">
+                <i class="bi bi-journal-check"></i>
+            </div>
+            <span class="dashboard-card-label">Mis Permisos</span>
+            @if ((ViewBag.PermisosPendientes ?? 0) > 0)
+            {
+                <span class="dashboard-card-badge amber">@ViewBag.PermisosPendientes</span>
+            }
+        </a>
+    </div>
+
+    <div class="col-xl-2 col-lg-3 col-md-4 col-6">
+        <a asp-controller="Vacaciones" asp-action="MisVacaciones" class="dashboard-card">
+            <div class="dashboard-card-icon green">
+                <i class="bi bi-sun"></i>
+            </div>
+            <span class="dashboard-card-label">Mis Vacaciones</span>
+            @if ((ViewBag.VacacionesDisponibles ?? 0) > 0)
+            {
+                <span class="dashboard-card-badge">@ViewBag.VacacionesDisponibles</span>
+            }
+        </a>
+    </div>
+
+    <div class="col-xl-2 col-lg-3 col-md-4 col-6">
+        <a asp-controller="HorasExtras" asp-action="MisHorasExtras" class="dashboard-card">
+            <div class="dashboard-card-icon green">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <span class="dashboard-card-label">Mis Horas Extras</span>
+            @if ((ViewBag.HorasExtrasPendientes ?? 0) > 0)
+            {
+                <span class="dashboard-card-badge amber">@ViewBag.HorasExtrasPendientes</span>
+            }
+        </a>
+    </div>
+
+</div>
+
+@* ================================================
+   SECCION: DOCUMENTOS Y BENEFICIOS
+   ================================================ *@
+<div class="dashboard-section-header">
+    <div class="dashboard-section-icon blue">
+        <i class="bi bi-file-earmark-text"></i>
+    </div>
+    <div>
+        <h5 class="dashboard-section-title">Documentos y Beneficios</h5>
+        <span class="dashboard-section-sub">Evaluaciones, uniformes e incapacidades</span>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+
+    <div class="col-xl-2 col-lg-3 col-md-4 col-6">
+        <a asp-controller="Consultas" asp-action="MisEvaluaciones" class="dashboard-card">
+            <div class="dashboard-card-icon blue">
+                <i class="bi bi-clipboard-check"></i>
+            </div>
+            <span class="dashboard-card-label">Mis Evaluaciones</span>
+        </a>
+    </div>
+
+    <div class="col-xl-2 col-lg-3 col-md-4 col-6">
+        <a asp-controller="Consultas" asp-action="MisUniformes" class="dashboard-card">
+            <div class="dashboard-card-icon blue">
+                <i class="bi bi-bag-check"></i>
+            </div>
+            <span class="dashboard-card-label">Mis Uniformes</span>
+        </a>
+    </div>
+
+    <div class="col-xl-2 col-lg-3 col-md-4 col-6">
+        <a asp-controller="Consultas" asp-action="MisIncapacidades" class="dashboard-card">
+            <div class="dashboard-card-icon blue">
+                <i class="bi bi-heart-pulse"></i>
+            </div>
+            <span class="dashboard-card-label">Mis Incapacidades</span>
+        </a>
+    </div>
+
+</div>

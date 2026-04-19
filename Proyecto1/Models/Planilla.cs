@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Proyecto1.Models
@@ -15,12 +17,15 @@ namespace Proyecto1.Models
 
         public int Estado { get; set; }
 
-        // ===== PROPIEDAD CALCULADA (NO BD) =====
         [NotMapped]
         public string EstadoTexto =>
-        Estado == 1 ? "Generada" :
-        Estado == 2 ? "Anulada" :
-        Estado == 3 ? "Regenerada" :
-        "Desconocido";
+            Estado == 1 ? "Generada" :
+            Estado == 2 ? "Anulada" :
+            Estado == 3 ? "Regenerada" :
+            "Desconocido";
+
+        public virtual ICollection<PlanillaDetalle> Detalles { get; set; } = new List<PlanillaDetalle>();
     }
+
+    
 }

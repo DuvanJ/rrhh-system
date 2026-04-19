@@ -1,0 +1,261 @@
+﻿@model Proyecto1.Models.Aguinaldo
+
+@{
+    ViewData["Title"] = "Detalle de Aguinaldo";
+    var anio = ViewBag.Anio;
+    var idCol = ViewBag.IdColaborador;
+
+    var iniciales = Model.NombreColaborador?
+        .Split(' ')
+        .Where(s => !string.IsNullOrEmpty(s))
+        .Take(2)
+        .Select(s => s[0].ToString())
+        .Aggregate("", (acc, c) => acc + c)
+        .ToUpper() ?? "??";
+
+    var estadoBadge = Model.Estado switch
+    {
+        "Pagado" => "bg-success",
+        "Aprobado" => "bg-warning",
+        _ => "bg-secondary"
+    };
+}
+
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-cash-coin"></i>Detalle de Aguinaldo
+    </h3>
+    <div class="d-flex gap-2">
+        <a asp-action="ExportarPdfAguinaldo"
+           asp-route-id="@Model.IdAguinaldo"
+           class="btn btn-danger">
+            <i class="bi bi-file-earmark-pdf"></i>Descargar PDF
+        </a>
+        <a asp-action="Index"
+           asp-route-anio="@anio"
+           asp-route-idColaborador="@idCol"
+           class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i>Volver
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-xl-7 col-lg-9">
+
+        @* Perfil del colaborador *@
+        <div class="card mb-4">
+            <div class="card-body py-4">
+                <div class="d-flex align-items-center gap-4">
+
+                    <div class="avatar-circle avatar-green"
+                         style="width:64px;height:64px;font-size:1.3rem;flex-shrink:0;">
+                        @iniciales
+                    </div>
+
+                    <div class="flex-grow-1">
+                        <h4 style="font-weight:700;color:var(--navy);margin-bottom:6px;">
+                            @Model.NombreColaborador
+                        </h4>
+                        <span class="badge @estadoBadge badge-dot">@Model.Estado</span>
+                    </div>
+
+                    <div class="text-end" style="flex-shrink:0;">
+                        <div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;
+                                    letter-spacing:.5px;color:var(--text-3);margin-bottom:4px;">
+                            Monto Aguinaldo
+                        </div>
+                        <div style="font-size:1.6rem;font-weight:700;color:var(--green);
+                                    font-family:'Consolas',monospace;">
+                            ₡ @Model.MontoAguinaldo.ToString("N2")
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        @* Detalle de campos *@
+        <div class="card mb-4">
+            <div class="card-header">
+                <span class="card-header-title">
+                    <i class="bi bi-card-list"></i>Informacion del aguinaldo
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+                        <div class="detail-field">
+                            <span class="detail-label">
+                                <i class="bi bi-cash-coin"></i>Total salarios
+                            </span>
+                            <span class="detail-value td-mono">
+                                ₡ @Model.TotalSalarios.ToString("N2")
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="detail-field">
+                            <span class="detail-label">
+                                <i class="bi bi-gift"></i>Monto aguinaldo
+                            </span>
+                            <span class="detail-value td-mono"
+                                  style="color:var(--green);font-weight:700;">
+                                ₡ @Model.MontoAguinaldo.ToString("N2")
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="detail-field">
+                            <span class="detail-label">
+                                <i class="bi bi-calendar-check"></i>Fecha de calculo
+                            </span>
+                            <span class="detail-value td-mono">
+                                @(Model.FechaCalculo?.ToString("dd/MM/yyyy") ?? "—")
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="detail-field">
+                            <span class="detail-label">
+                                <i class="bi bi-calendar-event"></i>Fecha de pago
+                            </span>
+                            <span class="detail-value td-mono">
+                                @if (Model.FechaPago != null)
+                                {
+                                    <span style="color:var(--green);font-weight:600;">
+                                        @Model.FechaPago.Value.ToString("dd/MM/yyyy")
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span style="color:var(--text-3);font-style:italic;">
+                                        Pendiente de pago
+                                    </span>
+                                }
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12">
+                        <div class="detail-field">
+                            <span class="detail-label">
+                                <i class="bi bi-info-circle"></i>Estado actual
+                            </span>
+                            <span class="detail-value">
+                                <span class="badge @estadoBadge badge-dot">@Model.Estado</span>
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            @* Acciones según estado *@
+            <div class="card-footer d-flex justify-content-between align-items-center"
+                 style="background:transparent;border-top:1px solid var(--border);padding:16px 20px;">
+
+                <a asp-action="Index"
+                   asp-route-anio="@anio"
+                   asp-route-idColaborador="@idCol"
+                   class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i>Volver al listado
+                </a>
+
+                <div class="d-flex gap-2">
+
+                    @if (Model.Estado == "Calculado")
+                    {
+                        <form method="post" asp-action="Aprobar" id="formAprobar">
+                            <input type="hidden" name="id" value="@Model.IdAguinaldo" />
+                            <input type="hidden" name="anio" value="@anio" />
+                            <button type="button"
+                                    class="btn btn-warning"
+                                    onclick="confirmarAprobar('@Model.NombreColaborador')">
+                                <i class="bi bi-check-circle"></i>Aprobar
+                            </button>
+                        </form>
+                    }
+
+                    @if (Model.Estado == "Aprobado")
+                    {
+                        <form method="post" asp-action="Pagar" id="formPagar">
+                            <input type="hidden" name="id" value="@Model.IdAguinaldo" />
+                            <input type="hidden" name="anio" value="@anio" />
+                            <button type="button"
+                                    class="btn btn-success"
+                                    onclick="confirmarPagar('@Model.NombreColaborador', '@Model.MontoAguinaldo.ToString("N2")')">
+                                <i class="bi bi-cash-coin"></i>Registrar pago
+                            </button>
+                        </form>
+                    }
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .detail-field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 14px 16px;
+            background: var(--slate-ll);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            height: 100%;
+        }
+
+        .detail-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-3);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+            .detail-label i {
+                font-size: 0.75rem;
+            }
+
+        .detail-value {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+
+        function confirmarAprobar(nombre) {
+            Alert.confirm(
+                `Se aprobara el aguinaldo de ${nombre}. Desea continuar?`,
+                () => { document.getElementById('formAprobar').submit(); },
+                'question'
+            );
+        }
+
+        function confirmarPagar(nombre, monto) {
+            Alert.confirm(
+                `Se registrara el pago de ₡${monto} a ${nombre}. Esta accion no se puede revertir. Desea continuar?`,
+                () => { document.getElementById('formPagar').submit(); },
+                'warning'
+            );
+        }
+
+    </script>
+}

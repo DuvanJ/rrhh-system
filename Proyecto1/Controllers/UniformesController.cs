@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Proyecto1.BLL;
 using Proyecto1.Models;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -16,7 +15,7 @@ namespace Proyecto1.Controllers
             _service = service;
         }
 
-        // ================= LISTAR HISTORIAL =================
+        // ================= INDEX =================
         public async Task<IActionResult> Index(int? idColaborador)
         {
             var lista = await _service.ListarHistorialAsync(null);
@@ -27,7 +26,7 @@ namespace Proyecto1.Controllers
 
                 if (!existe)
                 {
-                    TempData["Error"] = $"No existe ningún colaborador con ID {idColaborador.Value}. Mostrando todos los registros.";
+                    TempData["Error"] = $"No existe ningún colaborador con ID {idColaborador.Value}.";
                     return View(lista);
                 }
 
@@ -48,9 +47,7 @@ namespace Proyecto1.Controllers
             return View(lista);
         }
 
-
-
-        // ================= CREAR =================
+        // ================= CREATE GET =================
         [HttpGet]
         public async Task<IActionResult> Create()
         {
@@ -58,28 +55,18 @@ namespace Proyecto1.Controllers
             {
                 IdColaborador = 0,
                 NombreColaborador = "",
-
                 TiposUniforme = await _service.ListarTiposAsync(),
-
-                Tallas = new List<string>
-        {
-            "XS", "S", "M", "L", "XL", "XXL"
-        },
-
+                Tallas = new List<string> { "XS", "S", "M", "L", "XL", "XXL" },
                 Uniformes = new List<EntregaUniforme>()
             };
 
             return View(vm);
         }
 
-
-
-
-
+        // ================= CREATE POST =================
         [HttpPost]
         public async Task<IActionResult> Create(EntregaUniformeVM vm)
         {
-            // Validar que se haya agregado al menos un uniforme
             if (vm.Uniformes == null || vm.Uniformes.Count == 0)
             {
                 TempData["Error"] = "Debe agregar al menos un uniforme.";
@@ -88,33 +75,56 @@ namespace Proyecto1.Controllers
                 return View(vm);
             }
 
-            // ===== Validación de duplicados dentro del formulario =====
             var combinaciones = new HashSet<string>();
             foreach (var u in vm.Uniformes)
             {
                 var key = $"{u.IdTipoUniforme}-{u.Talla}";
                 if (!combinaciones.Add(key))
                 {
-                    TempData["Error"] = "No se permiten uniformes duplicados (mismo tipo y talla). Ajuste la cantidad si desea más.";
+                    TempData["Error"] = "No se permiten uniformes duplicados (mismo tipo y talla).";
                     vm.TiposUniforme = await _service.ListarTiposAsync();
                     vm.Tallas = new List<string> { "XS", "S", "M", "L", "XL", "XXL" };
                     return View(vm);
                 }
 
-                // Asignar datos generales
                 u.IdColaborador = vm.IdColaborador;
                 u.FechaEntrega = vm.FechaEntrega;
                 u.Observaciones = vm.Observaciones;
             }
 
-            // Guardar uniformes
             await _service.CrearMultiplesAsync(vm.Uniformes);
 
             TempData["Success"] = "Uniformes registrados correctamente.";
             return RedirectToAction(nameof(Index));
         }
 
+        // ================= EDIT GET =================
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var uniformes = await _service.ObtenerPorEntregaAsync(id);
 
+            if (uniformes == null || !uniformes.Any())
+                return NotFound();
+
+            var primero = uniformes.First();
+            var colaborador = await _service.ObtenerColaboradorActivoAsync(primero.IdColaborador);
+
+            var vm = new EntregaUniformeVM
+            {
+                IdColaborador = primero.IdColaborador,
+                NombreColaborador = colaborador?.Nombre ?? "",
+                FechaEntrega = primero.FechaEntrega,
+                Observaciones = primero.Observaciones,
+                TiposUniforme = await _service.ListarTiposAsync(),
+                Tallas = new List<string> { "XS", "S", "M", "L", "XL", "XXL" },
+                Uniformes = uniformes
+            };
+
+            return View(vm);
+        }
+
+        // ================= EDIT POST =================
         [HttpPost]
         public async Task<IActionResult> Edit(EntregaUniformeVM vm)
         {
@@ -139,8 +149,7 @@ namespace Proyecto1.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-
-        // ================= ELIMINAR =================
+        // ================= DELETE =================
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
@@ -149,7 +158,7 @@ namespace Proyecto1.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // ================= BUSCAR COLABORADOR =================
+        // ================= VERIFICAR COLABORADOR =================
         [HttpGet]
         public async Task<IActionResult> VerificarColaborador(int id)
         {

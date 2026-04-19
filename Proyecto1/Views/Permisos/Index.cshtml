@@ -1,84 +1,287 @@
-﻿@model IEnumerable<Proyecto1.Models.Permiso>
+﻿@model IEnumerable<Proyecto1.Models.PermisoAdminVM>
+
 @{
     ViewData["Title"] = "Gestión de Permisos";
+    var idColActual = Context.Request.Query["idColaborador"].ToString();
+    var lista = Model.ToList();
+
+    var pendientes = lista.Count(p => p.Estado == "Pendiente");
+    var aprobados = lista.Count(p => p.Estado == "Aprobado");
+    var rechazados = lista.Count(p => p.Estado == "Rechazado");
 }
 
-<h2 class="mb-4">Gestión de Permisos</h2>
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-calendar-event"></i>Gestión de Permisos
+    </h3>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-house"></i>Inicio
+    </a>
+</div>
 
-<form method="get" asp-action="Index" class="row g-3 mb-4">
-    <div class="col-md-4">
-        <input type="number" name="idColaborador" class="form-control" placeholder="Buscar por ID de colaborador" />
+@* ================================================
+   KPI CARDS
+   ================================================ *@
+<div class="row g-3 mb-4">
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total permisos</div>
+                <div class="kpi-value">@lista.Count</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-calendar-event"></i>
+            </div>
+        </div>
     </div>
-    <div class="col-md-2">
-        <button type="submit" class="btn btn-primary w-100">Buscar</button>
-    </div>
-    <div class="col-md-2">
-        <a asp-action="Index" class="btn btn-secondary w-100">Limpiar</a>
-    </div>
-</form>
 
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
-@if (TempData["Warning"] != null)
-{
-    <div class="alert alert-warning">@TempData["Warning"]</div>
-}
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Pendientes</div>
+                <div class="kpi-value" style="color:var(--amber)">@pendientes</div>
+            </div>
+            <div class="kpi-icon amber">
+                <i class="bi bi-clock-fill"></i>
+            </div>
+        </div>
+    </div>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>ID Colaborador</th>
-            <th>Colaborador</th>
-            <th>Tipo</th>
-            <th>Fecha solicitud</th>
-            <th>Desde</th>
-            <th>Hasta</th>
-            <th>Estado</th>
-            <th class="text-center">Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@item.IdColaborador</td>
-                <td>@item.NombreColaborador</td>
-                <td>@item.TipoPermiso</td>
-                <td>@item.FechaSolicitud.ToString("dd/MM/yyyy")</td>
-                <td>@item.FechaInicio.ToString("dd/MM/yyyy")</td>
-                <td>@item.FechaFin.ToString("dd/MM/yyyy")</td>
-                <td>
-                    <span class="badge @(item.Estado == "Pendiente" ? "bg-warning" :
-                                                                    item.Estado == "Aprobado" ? "bg-success" : "bg-danger")">
-                    @item.Estado
-                </span>
-            </td>
-            <td class="text-center">
-                @if (item.Estado == "Pendiente")
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Aprobados</div>
+                <div class="kpi-value" style="color:var(--green)">@aprobados</div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Rechazados</div>
+                <div class="kpi-value" style="color:var(--red)">@rechazados</div>
+            </div>
+            <div class="kpi-icon red">
+                <i class="bi bi-x-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@* ================================================
+   FILTROS
+   ================================================ *@
+<div class="filter-card mb-4">
+    <form method="get" asp-action="Index">
+        <div class="filter-row">
+
+            <div class="filter-group" style="max-width:200px;">
+                <span class="filter-label">ID Colaborador</span>
+                <input type="number"
+                       name="idColaborador"
+                       class="form-control"
+                       placeholder="Ingrese ID..."
+                       value="@idColActual" />
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i>Buscar
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i>Limpiar
+                </a>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+@* Contador *@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted" style="font-size:0.82rem;">
+        @lista.Count permiso(s) encontrado(s)
+    </span>
+</div>
+
+@* ================================================
+   TABLA
+   ================================================ *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>Listado de permisos
+        </span>
+        <span class="badge badge-info">@lista.Count registros</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaPermisos" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th>Colaborador</th>
+                        <th>Tipo</th>
+                        <th class="text-center">Solicitud</th>
+                        <th class="text-center">Desde</th>
+                        <th class="text-center">Hasta</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-end pe-3">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (lista.Any())
                     {
-                        <form asp-action="CambiarEstado" method="post" class="d-inline">
-                            <input type="hidden" name="id" value="@item.IdPermiso" />
-                            <input type="hidden" name="estado" value="Aprobado" />
-                            <button class="btn btn-success btn-sm">Aprobar</button>
-                        </form>
-                        <form asp-action="CambiarEstado" method="post" class="d-inline">
-                            <input type="hidden" name="id" value="@item.IdPermiso" />
-                            <input type="hidden" name="estado" value="Rechazado" />
-                            <button class="btn btn-danger btn-sm">Rechazar</button>
-                        </form>
+                        foreach (var item in lista)
+                        {
+                            var iniciales = item.NombreColaborador?
+                            .Split(' ')
+                            .Where(s => !string.IsNullOrEmpty(s))
+                            .Take(2)
+                            .Select(s => s[0].ToString())
+                            .Aggregate("", (acc, c) => acc + c)
+                            .ToUpper() ?? "??";
+
+                            string badgeClass = item.Estado switch
+                            {
+                                "Aprobado" => "bg-success",
+                                "Pendiente" => "bg-warning",
+                                _ => "bg-danger"
+                            };
+
+                            string avatarColor = item.Estado switch
+                            {
+                                "Aprobado" => "green",
+                                "Pendiente" => "amber",
+                                _ => "red"
+                            };
+
+                            <tr>
+                                <td>
+                                    <div class="table-avatar">
+                                        <div class="avatar-circle avatar-@avatarColor">
+                                            @iniciales
+                                        </div>
+                                        <div>
+                                            <div class="avatar-name">
+                                                @item.NombreColaborador
+                                            </div>
+                                            <div class="avatar-sub">
+                                                ID: @item.IdColaborador
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>@item.TipoPermiso</td>
+                                <td class="text-center td-muted">
+                                    @item.FechaSolicitud.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center td-muted">
+                                    @item.FechaInicio.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center td-muted">
+                                    @item.FechaFin.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge @badgeClass badge-dot">
+                                        @item.Estado
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="td-actions">
+                                        @if (item.Estado == "Pendiente")
+                                        {
+                                            <form asp-action="CambiarEstado"
+                                                  method="post"
+                                                  id="formAprobar_@item.IdPermiso"
+                                                  class="d-inline">
+                                                <input type="hidden" name="id"
+                                                       value="@item.IdPermiso" />
+                                                <input type="hidden" name="estado"
+                                                       value="Aprobado" />
+                                                <button type="button"
+                                                        class="btn btn-success btn-sm"
+                                                        onclick="confirmarCambio(@item.IdPermiso, 'aprobar', '@item.NombreColaborador')">
+                                                    <i class="bi bi-check-circle"></i>Aprobar
+                                                </button>
+                                            </form>
+                                            <form asp-action="CambiarEstado"
+                                                  method="post"
+                                                  id="formRechazar_@item.IdPermiso"
+                                                  class="d-inline">
+                                                <input type="hidden" name="id"
+                                                       value="@item.IdPermiso" />
+                                                <input type="hidden" name="estado"
+                                                       value="Rechazado" />
+                                                <button type="button"
+                                                        class="btn btn-danger btn-sm"
+                                                        onclick="confirmarCambio(@item.IdPermiso, 'rechazar', '@item.NombreColaborador')">
+                                                    <i class="bi bi-x-circle"></i>Rechazar
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <span class="td-muted" style="font-size:0.82rem;">
+                                                Procesado
+                                            </span>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
                     }
                     else
                     {
-                        <span class="text-muted">Procesado</span>
+                        <tr>
+                            <td colspan="7">
+                                <div class="table-empty">
+                                    <i class="bi bi-calendar-event"></i>
+                                    <p>No hay permisos para mostrar</p>
+                                </div>
+                            </td>
+                        </tr>
                     }
-                </td>
-            </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+
+        $(document).ready(function () {
+            if (@lista.Any().ToString().ToLower()) {
+                var config = Object.assign({}, DataTableConfig, {
+                    order: [[2, 'desc']]
+                });
+                $('#tablaPermisos').DataTable(config);
+            }
+        });
+
+        function confirmarCambio(id, accion, nombre) {
+            var mensaje = accion === 'aprobar'
+                ? 'Se aprobará el permiso de ' + nombre + '. ¿Desea continuar?'
+                : 'Se rechazará el permiso de ' + nombre + '. ¿Desea continuar?';
+
+            var tipo   = accion === 'aprobar' ? 'question' : 'warning';
+            var formId = accion === 'aprobar'
+                ? 'formAprobar_' + id
+                : 'formRechazar_' + id;
+
+            Alert.confirm(mensaje, function () {
+                document.getElementById(formId).submit();
+            }, tipo);
         }
-    </tbody>
-</table>
+
+    </script>
+}

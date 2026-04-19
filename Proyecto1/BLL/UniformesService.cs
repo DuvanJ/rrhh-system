@@ -151,5 +151,22 @@ namespace Proyecto1.BLL
         }
 
 
+        // ================= OBTENER UNIFORMES POR COLABORADOR Y FECHA =================
+        public async Task<List<EntregaUniforme>> ObtenerPorEntregaAsync(int idEntrega)
+        {
+            var entrega = await _context.EntregasUniforme
+                .FirstOrDefaultAsync(e => e.IdEntrega == idEntrega);
+
+            if (entrega == null)
+                return new List<EntregaUniforme>();
+
+            // Traer todos los uniformes del mismo colaborador y misma fecha
+            return await _context.EntregasUniforme
+                .Where(e => e.IdColaborador == entrega.IdColaborador &&
+                            e.FechaEntrega == entrega.FechaEntrega &&
+                            e.Observaciones == entrega.Observaciones)
+                .ToListAsync();
+        }
+
     }
 }

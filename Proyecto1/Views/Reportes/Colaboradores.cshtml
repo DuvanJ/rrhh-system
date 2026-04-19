@@ -1,0 +1,247 @@
+﻿@model List<Proyecto1.Models.Colaborador>
+
+@{
+    ViewData["Title"] = "Reporte de Colaboradores";
+
+    var nombreQ = Context.Request.Query["nombre"].ToString();
+    var deptoQ = Context.Request.Query["departamento"].ToString();
+    var estadoQ = Context.Request.Query["estado"].ToString();
+
+    var totalColabs = (int)(ViewBag.TotalColaboradores ?? 0);
+    var totalActivos = (int)(ViewBag.TotalActivos ?? 0);
+    var totalInact = (int)(ViewBag.TotalInactivos ?? 0);
+}
+
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-people-fill"></i>Reporte de Colaboradores
+    </h3>
+    <a asp-controller="Reportes" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
+
+@* ================================================
+   FILTROS
+   ================================================ *@
+<div class="filter-card mb-4">
+    <form method="get">
+        <div class="filter-row flex-wrap">
+
+            <div class="filter-group" style="max-width:240px;">
+                <span class="filter-label">Nombre</span>
+                <input type="text"
+                       name="nombre"
+                       value="@nombreQ"
+                       class="form-control"
+                       placeholder="Nombre o apellido..." />
+            </div>
+
+            <div class="filter-group" style="max-width:200px;">
+                <span class="filter-label">Departamento</span>
+                <input type="text"
+                       name="departamento"
+                       value="@deptoQ"
+                       class="form-control"
+                       placeholder="Departamento..." />
+            </div>
+
+            <div class="filter-group" style="max-width:150px;">
+                <span class="filter-label">Estado</span>
+                <select name="estado" class="form-select">
+                    <option value="">Todos</option>
+                    @if (estadoQ == "Activo")
+                    {
+                        <option value="Activo" selected="selected">Activo</option>
+                        <option value="Inactivo">Inactivo</option>
+                    }
+                    else if (estadoQ == "Inactivo")
+                    {
+                        <option value="Activo">Activo</option>
+                        <option value="Inactivo" selected="selected">Inactivo</option>
+                    }
+                    else
+                    {
+                        <option value="Activo">Activo</option>
+                        <option value="Inactivo">Inactivo</option>
+                    }
+                </select>
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i>Filtrar
+                </button>
+                <a asp-action="Colaboradores" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i>Limpiar
+                </a>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+@* ================================================
+   KPI CARDS
+   ================================================ *@
+<div class="row g-3 mb-4">
+
+    <div class="col-md-4">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total colaboradores</div>
+                <div class="kpi-value">@totalColabs</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-people-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Activos</div>
+                <div class="kpi-value" style="color:var(--green)">@totalActivos</div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Inactivos</div>
+                <div class="kpi-value" style="color:var(--red)">@totalInact</div>
+            </div>
+            <div class="kpi-icon red">
+                <i class="bi bi-x-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@* ================================================
+   BOTON EXCEL
+   ================================================ *@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted" style="font-size:0.82rem;">
+        @Model.Count colaborador(es) encontrado(s)
+    </span>
+    <a asp-action="ExportarColaboradoresExcel"
+       asp-route-nombre="@nombreQ"
+       asp-route-departamento="@deptoQ"
+       asp-route-estado="@estadoQ"
+       class="btn btn-success">
+        <i class="bi bi-file-earmark-excel"></i>Exportar Excel
+    </a>
+</div>
+
+@* ================================================
+   TABLA
+   ================================================ *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>Listado de colaboradores
+        </span>
+        <span class="badge badge-info">@Model.Count registros</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaColaboradores" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th>Cedula</th>
+                        <th>Colaborador</th>
+                        <th>Puesto</th>
+                        <th>Departamento</th>
+                        <th class="text-center">Ingreso</th>
+                        <th class="text-end">Salario</th>
+                        <th class="text-center">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            var iniciales = $"{item.Nombre?.Substring(0, 1)}{item.Apellidos?.Substring(0, 1)}".ToUpper();
+                            var colores = new[] { "blue", "green", "amber", "slate" };
+                            var color = colores[item.IdColaborador % colores.Length];
+
+                            <tr>
+                                <td class="td-mono">@item.Cedula</td>
+                                <td>
+                                    <div class="table-avatar">
+                                        <div class="avatar-circle avatar-@color">
+                                            @iniciales
+                                        </div>
+                                        <div>
+                                            <div class="avatar-name">
+                                                @item.Nombre @item.Apellidos
+                                            </div>
+                                            <div class="avatar-sub">@item.Correo</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>@item.Puesto</td>
+                                <td class="td-muted">@item.Departamento</td>
+                                <td class="text-center td-muted">
+                                    @item.FechaIngreso.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-end td-mono"
+                                    style="font-weight:600;color:var(--green)">
+                                    ₡ @item.SalarioBase.ToString("N2")
+                                </td>
+                                <td class="text-center">
+                                    @if (item.Estado)
+                                    {
+                                        <span class="badge bg-success badge-dot">Activo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary badge-dot">Inactivo</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7">
+                                <div class="table-empty">
+                                    <i class="bi bi-people-fill"></i>
+                                    <p>No se encontraron colaboradores</p>
+                                    <span class="text-muted" style="font-size:0.82rem;">
+                                        Ajuste los filtros e intente de nuevo
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            if (@Model.Any().ToString().ToLower()) {
+                var config = Object.assign({}, DataTableConfig, {
+                    order: [[1, 'asc']]
+                });
+                $('#tablaColaboradores').DataTable(config);
+            }
+        });
+    </script>
+}

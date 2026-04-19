@@ -1,115 +1,393 @@
 ﻿@model IEnumerable<Proyecto1.Models.Planilla>
 
 @{
-    ViewData["Title"] = "Gestión de Planillas";
+    ViewData["Title"] = "Gestion de Planillas";
+    var cultura = System.Globalization.CultureInfo.GetCultureInfo("es-ES");
+
+    var lista = Model.ToList();
+    var generadas = lista.Count(p => p.Estado == 1);
+    var anuladas = lista.Count(p => p.Estado == 2);
+    var regeneradas = lista.Count(p => p.Estado == 3);
 }
 
-<h3 class="fw-bold mb-4">Gestión de Planillas</h3>
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-receipt-cutoff"></i>Gestion de Planillas
+    </h3>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-house"></i>Inicio
+    </a>
+</div>
 
-<!-- Mensajes -->
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
+@* ================================================
+   KPI CARDS
+   ================================================ *@
+<div class="row g-3 mb-4">
 
-<!-- Generar planilla -->
-<div class="card shadow-sm mb-4">
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total planillas</div>
+                <div class="kpi-value">@lista.Count</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-receipt-cutoff"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Generadas</div>
+                <div class="kpi-value" style="color:var(--green)">@generadas</div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Anuladas</div>
+                <div class="kpi-value" style="color:var(--red)">@anuladas</div>
+            </div>
+            <div class="kpi-icon red">
+                <i class="bi bi-x-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Regeneradas</div>
+                <div class="kpi-value" style="color:var(--amber)">@regeneradas</div>
+            </div>
+            <div class="kpi-icon amber">
+                <i class="bi bi-arrow-repeat"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@* ================================================
+   GENERAR PLANILLA
+   ================================================ *@
+<div class="card mb-4">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-calculator"></i>Generar nueva planilla
+        </span>
+    </div>
     <div class="card-body">
-        <h5 class="card-title">Generar Nueva Planilla</h5>
+        <form asp-action="Generar" method="post" id="formGenerar" novalidate>
+            <div class="row g-3 align-items-end">
 
-        <form asp-action="Generar" method="post" class="row g-3">
-            <div class="col-md-4">
-                <label class="form-label">Mes</label>
-                <select name="mes" class="form-select" required>
-                    <option value="">-- Seleccione --</option>
-                    @for (int m = 1; m <= 12; m++)
-                    {
-                        <option value="@m">@System.Globalization.CultureInfo.GetCultureInfo("es-ES").DateTimeFormat.GetMonthName(m)</option>
-                    }
-                </select>
-            </div>
+                <div class="col-md-4">
+                    <label class="form-label">
+                        Mes <span class="required">*</span>
+                    </label>
+                    <select name="mes" id="selectMes" class="form-select" required>
+                        <option value="">-- Seleccione --</option>
+                        @for (int m = 1; m <= 12; m++)
+                        {
+                            @if (m == DateTime.Now.Month)
+                            {
+                                <option value="@m" selected="selected">
+                                    @cultura.DateTimeFormat.GetMonthName(m)
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="@m">
+                                    @cultura.DateTimeFormat.GetMonthName(m)
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
 
-            <div class="col-md-4">
-                <label class="form-label">Año</label>
-                <input type="number" name="año" class="form-control" value="@DateTime.Now.Year" required />
-            </div>
+                <div class="col-md-4">
+                    <label class="form-label">
+                        Año <span class="required">*</span>
+                    </label>
+                    <input type="number"
+                           name="año"
+                           id="inputAnio"
+                           class="form-control"
+                           value="@DateTime.Now.Year"
+                           min="2000"
+                           max="@DateTime.Now.Year"
+                           required />
+                </div>
 
-            <div class="col-md-4 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary w-100">
-                    <i class="bi bi-calculator"></i> Generar Planilla
-                </button>
+                <div class="col-md-4">
+                    <button type="button"
+                            class="btn btn-success w-100"
+                            onclick="confirmarGenerar()">
+                        <i class="bi bi-calculator"></i>Generar planilla
+                    </button>
+                </div>
+
             </div>
         </form>
     </div>
 </div>
 
-<!-- Listado de planillas -->
-<table class="table table-striped table-bordered shadow-sm">
-    <thead class="table-dark">
-        <tr>
-            <th>ID</th>
-            <th>Mes</th>
-            <th>Año</th>
-            <th>Fecha Generación</th>
-            <th>Estado</th>
-            <th style="width:180px">Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (!Model.Any())
-        {
-            <tr>
-                <td colspan="6" class="text-center text-muted">No hay planillas registradas.</td>
-            </tr>
-        }
-        else
-        {
-            foreach (var p in Model)
-            {
-                <tr>
-                    <td>@p.IdPlanilla</td>
-                    <td>@System.Globalization.CultureInfo.GetCultureInfo("es-ES").DateTimeFormat.GetMonthName(p.Mes)</td>
-                    <td>@p.Año</td>
-                    <td>@p.FechaGeneracion.ToShortDateString()</td>
-                    <td>
-                        @if (p.Estado == 1)
-                        {
-                            <span class="badge bg-success">Generada</span>
-                        }
-                        else if (p.Estado == 2)
-                        {
-                            <span class="badge bg-danger">Anulada</span>
-                        }
-                        else if (p.Estado == 3)
-                        {
-                            <span class="badge bg-warning text-dark">Regenerada</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-secondary">Desconocido</span>
-                        }
-                    </td>
-                    <td>
-                        <a asp-action="Detalle" asp-route-id="@p.IdPlanilla" class="btn btn-sm btn-info">
-                            <i class="bi bi-eye"></i>
-                        </a>
+@* ================================================
+   FILTRO DE ESTADO
+   ================================================ *@
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="btn-group" role="group">
+            <button type="button"
+                    class="btn btn-outline-primary active"
+                    onclick="filtrarPlanillas('todas')">
+                <i class="bi bi-funnel"></i>Todas (@lista.Count)
+            </button>
+            <button type="button"
+                    class="btn btn-outline-success"
+                    onclick="filtrarPlanillas(1)">
+                <i class="bi bi-check-circle"></i>Generadas (@generadas)
+            </button>
+            <button type="button"
+                    class="btn btn-outline-danger"
+                    onclick="filtrarPlanillas(2)">
+                <i class="bi bi-x-circle"></i>Anuladas (@anuladas)
+            </button>
+            <button type="button"
+                    class="btn btn-outline-warning"
+                    onclick="filtrarPlanillas(3)">
+                <i class="bi bi-arrow-repeat"></i>Regeneradas (@regeneradas)
+            </button>
+        </div>
+    </div>
+</div>
 
-                        @if (p.Estado == 1)
+@* ================================================
+   TABLA
+   ================================================ *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>Listado de planillas
+        </span>
+        <span class="badge badge-info">@lista.Count registros</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaPlanillas" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Mes</th>
+                        <th class="text-center">Año</th>
+                        <th class="text-center">Fecha generacion</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-end pe-3">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!lista.Any())
+                    {
+                        <tr>
+                            <td colspan="6">
+                                <div class="table-empty">
+                                    <i class="bi bi-receipt-cutoff"></i>
+                                    <p>No hay planillas registradas</p>
+                                    <span class="text-muted" style="font-size:0.82rem;">
+                                        Use el formulario de arriba para generar la primera planilla
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var p in lista.OrderByDescending(x => x.Año).ThenByDescending(x => x.Mes))
                         {
-                            <form asp-action="Anular" method="post" class="d-inline">
-                                <input type="hidden" name="idPlanilla" value="@p.IdPlanilla" />
-                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Desea anular esta planilla?');">
-                                    <i class="bi bi-x-circle"></i>
-                                </button>
-                            </form>
+                            string estadoBadge = p.Estado switch
+                            {
+                                1 => "bg-success",
+                                2 => "bg-danger",
+                                3 => "bg-warning",
+                                _ => "bg-secondary"
+                            };
+
+                            string estadoTexto = p.Estado switch
+                            {
+                                1 => "Generada",
+                                2 => "Anulada",
+                                3 => "Regenerada",
+                                _ => "Desconocido"
+                            };
+
+                            string claseFila = p.Estado == 2 ? "fila-anulada" : "";
+
+                            <tr class="@claseFila fila-estado-@p.Estado">
+                                <td class="td-mono">@p.IdPlanilla</td>
+                                <td style="font-weight:500;">
+                                    @cultura.DateTimeFormat.GetMonthName(p.Mes)
+                                </td>
+                                <td class="text-center td-mono">@p.Año</td>
+                                <td class="text-center td-muted">
+                                    @p.FechaGeneracion.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge @estadoBadge badge-dot">
+                                        @estadoTexto
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="td-actions">
+
+                                        <a asp-action="Detalle"
+                                           asp-route-id="@p.IdPlanilla"
+                                           class="btn btn-primary btn-sm">
+                                            <i class="bi bi-eye"></i>Ver detalle
+                                        </a>
+
+                                        <a asp-action="ExportarPdf"
+                                           asp-route-idPlanilla="@p.IdPlanilla"
+                                           class="btn btn-danger btn-sm">
+                                            <i class="bi bi-file-earmark-pdf"></i>PDF
+                                        </a>
+
+                                        @if (p.Estado == 1)
+                                        {
+                                            <form asp-action="Anular"
+                                                  method="post"
+                                                  id="formAnular_@p.IdPlanilla"
+                                                  class="d-inline">
+                                                <input type="hidden"
+                                                       name="idPlanilla"
+                                                       value="@p.IdPlanilla" />
+                                                <button type="button"
+                                                        class="btn btn-warning btn-sm"
+                                                        onclick="confirmarAnular(@p.IdPlanilla, '@cultura.DateTimeFormat.GetMonthName(p.Mes) @p.Año')">
+                                                    <i class="bi bi-x-circle"></i>Anular
+                                                </button>
+                                            </form>
+                                        }
+
+                                        @if (p.Estado == 2)
+                                        {
+                                            <span class="badge bg-secondary">
+                                                <i class="bi bi-lock"></i>Anulada
+                                            </span>
+                                        }
+
+                                    </div>
+                                </td>
+                            </tr>
                         }
-                    </td>
-                </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .required {
+            color: var(--red);
+            margin-left: 2px;
+        }
+
+        .fila-anulada {
+            background-color: rgba(220, 53, 69, 0.1);
+            opacity: 0.8;
+        }
+
+            .fila-anulada td {
+                color: #999;
+            }
+
+        .badge-dot {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+            .badge-dot::before {
+                content: '';
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background-color: currentColor;
+                opacity: 0.7;
+            }
+    </style>
+}
+
+@section Scripts {
+    <script>
+
+        let tablaDataTable = null;
+
+        $(document).ready(function () {
+            if (@lista.Any().ToString().ToLower()) {
+                var config = Object.assign({}, DataTableConfig, {
+                    order: [[2, 'desc'], [1, 'desc']]
+                });
+                tablaDataTable = $('#tablaPlanillas').DataTable(config);
+            }
+        });
+
+        function filtrarPlanillas(estado) {
+            if (!tablaDataTable) return;
+
+            // Actualizar botones activos
+            document.querySelectorAll('.btn-group .btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.closest('.btn').classList.add('active');
+
+            // Filtrar tabla
+            if (estado === 'todas') {
+                tablaDataTable.column(4).search('').draw();
+            } else {
+                let estadoTexto = estado == 1 ? 'Generada' :
+                                 estado == 2 ? 'Anulada' :
+                                 estado == 3 ? 'Regenerada' : '';
+                tablaDataTable.column(4).search(estadoTexto).draw();
             }
         }
-    </tbody>
-</table>
+
+        function confirmarGenerar() {
+            var mes      = document.getElementById('selectMes');
+            var anio     = document.getElementById('inputAnio').value;
+            var mesTexto = mes.options[mes.selectedIndex]?.text;
+
+            if (!mes.value) {
+                Alert.warning('Debe seleccionar un mes.');
+                return;
+            }
+
+            if (!anio) {
+                Alert.warning('Debe ingresar el año.');
+                return;
+            }
+
+            Alert.confirm(
+                'Se generara la planilla del mes de ' + mesTexto + ' ' + anio + '. Desea continuar?',
+                function () { document.getElementById('formGenerar').submit(); },
+                'question'
+            );
+        }
+
+        function confirmarAnular(id, periodo) {
+            Alert.confirm(
+                'Se anulara la planilla de ' + periodo + '. Esta accion no se puede revertir. Desea continuar?',
+                function () { document.getElementById('formAnular_' + id).submit(); },
+                'warning'
+            );
+        }
+
+    </script>
+}

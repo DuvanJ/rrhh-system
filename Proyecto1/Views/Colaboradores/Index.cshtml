@@ -1,66 +1,255 @@
 ﻿@model List<Proyecto1.Models.Colaborador>
 
-<h2>Colaboradores</h2>
+@{
+    ViewData["Title"] = "Colaboradores";
+    var estadoActual = Context.Request.Query["estado"].ToString();
+}
 
-<a href="/Colaboradores/Create" class="btn btn-primary mb-3">Nuevo Colaborador</a>
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-people-fill"></i>Colaboradores
+    </h3>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-house"></i>Inicio
+    </a>
+</div>
 
-<form method="get" class="row g-2 mb-3">
+@* ================================================
+   KPI CARDS
+   ================================================ *@
+<div class="row g-3 mb-4">
+
     <div class="col-md-4">
-        <input type="number"
-               name="buscar"
-               value="@ViewBag.Buscar"
-               class="form-control"
-               placeholder="Buscar por ID de colaborador" />
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total colaboradores</div>
+                <div class="kpi-value">@ViewBag.Total</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-people-fill"></i>
+            </div>
+        </div>
     </div>
 
-    <div class="col-md-2">
-        <button type="submit" class="btn btn-primary">
-            Buscar
-        </button>
+    <div class="col-md-4">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Activos</div>
+                <div class="kpi-value" style="color: var(--green)">@ViewBag.Activos</div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+        </div>
     </div>
 
-    <div class="col-md-2">
-        <a asp-action="Index" class="btn btn-secondary">
-            Limpiar
-        </a>
+    <div class="col-md-4">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Inactivos</div>
+                <div class="kpi-value" style="color: var(--red)">@ViewBag.Inactivos</div>
+            </div>
+            <div class="kpi-icon red">
+                <i class="bi bi-x-circle-fill"></i>
+            </div>
+        </div>
     </div>
-</form>
 
-<table class="table table-bordered table-striped">
-    <thead class="table-dark">
-        <tr>
-            <th>Cédula</th>
-            <th>Nombre</th>
-            <th>Apellidos</th>
-            <th>Puesto</th>
-            <th>Departamento</th>
-            <th>Ingreso</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
+</div>
 
-    <tbody>
-        @foreach (var c in Model)
-        {
-            <tr>
-                <td>@c.Cedula</td>
-                <td>@c.Nombre</td>
-                <td>@c.Apellidos</td>
-                <td>@c.Puesto</td>
-                <td>@c.Departamento</td>
-                <td>@c.FechaIngreso.ToString("yyyy-MM-dd")</td>
+@* ================================================
+   FILTROS
+   ================================================ *@
+<div class="filter-card mb-3">
+    <form method="get" asp-action="Index">
+        <div class="filter-row">
 
-                <td>
-                    <a href="/Colaboradores/Details/@c.IdColaborador" class="btn btn-info btn-sm">Detalles</a>
-                    <a href="/Colaboradores/Edit/@c.IdColaborador" class="btn btn-warning btn-sm">Editar</a>
-                    <a href="/Colaboradores/Delete/@c.IdColaborador" class="btn btn-danger btn-sm">Eliminar</a>
-                </td>
+            <div class="filter-group" style="max-width: 140px;">
+                <span class="filter-label">ID</span>
+                <input type="number"
+                       id="buscarInput"
+                       name="buscar"
+                       value="@ViewBag.Buscar"
+                       class="form-control"
+                       placeholder="Ej: 12" />
+            </div>
 
-            </tr>
+            <div class="filter-group" style="max-width: 180px;">
+                <span class="filter-label">Estado</span>
+                <select name="estado" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="1" selected="@(estadoActual == "1")">Activos</option>
+                    <option value="0" selected="@(estadoActual == "0")">Inactivos</option>
+                </select>
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i>Buscar
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i>Limpiar
+                </a>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+@* ================================================
+   BOTÓN CREAR — entre filtros y tabla
+   ================================================ *@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted" style="font-size: 0.82rem;">
+        @ViewBag.Total colaborador(es) encontrado(s)
+    </span>
+    <a asp-action="Create" class="btn btn-success">
+        <i class="bi bi-person-plus"></i>Crear colaborador
+    </a>
+</div>
+
+@* ================================================
+   TABLA
+   ================================================ *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>Listado de colaboradores
+        </span>
+        <span class="badge badge-info">@ViewBag.Total registros</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaColaboradores" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Cédula</th>
+                        <th>Colaborador</th>
+                        <th>Puesto</th>
+                        <th>Departamento</th>
+                        <th>Ingreso</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-end pe-3">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="8">
+                                <div class="table-empty">
+                                    <i class="bi bi-people"></i>
+                                    <p>No hay colaboradores registrados</p>
+                                    <a asp-action="Create" class="btn btn-success btn-sm">
+                                        <i class="bi bi-person-plus"></i>Crear el primero
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var c in Model)
+                        {
+                            var iniciales = $"{c.Nombre?.Substring(0, 1)}{c.Apellidos?.Substring(0, 1)}".ToUpper();
+                            var colores = new[] { "blue", "green", "amber", "slate" };
+                            var color = colores[c.IdColaborador % colores.Length];
+
+                            <tr>
+                                <td class="td-mono">@c.IdColaborador</td>
+                                <td class="td-mono">@c.Cedula</td>
+                                <td>
+                                    <div class="table-avatar">
+                                        <div class="avatar-circle avatar-@color">@iniciales</div>
+                                        <div>
+                                            <div class="avatar-name">@c.Nombre @c.Apellidos</div>
+                                            <div class="avatar-sub">@c.Correo</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>@c.Puesto</td>
+                                <td class="td-muted">@c.Departamento</td>
+                                <td class="td-muted">@c.FechaIngreso.ToString("dd/MM/yyyy")</td>
+                                <td class="text-center">
+                                    @if (c.Estado)
+                                    {
+                                        <span class="badge bg-success badge-dot">Activo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger badge-dot">Inactivo</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="td-actions">
+                                        <a asp-action="Details"
+                                           asp-route-id="@c.IdColaborador"
+                                           class="btn btn-primary btn-sm">
+                                            <i class="bi bi-eye"></i>Detalles
+                                        </a>
+                                        <a asp-action="Edit"
+                                           asp-route-id="@c.IdColaborador"
+                                           class="btn btn-warning btn-sm">
+                                            <i class="bi bi-pencil"></i>Editar
+                                        </a>
+                                        @if (c.Estado)
+                                        {
+                                            <button class="btn btn-danger btn-sm"
+                                                    onclick="desactivar(@c.IdColaborador, '@c.Nombre @c.Apellidos')">
+                                                <i class="bi bi-x-circle"></i>Desactivar
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Inactivo</span>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+
+        $(document).ready(function () {
+            $('#tablaColaboradores').DataTable(DataTableConfig);
+        });
+
+        document.getElementById('buscarInput').addEventListener('change', function () {
+            const id = this.value;
+            if (!id) return;
+
+            fetch(`/Colaboradores/BuscarColaborador?id=${id}`)
+                .then(res => {
+                    if (!res.ok) throw new Error();
+                    return res.json();
+                })
+                .then(data => {
+                    Alert.success(`Colaborador encontrado: ${data.nombre}`);
+                })
+                .catch(() => {
+                    Alert.error('El colaborador no existe');
+                });
+        });
+
+        function desactivar(id, nombre) {
+            Alert.confirm(
+                `Se desactivará a ${nombre}. Esta acción no se puede revertir fácilmente.`,
+                () => {
+                    window.location.href = `/Colaboradores/Delete/${id}`;
+                }
+            );
         }
-    </tbody>
-</table>
 
-
-
-
+    </script>
+}

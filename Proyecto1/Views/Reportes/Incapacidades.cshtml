@@ -1,0 +1,298 @@
+﻿@model List<Proyecto1.Models.IncapacidadAdminVM>
+
+@{
+    ViewData["Title"] = "Reporte de Incapacidades";
+
+    var colaboradorQ = Context.Request.Query["colaborador"].ToString();
+    var fechaInicioQ = Context.Request.Query["fechaInicio"].ToString();
+    var fechaFinQ = Context.Request.Query["fechaFin"].ToString();
+    var estadoQ = Context.Request.Query["estado"].ToString();
+
+    var totalRegistros = (int)(ViewBag.TotalRegistros ?? 0);
+    var totalActivas = (int)(ViewBag.TotalActivas ?? 0);
+    var totalFinalizadas = (int)(ViewBag.TotalFinalizadas ?? 0);
+    var totalAnuladas = (int)(ViewBag.TotalAnuladas ?? 0);
+}
+
+@* ================================================
+   HEADER
+   ================================================ *@
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-heart-pulse"></i>Reporte de Incapacidades
+    </h3>
+    <a asp-controller="Reportes" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
+
+@* ================================================
+   FILTROS
+   ================================================ *@
+<div class="filter-card mb-4">
+    <form method="get" asp-action="Incapacidades">
+        <div class="filter-row flex-wrap">
+
+            <div class="filter-group" style="max-width:220px;">
+                <span class="filter-label">Colaborador</span>
+                <input type="text"
+                       name="colaborador"
+                       value="@colaboradorQ"
+                       class="form-control"
+                       placeholder="Nombre..." />
+            </div>
+
+            <div class="filter-group" style="max-width:160px;">
+                <span class="filter-label">Fecha inicio</span>
+                <input type="date"
+                       name="fechaInicio"
+                       value="@fechaInicioQ"
+                       class="form-control" />
+            </div>
+
+            <div class="filter-group" style="max-width:160px;">
+                <span class="filter-label">Fecha fin</span>
+                <input type="date"
+                       name="fechaFin"
+                       value="@fechaFinQ"
+                       class="form-control" />
+            </div>
+
+            <div class="filter-group" style="max-width:150px;">
+                <span class="filter-label">Estado</span>
+                <select name="estado" class="form-select">
+                    <option value="">Todos</option>
+                    @if (estadoQ == "Activa")
+                    {
+                        <option value="Activa" selected="selected">Activa</option>
+                        <option value="Finalizada">Finalizada</option>
+                        <option value="Anulada">Anulada</option>
+                    }
+                    else if (estadoQ == "Finalizada")
+                    {
+                        <option value="Activa">Activa</option>
+                        <option value="Finalizada" selected="selected">Finalizada</option>
+                        <option value="Anulada">Anulada</option>
+                    }
+                    else if (estadoQ == "Anulada")
+                    {
+                        <option value="Activa">Activa</option>
+                        <option value="Finalizada">Finalizada</option>
+                        <option value="Anulada" selected="selected">Anulada</option>
+                    }
+                    else
+                    {
+                        <option value="Activa">Activa</option>
+                        <option value="Finalizada">Finalizada</option>
+                        <option value="Anulada">Anulada</option>
+                    }
+                </select>
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i>Filtrar
+                </button>
+                <a asp-action="Incapacidades" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i>Limpiar
+                </a>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+@* ================================================
+   KPI CARDS
+   ================================================ *@
+<div class="row g-3 mb-4">
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Total registros</div>
+                <div class="kpi-value">@totalRegistros</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-heart-pulse"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Activas</div>
+                <div class="kpi-value" style="color:var(--red)">@totalActivas</div>
+            </div>
+            <div class="kpi-icon red">
+                <i class="bi bi-activity"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Finalizadas</div>
+                <div class="kpi-value" style="color:var(--green)">@totalFinalizadas</div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-calendar-check"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Anuladas</div>
+                <div class="kpi-value" style="color:var(--amber)">@totalAnuladas</div>
+            </div>
+            <div class="kpi-icon amber">
+                <i class="bi bi-x-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@* ================================================
+   BOTON EXCEL
+   ================================================ *@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted" style="font-size:0.82rem;">
+        @(Model?.Count ?? 0) registro(s) encontrado(s)
+    </span>
+    <a asp-action="ExportarIncapacidadesExcel"
+       asp-route-colaborador="@colaboradorQ"
+       asp-route-fechaInicio="@fechaInicioQ"
+       asp-route-fechaFin="@fechaFinQ"
+       asp-route-estado="@estadoQ"
+       class="btn btn-success">
+        <i class="bi bi-file-earmark-excel"></i>Exportar Excel
+    </a>
+</div>
+
+@* ================================================
+   TABLA
+   ================================================ *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>Listado de incapacidades
+        </span>
+        <span class="badge badge-info">@(Model?.Count ?? 0) registros</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaIncapacidades" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th>Colaborador</th>
+                        <th>Tipo</th>
+                        <th class="text-center">Inicio</th>
+                        <th class="text-center">Fin</th>
+                        <th class="text-center">Dias</th>
+                        <th class="text-center">Remunerada</th>
+                        <th class="text-center">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model.OrderByDescending(x => x.FechaInicio))
+                        {
+                            var iniciales = item.NombreColaborador?
+                            .Split(' ')
+                            .Where(s => !string.IsNullOrEmpty(s))
+                            .Take(2)
+                            .Select(s => s[0].ToString())
+                            .Aggregate("", (acc, c) => acc + c)
+                            .ToUpper() ?? "??";
+
+                            string estadoBadge = item.Estado switch
+                            {
+                                "Activa" => "bg-danger",
+                                "Finalizada" => "bg-secondary",
+                                _ => "bg-warning"
+                            };
+
+                            string avatarColor = item.Estado switch
+                            {
+                                "Activa" => "red",
+                                "Finalizada" => "slate",
+                                _ => "amber"
+                            };
+
+                            <tr>
+                                <td>
+                                    <div class="table-avatar">
+                                        <div class="avatar-circle avatar-@avatarColor">
+                                            @iniciales
+                                        </div>
+                                        <div class="avatar-name">@item.NombreColaborador</div>
+                                    </div>
+                                </td>
+                                <td>@item.TipoIncapacidad</td>
+                                <td class="text-center td-muted">
+                                    @item.FechaInicio.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center td-muted">
+                                    @item.FechaFin.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center">
+                                    <span class="td-mono"
+                                          style="font-weight:700;
+                                                         color:@(item.DiasIncapacidad > 5 ? "var(--red)" : "var(--amber)")">
+                                        @item.DiasIncapacidad
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    @if (item.EsRemunerada)
+                                    {
+                                        <span class="badge bg-success badge-dot">Si</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary badge-dot">No</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge @estadoBadge badge-dot">@item.Estado</span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7">
+                                <div class="table-empty">
+                                    <i class="bi bi-heart-pulse"></i>
+                                    <p>No se encontraron registros de incapacidades</p>
+                                    <span class="text-muted" style="font-size:0.82rem;">
+                                        Ajuste los filtros e intente de nuevo
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            if (@((Model != null && Model.Any()).ToString().ToLower())) {
+                var config = Object.assign({}, DataTableConfig, {
+                    order: [[2, 'desc']]
+                });
+                $('#tablaIncapacidades').DataTable(config);
+            }
+        });
+    </script>
+}
