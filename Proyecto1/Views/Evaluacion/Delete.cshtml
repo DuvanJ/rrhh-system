@@ -1,7 +1,7 @@
 ﻿@model Proyecto1.Models.EvaluacionVM
 
 @{
-    ViewData["Title"] = "Eliminar Evaluacion";
+    ViewData["Title"] = "Eliminar Evaluación";
 
     var iniciales = Model.NombreColaborador?
         .Split(' ')
@@ -43,7 +43,7 @@
 
 <div class="page-header">
     <h3 class="page-title">
-        <i class="bi bi-trash"></i>Eliminar Evaluacion
+        <i class="bi bi-trash"></i>Eliminar Evaluación
     </h3>
     <a asp-action="Index" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left"></i>Volver
@@ -58,10 +58,10 @@
             <i class="bi bi-exclamation-triangle-fill flex-shrink-0"
                style="font-size:1.2rem;margin-top:2px;"></i>
             <div>
-                <div style="font-weight:600;margin-bottom:2px;">Accion irreversible</div>
+                <div style="font-weight:600;margin-bottom:2px;">Acción irreversible</div>
                 <div style="font-size:0.875rem;">
-                    Esta evaluacion sera eliminada permanentemente del sistema.
-                    Los datos no podran ser recuperados.
+                    Esta evaluación será eliminada permanentemente del sistema.
+                    Los datos no podrán ser recuperados.
                 </div>
             </div>
         </div>
@@ -70,7 +70,7 @@
         <div class="card mb-4">
             <div class="card-header">
                 <span class="card-header-title">
-                    <i class="bi bi-clipboard-check"></i>Evaluacion a eliminar
+                    <i class="bi bi-clipboard-check"></i>Evaluación a eliminar
                 </span>
             </div>
             <div class="card-body">
@@ -100,7 +100,7 @@
                     <div class="col-md-6">
                         <div class="detail-field">
                             <span class="detail-label">
-                                <i class="bi bi-calendar-event"></i>Fecha de evaluacion
+                                <i class="bi bi-calendar-event"></i>Fecha de evaluación
                             </span>
                             <span class="detail-value td-mono">
                                 @Model.FechaEvaluacion.ToString("dd/MM/yyyy")
@@ -164,7 +164,7 @@
                         <button type="button"
                                 class="btn btn-danger"
                                 onclick="confirmarEliminar('@Model.NombreColaborador')">
-                            <i class="bi bi-trash"></i>Confirmar eliminacion
+                            <i class="bi bi-trash"></i>Confirmar eliminación
                         </button>
                     </div>
                 </form>
@@ -259,7 +259,7 @@
     <script>
         function confirmarEliminar(nombre) {
             Alert.confirm(
-                'Se eliminara permanentemente la evaluacion de ' + nombre + '. Esta accion no se puede revertir. Desea continuar?',
+                'Se eliminará permanentemente la evaluación de ' + nombre + '. Esta acción no se puede revertir. ¿Desea continuar?',
                 function () {
                     document.getElementById('formEliminar').submit();
                 },

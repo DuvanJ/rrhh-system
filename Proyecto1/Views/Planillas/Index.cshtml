@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<Proyecto1.Models.Planilla>
 
 @{
-    ViewData["Title"] = "Gestion de Planillas";
+    ViewData["Title"] = "Gestión de Planillas";
     var cultura = System.Globalization.CultureInfo.GetCultureInfo("es-ES");
 
     var lista = Model.ToList();
@@ -12,7 +12,7 @@
 
 <div class="page-header">
     <h3 class="page-title">
-        <i class="bi bi-receipt-cutoff"></i>Gestion de Planillas
+        <i class="bi bi-receipt-cutoff"></i>Gestión de Planillas
     </h3>
     <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
         <i class="bi bi-house"></i>Inicio
@@ -138,35 +138,7 @@
     </div>
 </div>
 
-@* ================================================
-   FILTRO DE ESTADO
-   ================================================ *@
-<div class="card mb-4">
-    <div class="card-body">
-        <div class="btn-group" role="group">
-            <button type="button"
-                    class="btn btn-outline-primary active"
-                    onclick="filtrarPlanillas('todas')">
-                <i class="bi bi-funnel"></i>Todas (@lista.Count)
-            </button>
-            <button type="button"
-                    class="btn btn-outline-success"
-                    onclick="filtrarPlanillas(1)">
-                <i class="bi bi-check-circle"></i>Generadas (@generadas)
-            </button>
-            <button type="button"
-                    class="btn btn-outline-danger"
-                    onclick="filtrarPlanillas(2)">
-                <i class="bi bi-x-circle"></i>Anuladas (@anuladas)
-            </button>
-            <button type="button"
-                    class="btn btn-outline-warning"
-                    onclick="filtrarPlanillas(3)">
-                <i class="bi bi-arrow-repeat"></i>Regeneradas (@regeneradas)
-            </button>
-        </div>
-    </div>
-</div>
+
 
 @* ================================================
    TABLA
@@ -186,7 +158,7 @@
                         <th>ID</th>
                         <th>Mes</th>
                         <th class="text-center">Año</th>
-                        <th class="text-center">Fecha generacion</th>
+                        <th class="text-center">Fecha generación</th>
                         <th class="text-center">Estado</th>
                         <th class="text-end pe-3">Acciones</th>
                     </tr>
@@ -348,15 +320,7 @@
             });
             event.target.closest('.btn').classList.add('active');
 
-            // Filtrar tabla
-            if (estado === 'todas') {
-                tablaDataTable.column(4).search('').draw();
-            } else {
-                let estadoTexto = estado == 1 ? 'Generada' :
-                                 estado == 2 ? 'Anulada' :
-                                 estado == 3 ? 'Regenerada' : '';
-                tablaDataTable.column(4).search(estadoTexto).draw();
-            }
+            
         }
 
         function confirmarGenerar() {
@@ -375,7 +339,7 @@
             }
 
             Alert.confirm(
-                'Se generara la planilla del mes de ' + mesTexto + ' ' + anio + '. Desea continuar?',
+                'Se generará la planilla del mes de ' + mesTexto + ' ' + anio + '. ¿Desea continuar?',
                 function () { document.getElementById('formGenerar').submit(); },
                 'question'
             );
@@ -383,7 +347,7 @@
 
         function confirmarAnular(id, periodo) {
             Alert.confirm(
-                'Se anulara la planilla de ' + periodo + '. Esta accion no se puede revertir. Desea continuar?',
+                'Se anulará la planilla de ' + periodo + '. Esta acción no se puede revertir. ¿Desea continuar?',
                 function () { document.getElementById('formAnular_' + id).submit(); },
                 'warning'
             );

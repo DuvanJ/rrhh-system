@@ -96,7 +96,7 @@
 </div>
 
 @* ================================================
-   BOTON NUEVA ENTREGA
+   BOTÓN NUEVA ENTREGA
    ================================================ *@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <span class="text-muted" style="font-size:0.82rem;">
@@ -187,7 +187,7 @@
                         <td class="text-center">
                             @if (item.CobrarEnPlanilla)
                                     {
-                                        <span class="badge bg-warning badge-dot">Si</span>
+                                        <span class="badge bg-warning badge-dot">Sí</span>
                                     }
                                     else
                                     {
@@ -258,7 +258,7 @@
 
         function confirmarEliminar(id, nombre) {
             Alert.confirm(
-                'Se eliminara la entrega de uniforme de ' + nombre + '. Desea continuar?',
+                'Se eliminará la entrega de uniforme de ' + nombre + '. ¿Desea continuar?',
                 function () {
                     document.getElementById('formEliminar_' + id).submit();
                 },
@@ -268,7 +268,5 @@
 
     </script>
 }
-
-
 
 

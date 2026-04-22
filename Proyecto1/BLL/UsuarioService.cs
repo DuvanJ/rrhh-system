@@ -61,6 +61,16 @@ namespace Proyecto1.Services
                 new SqlParameter("@IdUsuario", id)
             );
         }
+
+
+
+        public async Task DesactivarPorColaboradorAsync(int idColaborador)
+        {
+            await _context.Database.ExecuteSqlRawAsync(
+                "EXEC sp_Usuarios_DesactivarPorColaborador @IdColaborador",
+                new SqlParameter("@IdColaborador", idColaborador)
+            );
+        }
     }
 
 }

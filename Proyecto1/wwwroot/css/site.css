@@ -1825,3 +1825,235 @@ div.dataTables_wrapper div.dataTables_paginate .paginate_button {
     }
 
 
+/* =============================
+   ALERTAS LOGIN - ESTILO ELEGANTE
+   ============================= */
+
+.alert {
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-bottom: 20px;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c2c7 100%);
+    color: #842029;
+}
+
+    .alert-danger i {
+        color: #842029;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+.alert-success {
+    background: linear-gradient(135deg, #d1e7dd 0%, #c6e6d5 100%);
+    color: #0f5132;
+}
+
+    .alert-success i {
+        color: #0f5132;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+.alert span {
+    font-weight: 500;
+}
+
+
+/* =====================================================
+   MODAL: CREAR USUARIO DESDE COLABORADOR
+   ===================================================== */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .3s ease, visibility .3s ease;
+}
+
+    .modal-overlay.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+.modal-content {
+    background: var(--white);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    padding: 40px;
+    max-width: 480px;
+    width: 90%;
+    animation: modalSlideUp .35s ease;
+    border: 1px solid var(--border);
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header-custom {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.modal-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--green-l);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 2.4rem;
+    color: var(--green);
+    animation: modalIconPulse .5s ease;
+}
+
+@keyframes modalIconPulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.modal-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+}
+
+.modal-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-3);
+    line-height: 1.6;
+}
+
+.modal-info {
+    background: var(--blue-l);
+    border-left: 4px solid var(--blue);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin: 24px 0;
+}
+
+.modal-info-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--text-3);
+    margin-bottom: 6px;
+}
+
+.modal-info-value {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.modal-question {
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--text-2);
+    margin: 24px 0 28px;
+    padding: 12px;
+    background: var(--slate-ll);
+    border-radius: var(--radius);
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.modal-btn {
+    flex: 1;
+    padding: 11px 20px;
+    border: none;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: transform .15s ease, box-shadow .15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+    .modal-btn:hover {
+        transform: translateY(-2px);
+    }
+
+    .modal-btn:active {
+        transform: translateY(0);
+    }
+
+.modal-btn-primary {
+    background: var(--green);
+    color: white;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+}
+
+    .modal-btn-primary:hover {
+        background: var(--green-d);
+        box-shadow: 0 6px 16px rgba(22, 163, 74, 0.35);
+    }
+
+.modal-btn-secondary {
+    background: var(--slate-l);
+    color: var(--text);
+    border: 1.5px solid var(--border);
+}
+
+    .modal-btn-secondary:hover {
+        background: var(--slate-ll);
+        border-color: var(--border-d);
+    }
+
+.modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 1.4rem;
+    color: var(--text-3);
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: color .15s ease;
+}
+
+    .modal-close:hover {
+        color: var(--text);
+    }

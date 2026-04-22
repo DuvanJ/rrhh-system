@@ -106,12 +106,19 @@
     </form>
 </div>
 
-@* Contador *@
+
+@* ================================================
+   BOTÓN SOLICITAR
+   ================================================ *@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <span class="text-muted" style="font-size:0.82rem;">
-        @lista.Count permiso(s) encontrado(s)
+        @lista.Count solicitud(es) registrada(s)
     </span>
+    <a asp-action="Create" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i>Solicitar permiso
+    </a>
 </div>
+
 
 @* ================================================
    TABLA

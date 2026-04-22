@@ -1,7 +1,7 @@
 ﻿@model Proyecto1.Models.EvaluacionVM
 
 @{
-    ViewData["Title"] = "Editar Evaluacion";
+    ViewData["Title"] = "Editar Evaluación";
 
     var iniciales = Model.NombreColaborador?
         .Split(' ')
@@ -43,7 +43,7 @@
 
 <div class="page-header">
     <h3 class="page-title">
-        <i class="bi bi-pencil-square"></i>Editar Evaluacion
+        <i class="bi bi-pencil-square"></i>Editar Evaluación
     </h3>
     <a asp-action="Index" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left"></i>Volver
@@ -73,7 +73,7 @@
                             <div style="font-size:0.82rem;color:var(--text-3);">
                                 ID: @Model.IdColaborador
                                 &nbsp;·&nbsp;
-                                Evaluacion #@Model.IdEvaluacion
+                                Evaluación #@Model.IdEvaluacion
                                 &nbsp;·&nbsp;
                                 @Model.FechaEvaluacion.ToString("dd/MM/yyyy")
                             </div>
@@ -91,7 +91,7 @@
             <div class="card mb-4">
                 <div class="card-header">
                     <span class="card-header-title">
-                        <i class="bi bi-calendar-check"></i>Datos de la evaluacion
+                        <i class="bi bi-calendar-check"></i>Datos de la evaluación
                     </span>
                 </div>
                 <div class="card-body">
@@ -99,7 +99,7 @@
                     <div class="row g-3">
 
                         <div class="col-md-4">
-                            <label class="form-label">Fecha de evaluacion</label>
+                            <label class="form-label">Fecha de evaluación</label>
                             <input asp-for="FechaEvaluacion"
                                    type="date"
                                    class="form-control"
@@ -114,7 +114,7 @@
                                       id="inputComentarios"
                                       class="form-control"
                                       rows="3"
-                                      placeholder="Observaciones generales sobre el desempeno..."
+                                      placeholder="Observaciones generales sobre el desempeño..."
                                       style="resize:vertical;"></textarea>
                             <div class="d-flex justify-content-between mt-1">
                                 <span asp-validation-for="ComentariosGenerales"
@@ -137,7 +137,7 @@
             <div class="card mb-4">
                 <div class="card-header">
                     <span class="card-header-title">
-                        <i class="bi bi-list-check"></i>Criterios de evaluacion
+                        <i class="bi bi-list-check"></i>Criterios de evaluación
                     </span>
                     <span id="badgePuntaje" class="badge @badgeClass">
                         Puntaje promedio: @Model.PuntajeTotal?.ToString("N1") / 100
@@ -152,7 +152,7 @@
                                     <th class="text-center" style="width:160px;">
                                         Puntaje (0-100)
                                     </th>
-                                    <th>Observacion</th>
+                                    <th>Observación</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -177,7 +177,7 @@
                                         <td>
                                             <input asp-for="Detalles[i].Observacion"
                                                    class="form-control"
-                                                   placeholder="Observacion opcional..." />
+                                                   placeholder="Observación opcional..." />
                                         </td>
                                     </tr>
                                 }
@@ -269,7 +269,7 @@
         // Confirmar guardar
         function confirmarGuardar() {
             Alert.confirm(
-                'Se guardaran los cambios en la evaluacion de @Model.NombreColaborador. Desea continuar?',
+                'Se guardarán los cambios en la evaluación de @Model.NombreColaborador. ¿Desea continuar?',
                 function () {
                     document.getElementById('formEditar').submit();
                 },

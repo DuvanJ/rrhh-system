@@ -133,7 +133,7 @@
                                     <th class="text-center" style="width:100px;">Cantidad</th>
                                     <th class="text-end" style="width:140px;">Costo (₡)</th>
                                     <th class="text-center" style="width:120px;">Cobrar en planilla</th>
-                                    <th class="text-center" style="width:80px;">Accion</th>
+                                    <th class="text-center" style="width:80px;">Acción</th>
                                 </tr>
                             </thead>
                             <tbody id="tbodyUniformes">
@@ -143,7 +143,7 @@
                                             <i class="bi bi-bag-x"></i>
                                             <p>No hay uniformes agregados</p>
                                             <span class="text-muted" style="font-size:0.82rem;">
-                                                Use el boton "Agregar uniforme" para comenzar
+                                                Use el botón "Agregar uniforme" para comenzar
                                             </span>
                                         </div>
                                     </td>
@@ -202,7 +202,7 @@
         var tipos = '';
         @foreach (var t in Model.TiposUniforme ?? new List<Proyecto1.Models.TipoUniforme>())
         {
-                <text>tipos += '<option value="@t.IdTipoUniforme">@t.NombreTipo</option>';</text>
+                    <text>tipos += '<option value="@t.IdTipoUniforme">@t.NombreTipo</option>';</text>
         }
 
         var tallas = '<option>XS</option><option>S</option><option selected>M</option><option>L</option><option>XL</option><option>XXL</option>';
@@ -328,7 +328,7 @@
             }
 
             Alert.confirm(
-                'Se registrara la entrega de ' + filas + ' uniforme(s) para ' + nombre + '. Desea continuar?',
+                'Se registrará la entrega de ' + filas + ' uniforme(s) para ' + nombre + '. ¿Desea continuar?',
                 function () {
                     document.getElementById('formEntrega').submit();
                 },

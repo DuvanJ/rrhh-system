@@ -1,7 +1,7 @@
 ﻿@model Proyecto1.Models.EvaluacionVM
 
 @{
-    ViewData["Title"] = "Detalle de Evaluacion";
+    ViewData["Title"] = "Detalle de Evaluación";
 
     var iniciales = Model.NombreColaborador?
         .Split(' ')
@@ -43,7 +43,7 @@
 
 <div class="page-header">
     <h3 class="page-title">
-        <i class="bi bi-clipboard-check"></i>Detalle de Evaluacion
+        <i class="bi bi-clipboard-check"></i>Detalle de Evaluación
     </h3>
     <div class="d-flex gap-2">
         <a asp-action="Edit"
@@ -79,7 +79,7 @@
                         <div style="font-size:0.82rem;color:var(--text-3);margin-bottom:8px;">
                             ID Colaborador: @Model.IdColaborador
                             &nbsp;·&nbsp;
-                            Evaluacion #@Model.IdEvaluacion
+                            Evaluación #@Model.IdEvaluacion
                             &nbsp;·&nbsp;
                             @Model.FechaEvaluacion.ToString("dd/MM/yyyy")
                         </div>
@@ -90,14 +90,14 @@
                     {
                         <div class="text-end" style="flex-shrink:0;">
                             <div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;
-                                            letter-spacing:.5px;color:var(--text-3);margin-bottom:4px;">
+                                                letter-spacing:.5px;color:var(--text-3);margin-bottom:4px;">
                                 Puntaje total
                             </div>
                             <div style="font-size:2rem;font-weight:700;
-                                            font-family:'Consolas',monospace;
-                                            color:var(--@(avatarColor == "green" ? "green" :
-                                                                                       avatarColor == "blue" ? "blue" :
-                                                                                       avatarColor == "amber" ? "amber" : "red"))">
+                                                font-family:'Consolas',monospace;
+                                                color:var(--@(avatarColor == "green" ? "green" :
+                                                                                                                        avatarColor == "blue" ? "blue" :
+                                                                                                                        avatarColor == "amber" ? "amber" : "red"))">
                             @Model.PuntajeTotal.Value.ToString("N1")
                         </div>
                         <div style="font-size:0.72rem;color:var(--text-3);">de 100 puntos</div>
@@ -128,12 +128,12 @@
         }
 
         @* ================================================
-           CRITERIOS DE EVALUACION
+           CRITERIOS DE EVALUACIÓN
            ================================================ *@
         <div class="card mb-4">
             <div class="card-header">
                 <span class="card-header-title">
-                    <i class="bi bi-list-check"></i>Criterios de evaluacion
+                    <i class="bi bi-list-check"></i>Criterios de evaluación
                 </span>
                 <span class="badge badge-info">
                     @Model.Detalles.Count criterios
@@ -146,7 +146,7 @@
                             <tr>
                                 <th>Criterio</th>
                                 <th class="text-center" style="width:160px;">Puntaje</th>
-                                <th>Observacion</th>
+                                <th>Observación</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -184,7 +184,7 @@
                                 </td>
                                 <td class="td-muted">
                                     @(string.IsNullOrEmpty(item.Observacion)
-                                                                        ? "Sin observacion"
+                                                                        ? "Sin observación"
                                                                         : item.Observacion)
                                 </td>
                             </tr>
@@ -214,7 +214,7 @@
                 <a asp-action="Edit"
                    asp-route-id="@Model.IdEvaluacion"
                    class="btn btn-warning">
-                    <i class="bi bi-pencil"></i>Editar evaluacion
+                    <i class="bi bi-pencil"></i>Editar evaluación
                 </a>
             </div>
         </div>

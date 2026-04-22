@@ -105,6 +105,54 @@ namespace Proyecto1.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
+            // ✅ GUARDAR ARCHIVO SI VIENE ADJUNTO
+            try
+            {
+                if (model.ArchivoAdjunto != null)
+                {
+                    // Validar extensión
+                    var extensionesPermitidas = new[] { ".pdf", ".doc", ".docx", ".jpg", ".jpeg", ".png" };
+                    var extension = Path.GetExtension(model.ArchivoAdjunto.FileName).ToLower();
+
+                    if (!extensionesPermitidas.Contains(extension))
+                    {
+                        ModelState.AddModelError("ArchivoAdjunto", "Formato de archivo no permitido. Use: PDF, DOC, DOCX, JPG, PNG");
+                        return View(model);
+                    }
+
+                    // Validar tamaño (máximo 5 MB)
+                    if (model.ArchivoAdjunto.Length > 5 * 1024 * 1024)
+                    {
+                        ModelState.AddModelError("ArchivoAdjunto", "El archivo no debe superar 5 MB");
+                        return View(model);
+                    }
+
+                    // Crear carpeta si no existe
+                    var carpeta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "incapacidades");
+                    if (!Directory.Exists(carpeta))
+                    {
+                        Directory.CreateDirectory(carpeta);
+                    }
+
+                    // Guardar archivo con nombre único
+                    var nombreArchivo = $"{DateTime.Now:yyyyMMddHHmmss}_{model.ArchivoAdjunto.FileName}";
+                    var rutaArchivo = Path.Combine(carpeta, nombreArchivo);
+
+                    using (var stream = new FileStream(rutaArchivo, FileMode.Create))
+                    {
+                        await model.ArchivoAdjunto.CopyToAsync(stream);
+                    }
+
+                    // Guardar el nombre del archivo en la BD
+                    model.DocumentoAdjunto = nombreArchivo;
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Error al guardar el archivo: " + ex.Message;
+                return View(model);
+            }
+
             model.Estado = "Activa";
 
             await _service.RegistrarAsync(model);
@@ -113,7 +161,6 @@ namespace Proyecto1.Controllers
 
             return RedirectToAction(nameof(Index));
         }
-
 
         public async Task<IActionResult> MisIncapacidades()
         {
@@ -163,7 +210,6 @@ namespace Proyecto1.Controllers
             return View(detalle);
         }
 
-
         // ================= BUSCAR COLABORADOR =================
         [HttpPost]
         public async Task<IActionResult> BuscarColaborador(int IdColaborador)
@@ -192,9 +238,5 @@ namespace Proyecto1.Controllers
 
             return View("Create", model);
         }
-
-
-
-
     }
 }

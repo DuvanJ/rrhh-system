@@ -26,7 +26,7 @@
             <div>
                 <div style="font-weight:600;margin-bottom:2px;">Acción irreversible</div>
                 <div style="font-size:0.875rem;">
-                    El colaborador será marcado como inactivo y no podrá acceder al sistema.
+                    El colaborador y su usuario asociado serán marcados como inactivos y no podrán acceder al sistema.
                     Esta acción no elimina los registros históricos asociados.
                 </div>
             </div>
@@ -158,7 +158,7 @@
     <script>
         function confirmarDesactivar(nombre) {
             Alert.confirm(
-                `Se desactivará a ${nombre}. Ya no podrá acceder al sistema. ¿Desea continuar?`,
+                `Se desactivará a ${nombre} y su usuario asociado. Ya no podrán acceder al sistema. ¿Desea continuar?`,
                 () => {
                     document.getElementById('formDesactivar').submit();
                 },

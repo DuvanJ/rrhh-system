@@ -15,10 +15,10 @@ namespace Proyecto1.BLL
         }
 
         // =============================
-        // LOGIN
+        // LOGIN CON VALIDACIÓN DE ESTADO
         // =============================
 
-        public async Task<LoginUsuarioResult?> ValidarLogin(string usuario, string contrasena)
+        public async Task<(bool esValido, string mensaje, LoginUsuarioResult usuario)> ValidarLogin(string usuario, string contrasena)
         {
             var pUsuario = new SqlParameter("@NombreUsuario", usuario);
             var pPass = new SqlParameter("@ContrasenaHash", contrasena);
@@ -28,7 +28,22 @@ namespace Proyecto1.BLL
                     pUsuario, pPass)
                 .ToListAsync();
 
-            return result.FirstOrDefault();
+            var user = result.FirstOrDefault();
+
+            // Si no hay resultado, las credenciales son inválidas
+            if (user == null)
+            {
+                return (false, "Usuario o contraseña incorrectos", null);
+            }
+
+            // Si el usuario existe pero está inactivo
+            if (!user.Estado)
+            {
+                return (false, "El usuario se encuentra inactivo. Por favor contacte al administrador.", user);
+            }
+
+            // Si todo es válido
+            return (true, "Login exitoso", user);
         }
 
         // =============================

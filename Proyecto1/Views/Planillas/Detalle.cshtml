@@ -29,12 +29,12 @@
    ================================================ *@
 <div class="row g-3 mb-4">
 
-    <div class="col-md-3">
+    <div class="col-md-4">
         <div class="kpi-card">
             <div>
-                <div class="kpi-label">Salario bruto total</div>
-                <div class="kpi-value" style="font-size:1.1rem;">
-                    ₡ @lista.Sum(x => x.SalarioBruto).ToString("N2")
+                <div class="kpi-label">Salario base total</div>
+                <div class="kpi-value" style="font-size:1.2rem;">
+                    ₡ @lista.Sum(x => x.SalarioBase).ToString("N2")
                 </div>
             </div>
             <div class="kpi-icon blue">
@@ -43,11 +43,11 @@
         </div>
     </div>
 
-    <div class="col-md-3">
+    <div class="col-md-4">
         <div class="kpi-card">
             <div>
                 <div class="kpi-label">Salario neto total</div>
-                <div class="kpi-value" style="font-size:1.1rem;color:var(--green)">
+                <div class="kpi-value" style="font-size:1.2rem;color:var(--green)">
                     ₡ @lista.Sum(x => x.SalarioNeto).ToString("N2")
                 </div>
             </div>
@@ -57,30 +57,16 @@
         </div>
     </div>
 
-    <div class="col-md-3">
+    <div class="col-md-4">
         <div class="kpi-card">
             <div>
                 <div class="kpi-label">Total deducciones</div>
-                <div class="kpi-value" style="font-size:1.1rem;color:var(--red)">
+                <div class="kpi-value" style="font-size:1.2rem;color:var(--red)">
                     ₡ @lista.Sum(x => x.Deducciones).ToString("N2")
                 </div>
             </div>
             <div class="kpi-icon red">
                 <i class="bi bi-dash-circle-fill"></i>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="kpi-card">
-            <div>
-                <div class="kpi-label">Pago feriados</div>
-                <div class="kpi-value" style="font-size:1.1rem;color:var(--amber)">
-                    ₡ @lista.Sum(x => x.MontoFeriado ?? 0).ToString("N2")
-                </div>
-            </div>
-            <div class="kpi-icon amber">
-                <i class="bi bi-calendar-heart"></i>
             </div>
         </div>
     </div>
@@ -104,7 +90,7 @@
                     <tr>
                         <th>Colaborador</th>
                         <th class="text-end">Salario base</th>
-                        <th class="text-center">Dias</th>
+                        <th class="text-center">Días</th>
                         <th class="text-end">H. Ord.</th>
                         <th class="text-end">H. Extra</th>
                         <th class="text-end">H. Feriado</th>
@@ -140,13 +126,10 @@
                             .Aggregate("", (acc, c) => acc + c)
                             .ToUpper() ?? "??";
 
-                            var colores = new[] { "blue", "green", "amber", "slate" };
-                            var color = colores[p.IdColaborador % colores.Length];
-
                             <tr>
                                 <td>
                                     <div class="table-avatar">
-                                        <div class="avatar-circle avatar-@color">
+                                        <div class="avatar-circle avatar-blue">
                                             @iniciales
                                         </div>
                                         <div class="avatar-name">

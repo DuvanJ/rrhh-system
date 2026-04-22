@@ -27,14 +27,17 @@ namespace Proyecto1.Controllers
         [HttpPost]
         public async Task<IActionResult> Index(string usuario, string contrasena)
         {
-            var user = await _loginService.ValidarLogin(usuario, contrasena);
+            // Validar login
+            var (esValido, mensaje, user) = await _loginService.ValidarLogin(usuario, contrasena);
 
-            if (user == null)
+            if (!esValido)
             {
-                TempData["Error"] = "Usuario o contraseña incorrectos";
+                // Pasar mensaje específico por TempData
+                TempData["Error"] = mensaje;
                 return View();
             }
 
+            // Login exitoso: crear sesión
             HttpContext.Session.SetString("Usuario", user.NombreUsuario);
             HttpContext.Session.SetString("Perfil", user.NombrePerfil);
             HttpContext.Session.SetInt32("IdColaborador", user.IdColaborador);
@@ -59,7 +62,7 @@ namespace Proyecto1.Controllers
 
             if (usuario == null)
             {
-                ViewBag.Error = "El correo no está registrado.";
+                TempData["Error"] = "El correo no está registrado.";
                 return View();
             }
 
@@ -112,7 +115,7 @@ Si no solicitaste este cambio puedes ignorar este correo.
         {
             if (password != confirmar)
             {
-                ViewBag.Error = "Las contraseñas no coinciden.";
+                TempData["Error"] = "Las contraseñas no coinciden.";
                 return View();
             }
 

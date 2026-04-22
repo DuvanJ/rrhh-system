@@ -66,7 +66,7 @@
     <div class="col-md-3">
         <div class="kpi-card">
             <div>
-                <div class="kpi-label">Requieren atencion</div>
+                <div class="kpi-label">Requieren atención</div>
                 <div class="kpi-value" style="color:var(--red)">
                     @(regulares + deficientes)
                 </div>
@@ -109,14 +109,14 @@
 </div>
 
 @* ================================================
-   BOTON CREAR
+   BOTÓN CREAR
    ================================================ *@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <span class="text-muted" style="font-size:0.82rem;">
-        @Model.Count evaluacion(es) encontrada(s)
+        @Model.Count evaluación(es) encontrada(s)
     </span>
     <a asp-action="Create" class="btn btn-success">
-        <i class="bi bi-plus-circle"></i>Nueva evaluacion
+        <i class="bi bi-plus-circle"></i>Nueva evaluación
     </a>
 </div>
 
@@ -252,7 +252,7 @@
                                     <i class="bi bi-clipboard-x"></i>
                                     <p>No hay evaluaciones para mostrar</p>
                                     <a asp-action="Create" class="btn btn-success btn-sm">
-                                        <i class="bi bi-plus-circle"></i>Nueva evaluacion
+                                        <i class="bi bi-plus-circle"></i>Nueva evaluación
                                     </a>
                                 </div>
                             </td>
@@ -329,7 +329,7 @@
 
         function confirmarEliminar(id, nombre) {
             Alert.confirm(
-                'Se eliminara la evaluacion de ' + nombre + '. Esta accion no se puede revertir. Desea continuar?',
+                'Se eliminará la evaluación de ' + nombre + '. Esta acción no se puede revertir. ¿Desea continuar?',
                 function () {
                     window.location.href = '/Evaluacion/Delete/' + id;
                 },

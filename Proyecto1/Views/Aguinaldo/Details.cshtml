@@ -79,7 +79,7 @@
         <div class="card mb-4">
             <div class="card-header">
                 <span class="card-header-title">
-                    <i class="bi bi-card-list"></i>Informacion del aguinaldo
+                    <i class="bi bi-card-list"></i>Información del aguinaldo
                 </span>
             </div>
             <div class="card-body">
@@ -111,7 +111,7 @@
                     <div class="col-md-6">
                         <div class="detail-field">
                             <span class="detail-label">
-                                <i class="bi bi-calendar-check"></i>Fecha de calculo
+                                <i class="bi bi-calendar-check"></i>Fecha de cálculo
                             </span>
                             <span class="detail-value td-mono">
                                 @(Model.FechaCalculo?.ToString("dd/MM/yyyy") ?? "—")
@@ -243,7 +243,7 @@
 
         function confirmarAprobar(nombre) {
             Alert.confirm(
-                `Se aprobara el aguinaldo de ${nombre}. Desea continuar?`,
+                `Se aprobará el aguinaldo de ${nombre}. ¿Desea continuar?`,
                 () => { document.getElementById('formAprobar').submit(); },
                 'question'
             );
@@ -251,7 +251,7 @@
 
         function confirmarPagar(nombre, monto) {
             Alert.confirm(
-                `Se registrara el pago de ₡${monto} a ${nombre}. Esta accion no se puede revertir. Desea continuar?`,
+                `Se registrará el pago de ₡${monto} a ${nombre}. Esta acción no se puede revertir. ¿Desea continuar?`,
                 () => { document.getElementById('formPagar').submit(); },
                 'warning'
             );

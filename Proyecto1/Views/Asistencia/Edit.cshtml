@@ -13,7 +13,7 @@
     }
     else if (Model.HoraEntrada > new TimeSpan(8, 0, 0))
     {
-        estadoActual = "Tardia";
+        estadoActual = "Tardía";
         badgeClass = "bg-warning";
     }
     else
@@ -121,7 +121,7 @@
                         <i class="bi bi-exclamation-triangle-fill flex-shrink-0"
                            style="font-size:1rem;margin-top:2px;"></i>
                         <div style="font-size:0.82rem;">
-                            Este ajuste quedara registrado en la auditoria del sistema
+                            Este ajuste quedará registrado en la auditoría del sistema
                             junto con el usuario que realiza el cambio y el motivo indicado.
                         </div>
                     </div>
@@ -218,7 +218,7 @@
                     salida.style.borderColor  = 'var(--green)';
                     msgHoras.style.display    = 'block';
                     msgHoras.style.color      = 'var(--green)';
-                    msgHoras.textContent      = 'Horas validas';
+                    msgHoras.textContent      = 'Horas válidas';
                 } else {
                     salida.style.borderColor  = '';
                     msgHoras.style.display    = 'none';
@@ -264,7 +264,7 @@
             }
 
             Alert.confirm(
-                'Se registrara el ajuste de asistencia con el motivo indicado. Esta accion queda registrada en auditoria. Desea continuar?',
+                'Se registrará el ajuste de asistencia con el motivo indicado. Esta acción queda registrada en auditoría. ¿Desea continuar?',
                 function () {
                     document.getElementById('formAjuste').submit();
                 },

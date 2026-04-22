@@ -1,7 +1,7 @@
 ﻿@model List<Proyecto1.Models.IncapacidadAdminVM>
 
 @{
-    ViewData["Title"] = "Gestion de Incapacidades";
+    ViewData["Title"] = "Gestión de Incapacidades";
     var idColActual = Context.Request.Query["idColaborador"].ToString();
 
     var activas = Model?.Count(i => i.Estado == "Activa") ?? 0;
@@ -15,10 +15,10 @@
    ================================================ *@
 <div class="page-header">
     <h3 class="page-title">
-        <i class="bi bi-heart-pulse"></i>Gestion de Incapacidades
+        <i class="bi bi-heart-pulse"></i>Gestión de Incapacidades
     </h3>
     <div class="d-flex gap-2">
-   
+
         <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
             <i class="bi bi-house"></i>Inicio
         </a>
@@ -57,7 +57,7 @@
     <div class="col-md-3">
         <div class="kpi-card">
             <div>
-                <div class="kpi-label">Total dias</div>
+                <div class="kpi-label">Total días</div>
                 <div class="kpi-value" style="color:var(--amber)">@totalDias</div>
             </div>
             <div class="kpi-icon amber">
@@ -110,7 +110,7 @@
 </div>
 
 @* ================================================
-   BOTON REGISTRAR + CONTADOR
+   BOTÓN REGISTRAR + CONTADOR
    ================================================ *@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <span class="text-muted" style="font-size:0.82rem;">
@@ -142,7 +142,7 @@
                         <th>Tipo</th>
                         <th class="text-center">Inicio</th>
                         <th class="text-center">Fin</th>
-                        <th class="text-center">Dias</th>
+                        <th class="text-center">Días</th>
                         <th class="text-center">Remunerada</th>
                         <th class="text-center">Estado</th>
                         <th class="text-end pe-3">Acciones</th>
@@ -190,7 +190,7 @@
                                 <td class="text-center">
                                     @if (i.EsRemunerada)
                                     {
-                                        <span class="badge bg-success badge-dot">Si</span>
+                                        <span class="badge bg-success badge-dot">Sí</span>
                                     }
                                     else
                                     {
@@ -265,7 +265,7 @@
 
         function confirmarCerrar(id, nombre) {
             Alert.confirm(
-                'Se cerrara la incapacidad de ' + nombre + '. Desea continuar?',
+                'Se cerrará la incapacidad de ' + nombre + '. ¿Desea continuar?',
                 function () {
                     document.getElementById('formCerrar_' + id).submit();
                 },

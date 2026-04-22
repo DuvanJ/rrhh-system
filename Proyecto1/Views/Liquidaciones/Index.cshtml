@@ -1,7 +1,7 @@
 ﻿@model List<Proyecto1.Models.LiquidacionVM>
 
 @{
-    ViewData["Title"] = "Gestion de Liquidaciones";
+    ViewData["Title"] = "Gestión de Liquidaciones";
     var idColActual = Context.Request.Query["idColaborador"].ToString();
 
     var pendientes = Model?.Count(l => l.Estado == "Pendiente") ?? 0;
@@ -13,7 +13,7 @@
 
 <div class="page-header">
     <h3 class="page-title">
-        <i class="bi bi-cash-stack"></i>Gestion de Liquidaciones
+        <i class="bi bi-cash-stack"></i>Gestión de Liquidaciones
     </h3>
     <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
         <i class="bi bi-house"></i>Inicio
@@ -102,10 +102,10 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <span class="text-muted" style="font-size:0.82rem;">
-        @(Model?.Count ?? 0) liquidacion(es) encontrada(s)
+        @(Model?.Count ?? 0) liquidación(es) encontrada(s)
     </span>
     <a asp-action="Create" class="btn btn-success">
-        <i class="bi bi-plus-circle"></i>Generar liquidacion
+        <i class="bi bi-plus-circle"></i>Generar liquidación
     </a>
 </div>
 
@@ -243,7 +243,7 @@
 
         function confirmarAprobar(id, nombre) {
             Alert.confirm(
-                'Se aprobara la liquidacion de ' + nombre + '. Desea continuar?',
+                'Se aprobará la liquidación de ' + nombre + '. ¿Desea continuar?',
                 function () { window.location.href = '/Liquidaciones/Aprobar/' + id; },
                 'question'
             );
@@ -251,7 +251,7 @@
 
         function confirmarPagar(id, nombre, monto) {
             Alert.confirm(
-                'Se registrara el pago de ₡' + monto + ' a ' + nombre + '. Esta accion no se puede revertir. Desea continuar?',
+                'Se registrará el pago de ₡' + monto + ' a ' + nombre + '. Esta acción no se puede revertir. ¿Desea continuar?',
                 function () { window.location.href = '/Liquidaciones/Pagar/' + id; },
                 'warning'
             );

@@ -67,6 +67,24 @@ namespace Proyecto1.Controllers
         {
             try
             {
+                // ✅ VALIDACIÓN: El usuario logueado NO puede aprobar sus propios permisos
+                int? idUsuarioLogueado = HttpContext.Session.GetInt32("IdColaborador");
+                var solicitud = _service.ObtenerDetalle(id);
+
+                if (solicitud == null)
+                {
+                    TempData["Error"] = "No se encontró el permiso.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // Si el usuario logueado es el que hizo la solicitud, NO PUEDE aprobarla
+                if (idUsuarioLogueado.HasValue && solicitud.IdColaborador == idUsuarioLogueado.Value)
+                {
+                    TempData["Error"] = "No puedes aprobar o rechazar tus propios permisos. Otro miembro de RRHH debe hacerlo.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // ✅ Si pasa la validación, continúa normalmente
                 await _service.CambiarEstadoAsync(id, estado);
 
                 var detalle = _service.ObtenerDetalle(id);
@@ -142,6 +160,7 @@ Departamento de RRHH
                 return RedirectToAction(nameof(Index));
             }
         }
+
 
         // =================================
         // Vista para el colaborador: Mis permisos

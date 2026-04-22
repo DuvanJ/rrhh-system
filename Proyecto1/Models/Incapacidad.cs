@@ -37,5 +37,8 @@ namespace Proyecto1.Models
 
         [Required, StringLength(20)]
         public string Estado { get; set; } = "Activa";
+
+        [NotMapped]
+        public IFormFile? ArchivoAdjunto { get; set; }
     }
 }

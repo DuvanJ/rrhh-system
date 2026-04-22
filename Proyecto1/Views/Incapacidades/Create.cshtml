@@ -20,7 +20,7 @@
 <div class="row justify-content-center">
     <div class="col-xl-8 col-lg-10">
 
-        <form asp-action="Create" method="post" id="formIncapacidad" novalidate>
+        <form asp-action="Create" method="post" id="formIncapacidad" enctype="multipart/form-data" novalidate>
 
             @Html.AntiForgeryToken()
 
@@ -117,8 +117,8 @@
                         <select asp-for="IdTipoIncapacidad"
                                 class="form-select"
                                 asp-items="@(new SelectList(ViewBag.TiposIncapacidad,
-                                                                                            "IdTipoIncapacidad",
-                                                                                            "Nombre"))">
+                                                                                                                                                                                            "IdTipoIncapacidad",
+                                                                                                                                                                                            "Nombre"))">
                             <option value="">-- Seleccione --</option>
                         </select>
                         <span asp-validation-for="IdTipoIncapacidad"
@@ -153,11 +153,11 @@
                         </div>
                     </div>
 
-                    @* Dias calculados *@
+                    @* Días calculados *@
                     <div class="mb-3">
                         <div class="detail-field">
                             <span class="detail-label">
-                                <i class="bi bi-calendar-range"></i>Dias de incapacidad
+                                <i class="bi bi-calendar-range"></i>Días de incapacidad
                             </span>
                             <span id="diasCalculados"
                                   style="font-size:1.1rem;font-weight:700;
@@ -168,7 +168,7 @@
                     </div>
 
                     @* Motivo *@
-                    <div class="mb-0">
+                    <div class="mb-4">
                         <label class="form-label">Motivo</label>
                         <textarea asp-for="Motivo"
                                   id="inputMotivo"
@@ -178,6 +178,43 @@
                                   style="resize:vertical;"></textarea>
                         <div class="d-flex justify-content-end mt-1">
                             <span id="contadorMotivo" class="form-text">0 / 300</span>
+                        </div>
+                    </div>
+
+                    @* ================================================
+                       ADJUNTAR ARCHIVO
+                       ================================================ *@
+                    <div class="mb-0">
+                        <label class="form-label">
+                            <i class="bi bi-paperclip"></i>Adjuntar documento (Certificado médico)
+                        </label>
+                        <div class="upload-area" id="uploadArea">
+                            <input type="file"
+                                   id="inputArchivo"
+                                   name="ArchivoAdjunto"
+                                   class="d-none"
+                                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" />
+                            <div class="upload-content">
+                                <i class="bi bi-cloud-arrow-up"></i>
+                                <p style="margin: 8px 0 0 0; font-weight: 500;">Arrastra tu archivo aquí</p>
+                                <p style="margin: 2px 0 0 0; color: var(--text-3); font-size: 0.85rem;">
+                                    o <a href="#" id="linkSeleccionar" style="color: var(--blue); text-decoration: none; font-weight: 500;">selecciona uno</a>
+                                </p>
+                                <p style="margin: 8px 0 0 0; color: var(--text-3); font-size: 0.75rem;">
+                                    Formatos permitidos: PDF, DOC, DOCX, JPG, PNG (máx. 5 MB)
+                                </p>
+                            </div>
+                        </div>
+                        <div id="archivoSeleccionado" style="display: none; margin-top: 12px;">
+                            <div class="alert alert-success d-flex align-items-center gap-2 mb-2">
+                                <i class="bi bi-check-circle-fill"></i>
+                                <span id="nombreArchivo"></span>
+                                <button type="button"
+                                        class="btn btn-link btn-sm ms-auto p-0"
+                                        onclick="limpiarArchivo(); return false;">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -251,6 +288,44 @@
         .input-validation-error {
             border-color: var(--red) !important;
         }
+
+        /* ========== UPLOAD AREA ========== */
+        .upload-area {
+            border: 2px dashed var(--border-d);
+            border-radius: var(--radius-lg);
+            padding: 32px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--slate-ll);
+        }
+
+            .upload-area:hover {
+                border-color: var(--blue);
+                background: #f0f8ff;
+            }
+
+            .upload-area.dragover {
+                border-color: var(--blue);
+                background: #e0f2fe;
+            }
+
+        .upload-content i {
+            font-size: 2.5rem;
+            color: var(--blue);
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .alert-success {
+            background: var(--green-l) !important;
+            border: 1px solid #86efac !important;
+            color: var(--green-t) !important;
+        }
+
+            .alert-success i {
+                color: var(--green);
+            }
     </style>
 }
 
@@ -263,8 +338,78 @@
         var msgFechas    = document.getElementById('msgFechas');
         var motivo       = document.getElementById('inputMotivo');
         var contador     = document.getElementById('contadorMotivo');
+        var uploadArea   = document.getElementById('uploadArea');
+        var inputArchivo = document.getElementById('inputArchivo');
+        var linkSeleccionar = document.getElementById('linkSeleccionar');
 
-        // Calcular dias entre fechas
+                // ========== UPLOAD ARCHIVO ==========
+        uploadArea.addEventListener('click', function (e) {
+            e.stopPropagation();
+            inputArchivo.click();
+        });
+
+        linkSeleccionar.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            inputArchivo.click();
+        });
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadArea.classList.remove('dragover');
+            var files = e.dataTransfer.files;
+            if (files.length > 0) {
+                inputArchivo.files = files;
+                mostrarArchivoSeleccionado(files[0]);
+            }
+        });
+
+        // ✅ Seleccionar archivo - SOLUCIÓN DEFINITIVA
+        inputArchivo.addEventListener('change', function (e) {
+            e.stopPropagation();
+
+            if (this.files.length > 0) {
+                mostrarArchivoSeleccionado(this.files[0]);
+                // Limpiar el input para que no se dispare change nuevamente
+                this.value = '';
+            }
+        }, {once: false});
+
+        function mostrarArchivoSeleccionado(file) {
+            // Validar tamaño
+            var maxSize = 5 * 1024 * 1024; // 5 MB
+            if (file.size > maxSize) {
+                Alert.error('El archivo no debe superar 5 MB');
+                inputArchivo.value = '';
+                return;
+            }
+
+            uploadArea.style.display = 'none';
+            document.getElementById('archivoSeleccionado').style.display = 'block';
+            document.getElementById('nombreArchivo').textContent = file.name + ' (' + (file.size / 1024).toFixed(2) + ' KB)';
+        }
+
+        function limpiarArchivo() {
+            inputArchivo.value = '';
+            uploadArea.style.display = 'block';
+            document.getElementById('archivoSeleccionado').style.display = 'none';
+        }
+
+        // Calcular días entre fechas
         function calcularDias() {
             var inicio = inputInicio.value;
             var fin    = inputFin.value;
@@ -286,10 +431,10 @@
                 msgFechas.textContent   = 'La fecha fin debe ser posterior a la fecha inicio';
                 inputFin.style.borderColor = 'var(--red)';
             } else {
-                diasSpan.textContent    = diff + ' dia(s)';
+                diasSpan.textContent    = diff + ' día(s)';
                 msgFechas.style.display = 'block';
                 msgFechas.style.color   = 'var(--green)';
-                msgFechas.textContent   = diff + ' dia(s) de incapacidad';
+                msgFechas.textContent   = diff + ' día(s) de incapacidad';
                 inputFin.style.borderColor = 'var(--green)';
             }
         }

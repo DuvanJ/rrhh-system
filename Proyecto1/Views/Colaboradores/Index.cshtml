@@ -218,8 +218,59 @@
     </div>
 </div>
 
+@* ========== MODAL: CREAR USUARIO ========== *@
+@if (ViewBag.ShowModal == true)
+{
+    <div class="modal-overlay show" id="modalCrearUsuario">
+        <div class="modal-content">
+            <div class="modal-header-custom">
+                <div class="modal-icon">✓</div>
+                <h2 class="modal-title">¡Colaborador creado!</h2>
+            </div>
+
+            <div class="modal-question">
+                ¿Desea crear el usuario ahora?
+            </div>
+
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-secondary" onclick="cerrarModal()">
+                    No, después
+                </button>
+                <button class="modal-btn modal-btn-primary" onclick="irACrearUsuario()">
+                    Sí, crear usuario
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
 @section Scripts {
     <script>
+
+        function cerrarModal() {
+            const modal = document.getElementById('modalCrearUsuario');
+            if (modal) {
+                modal.classList.remove('show');
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                }, 300);
+            }
+        }
+
+        function irACrearUsuario() {
+            const idColaborador = '@ViewBag.IdColaborador';
+            const nombreColaborador = '@ViewBag.NombreColaborador';
+            const correoColaborador = '@ViewBag.CorreoColaborador';
+
+            window.location.href = `/Colaboradores/CrearUsuarioDesdeColaborador?idColaborador=${idColaborador}&nombreColaborador=${encodeURIComponent(nombreColaborador)}&correo=${encodeURIComponent(correoColaborador)}`;
+        }
+
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('modalCrearUsuario');
+            if (modal && event.target === modal) {
+                cerrarModal();
+            }
+        });
 
         $(document).ready(function () {
             $('#tablaColaboradores').DataTable(DataTableConfig);

@@ -4,7 +4,7 @@
     int anio = ViewBag.Anio ?? 0;
     decimal total = ViewBag.Total ?? 0;
     int? idCol = ViewBag.IdColaborador as int?;
-    ViewData["Title"] = "Gestion de Aguinaldo";
+    ViewData["Title"] = "Gestión de Aguinaldo";
 }
 
 @* ================================================
@@ -12,7 +12,7 @@
    ================================================ *@
 <div class="page-header">
     <h3 class="page-title">
-        <i class="bi bi-cash-coin"></i>Gestion de Aguinaldo
+        <i class="bi bi-cash-coin"></i>Gestión de Aguinaldo
     </h3>
     <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
         <i class="bi bi-house"></i>Inicio
@@ -194,7 +194,7 @@
                             <th class="text-end">Total salarios</th>
                             <th class="text-end">Monto aguinaldo</th>
                             <th class="text-center">Estado</th>
-                            <th class="text-center">Fecha calculo</th>
+                            <th class="text-center">Fecha cálculo</th>
                             <th class="text-center">Fecha pago</th>
                             <th class="text-end pe-3">Acciones</th>
                         </tr>
@@ -288,7 +288,7 @@
                 return;
             }
             Alert.confirm(
-                'Se calculara el aguinaldo para la temporada ' + anio + '. Si ya existe informacion sera recalculada. Desea continuar?',
+                'Se calculará el aguinaldo para la temporada ' + anio + '. Si ya existe información será recalculada. ¿Desea continuar?',
                 function () { document.getElementById('formCalcular').submit(); },
                 'question'
             );
@@ -301,7 +301,7 @@
                 return;
             }
             Alert.confirm(
-                'Se pagaran todos los aguinaldos aprobados de la temporada ' + anio + '. Esta accion no se puede revertir. Desea continuar?',
+                'Se pagarán todos los aguinaldos aprobados de la temporada ' + anio + '. Esta acción no se puede revertir. ¿Desea continuar?',
                 function () { document.getElementById('formPagarMasivo').submit(); },
                 'warning'
             );

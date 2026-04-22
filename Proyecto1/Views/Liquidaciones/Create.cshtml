@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "Generar Liquidacion";
+    ViewData["Title"] = "Generar Liquidación";
 }
 
 @* ================================================
@@ -7,7 +7,7 @@
    ================================================ *@
 <div class="page-header">
     <h3 class="page-title">
-        <i class="bi bi-cash-stack"></i>Generar Liquidacion
+        <i class="bi bi-cash-stack"></i>Generar Liquidación
     </h3>
     <a asp-action="Index" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left"></i>Volver
@@ -85,12 +85,12 @@
             </div>
 
             @* ================================================
-               PASO 2 — Datos de la liquidacion
+               PASO 2 — Datos de la liquidación
                ================================================ *@
             <div class="card mb-4">
                 <div class="card-header">
                     <span class="card-header-title">
-                        <i class="bi bi-cash-stack"></i>Paso 2 — Datos de la liquidacion
+                        <i class="bi bi-cash-stack"></i>Paso 2 — Datos de la liquidación
                     </span>
                 </div>
                 <div class="card-body">
@@ -134,9 +134,9 @@
                 <i class="bi bi-exclamation-triangle-fill flex-shrink-0"
                    style="font-size:1rem;margin-top:2px;"></i>
                 <div style="font-size:0.82rem;">
-                    La liquidacion se calculara automaticamente en base al salario,
-                    anos de servicio y tipo de salida del colaborador.
-                    Esta accion no se puede revertir una vez generada.
+                    La liquidación se calculará automáticamente en base al salario,
+                    años de servicio y tipo de salida del colaborador.
+                    Esta acción no se puede revertir una vez generada.
                 </div>
             </div>
 
@@ -149,7 +149,7 @@
                 <button type="button"
                         class="btn btn-success"
                         onclick="confirmarGenerar()">
-                    <i class="bi bi-calculator"></i>Generar liquidacion
+                    <i class="bi bi-calculator"></i>Generar liquidación
                 </button>
             </div>
 
@@ -208,11 +208,11 @@
 
                         Alert.success('Colaborador encontrado: ' + data.nombre);
                     } else {
-                        Alert.error('No se encontro un colaborador activo con ese ID.');
+                        Alert.error('No se encontró un colaborador activo con ese ID.');
                     }
                 })
                 .catch(function () {
-                    Alert.error('Ocurrio un error al buscar el colaborador.');
+                    Alert.error('Ocurrió un error al buscar el colaborador.');
                 });
         });
 
@@ -240,7 +240,7 @@
             }
 
             Alert.confirm(
-                'Se generara la liquidacion de ' + nombre + ' por ' + tipoTexto + '. Esta accion no se puede revertir. Desea continuar?',
+                'Se generará la liquidación de ' + nombre + ' por ' + tipoTexto + '. Esta acción no se puede revertir. ¿Desea continuar?',
                 function () {
                     document.getElementById('formLiquidacion').submit();
                 },

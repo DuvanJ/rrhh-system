@@ -30,7 +30,7 @@
 
                     <div class="row g-3">
 
-                        @* Input ID + boton buscar *@
+                        @* Input ID + botón buscar *@
                         <div class="col-md-4">
                             <label class="form-label">
                                 ID Colaborador <span class="required">*</span>
@@ -74,7 +74,7 @@
 
                     </div>
 
-                    @* Panel de resultado de busqueda *@
+                    @* Panel de resultado de búsqueda *@
                     <div id="panelColaborador" class="colaborador-found mt-3" style="display:none;">
                         <div class="d-flex align-items-center gap-3">
                             <div class="avatar-circle avatar-blue" id="avatarColaborador"
@@ -134,14 +134,14 @@
 
                         <div class="col-md-6">
                             <label class="form-label">
-                                Contrasena <span class="required">*</span>
+                                Contraseña <span class="required">*</span>
                             </label>
                             <div class="login-input-group">
                                 <input asp-for="ContrasenaHash"
                                        id="inputPassword"
                                        type="password"
                                        class="form-control login-input"
-                                       placeholder="Minimo 6 caracteres"
+                                       placeholder="Mínimo 6 caracteres"
                                        style="padding-left:12px;padding-right:40px;" />
                                 <button type="button"
                                         class="login-input-toggle"
@@ -155,13 +155,13 @@
 
                         <div class="col-md-6">
                             <label class="form-label">
-                                Confirmar contrasena <span class="required">*</span>
+                                Confirmar contraseña <span class="required">*</span>
                             </label>
                             <div class="login-input-group">
                                 <input type="password"
                                        id="inputConfirmar"
                                        class="form-control"
-                                       placeholder="Repite la contrasena"
+                                       placeholder="Repite la contraseña"
                                        style="padding-right:40px;" />
                                 <button type="button"
                                         class="login-input-toggle"
@@ -261,12 +261,12 @@
                     Alert.success(`Colaborador encontrado: ${data.nombreCompleto}`);
                 })
                 .catch(() => {
-                    Alert.error('El colaborador no existe o no esta activo.');
+                    Alert.error('El colaborador no existe o no está activo.');
                 });
         });
 
         // ================================================
-        // TOGGLE CONTRASENA
+        // TOGGLE CONTRASEÑA
         // ================================================
         function togglePass(inputId, iconId) {
             const input = document.getElementById(inputId);
@@ -281,7 +281,7 @@
         }
 
         // ================================================
-        // VALIDACION COINCIDENCIA DE CONTRASENA
+        // VALIDACIÓN COINCIDENCIA DE CONTRASEÑA
         // ================================================
         const pass     = document.getElementById('inputPassword');
         const confirm  = document.getElementById('inputConfirmar');
@@ -294,11 +294,11 @@
             }
             matchMsg.style.display = 'block';
             if (pass.value === confirm.value) {
-                matchMsg.textContent       = 'Las contrasenas coinciden';
+                matchMsg.textContent       = 'Las contraseñas coinciden';
                 matchMsg.style.color       = 'var(--green)';
                 confirm.style.borderColor  = 'var(--green)';
             } else {
-                matchMsg.textContent       = 'Las contrasenas no coinciden';
+                matchMsg.textContent       = 'Las contraseñas no coinciden';
                 matchMsg.style.color       = 'var(--red)';
                 confirm.style.borderColor  = 'var(--red)';
             }
@@ -322,17 +322,17 @@
             }
 
             if (!passVal) {
-                Alert.warning('Debe ingresar una contrasena.');
+                Alert.warning('Debe ingresar una contraseña.');
                 return;
             }
 
             if (passVal !== confVal) {
-                Alert.error('Las contrasenas no coinciden.');
+                Alert.error('Las contraseñas no coinciden.');
                 return;
             }
 
             Alert.confirm(
-                `Se creara el usuario "${nombre}". Desea continuar?`,
+                `Se creará el usuario "${nombre}". ¿Desea continuar?`,
                 () => {
                     document.getElementById('formCrear').submit();
                 },
@@ -342,6 +342,3 @@
 
     </script>
 }
-
-
-

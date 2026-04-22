@@ -92,7 +92,7 @@
                     }
                     else
                     {
-                        <span class="badge bg-success badge-dot">Dia completo</span>
+                        <span class="badge bg-success badge-dot">Día completo</span>
                     }
                 </div>
             </div>
@@ -105,10 +105,10 @@
     <div class="col-md-3">
         <div class="kpi-card">
             <div>
-                <div class="kpi-label">Dias completos este mes</div>
+                <div class="kpi-label">Días completos este mes</div>
                 <div class="kpi-value" style="color:var(--green)">@completosMes</div>
                 <div class="kpi-trend up" style="font-size:0.72rem;">
-                    de @totalMes dias registrados
+                    de @totalMes días registrados
                 </div>
             </div>
             <div class="kpi-icon green">
@@ -156,7 +156,7 @@
                         <span>Marcar entrada</span>
                         @if (entradaHoy.HasValue)
                         {
-                            <small>Ultima: @entradaHoy.Value.ToString(@"hh\:mm")</small>
+                            <small>Última: @entradaHoy.Value.ToString(@"hh\:mm")</small>
                         }
                     </button>
                 </form>
@@ -173,7 +173,7 @@
                         <span>Marcar salida</span>
                         @if (salidaHoy.HasValue)
                         {
-                            <small>Ultima: @salidaHoy.Value.ToString(@"hh\:mm")</small>
+                            <small>Última: @salidaHoy.Value.ToString(@"hh\:mm")</small>
                         }
                     </button>
                 </form>
@@ -273,7 +273,7 @@
                             <td colspan="4">
                                 <div class="table-empty">
                                     <i class="bi bi-calendar-x"></i>
-                                    <p>No hay registros de asistencia aun</p>
+                                    <p>No hay registros de asistencia aún</p>
                                 </div>
                             </td>
                         </tr>
@@ -374,7 +374,7 @@
 
             document.getElementById('btnEntrada').addEventListener('click', function () {
                 Alert.confirm(
-                    'Se registrara su entrada a las ' + document.getElementById('relojHora').textContent + '. Desea continuar?',
+                    'Se registrará su entrada a las ' + document.getElementById('relojHora').textContent + '. ¿Desea continuar?',
                     function () { formEntrada.submit(); },
                     'question'
                 );
@@ -382,7 +382,7 @@
 
             document.getElementById('btnSalida').addEventListener('click', function () {
                 Alert.confirm(
-                    'Se registrara su salida a las ' + document.getElementById('relojHora').textContent + '. Desea continuar?',
+                    'Se registrará su salida a las ' + document.getElementById('relojHora').textContent + '. ¿Desea continuar?',
                     function () { formSalida.submit(); },
                     'question'
                 );

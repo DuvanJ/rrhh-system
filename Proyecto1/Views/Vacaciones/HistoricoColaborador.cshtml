@@ -1,0 +1,183 @@
+﻿@model List<Proyecto1.Models.VacacionAdminVM>
+
+@{
+    ViewData["Title"] = "Histórico de Vacaciones";
+}
+
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-sun"></i>Histórico de Vacaciones
+    </h3>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>Volver
+    </a>
+</div>
+
+@* ================================================
+   INFO DEL COLABORADOR
+   ================================================ *@
+<div class="card mb-4">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-person"></i>Información del colaborador
+        </span>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="avatar-circle avatar-blue" style="width:56px;height:56px;font-size:1.1rem;flex-shrink:0;">
+                        @ViewBag.Iniciales
+                    </div>
+                    <div>
+                        <div style="font-size:1rem;font-weight:700;">@ViewBag.NombreColaborador</div>
+                        <div style="font-size:0.82rem;color:var(--text-3);">ID: @ViewBag.IdColaborador</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ================================================
+   KPI CARDS - RESUMEN
+   ================================================ *@
+<div class="row g-3 mb-4">
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Días disponibles</div>
+                <div class="kpi-value" style="color:var(--green)">@ViewBag.DiasDisponibles</div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-calendar-check"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Días usados</div>
+                <div class="kpi-value" style="color:var(--blue)">@ViewBag.TotalDiasUsados</div>
+            </div>
+            <div class="kpi-icon blue">
+                <i class="bi bi-sun-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Aprobadas</div>
+                <div class="kpi-value" style="color:var(--green)">@ViewBag.TotalAprobadas</div>
+            </div>
+            <div class="kpi-icon green">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Pendientes/Rechazadas</div>
+                <div class="kpi-value" style="color:var(--red)">@(ViewBag.TotalPendientes + ViewBag.TotalRechazadas)</div>
+            </div>
+            <div class="kpi-icon red">
+                <i class="bi bi-exclamation-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@* ================================================
+   TABLA HISTÓRICO
+   ================================================ *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-header-title">
+            <i class="bi bi-table"></i>Histórico completo de vacaciones
+        </span>
+        <span class="badge badge-info">@ViewBag.TotalSolicitudes registros</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tablaHistorico" class="tabla-sistema w-100">
+                <thead>
+                    <tr>
+                        <th class="text-center">Solicitud</th>
+                        <th class="text-center">Desde</th>
+                        <th class="text-center">Hasta</th>
+                        <th class="text-center">Días</th>
+                        <th class="text-center">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var v in Model)
+                        {
+                            string badgeClass = v.Estado switch
+                            {
+                                "Aprobada" => "bg-success",
+                                "Pendiente" => "bg-warning",
+                                _ => "bg-danger"
+                            };
+
+                            <tr>
+                                <td class="text-center td-muted">
+                                    @v.FechaSolicitud.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center td-muted">
+                                    @v.FechaInicio.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center td-muted">
+                                    @v.FechaFin.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center">
+                                    <span class="td-mono" style="font-weight:700;color:var(--blue)">
+                                        @v.DiasSolicitados
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge @badgeClass badge-dot">
+                                        @v.Estado
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5">
+                                <div class="table-empty">
+                                    <i class="bi bi-sun"></i>
+                                    <p>No hay solicitudes de vacaciones registradas</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            var hasData = @(Model != null && Model.Any() ? "true" : "false");
+            if (hasData === "true") {
+                var config = Object.assign({}, DataTableConfig, {
+                    order: [[0, 'desc']]
+                });
+                $('#tablaHistorico').DataTable(config);
+            }
+        });
+    </script>
+}

@@ -96,6 +96,16 @@ namespace Proyecto1.BLL
         }
 
 
+        // Obtener histórico completo de un colaborador
+        public async Task<List<VacacionAdminVM>> ObtenerHistoricoColaboradorAsync(int idColaborador)
+        {
+            return await _context.Set<VacacionAdminVM>()
+                .FromSqlRaw(
+                    "EXEC sp_Vacaciones_HistoricoColaborador @IdColaborador",
+                    new SqlParameter("@IdColaborador", idColaborador)
+                )
+                .ToListAsync();
+        }
 
 
     }

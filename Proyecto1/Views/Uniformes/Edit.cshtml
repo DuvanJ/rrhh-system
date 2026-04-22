@@ -113,7 +113,7 @@
                         <i class="bi bi-bag-check"></i>Uniformes entregados
                     </span>
                     <span class="badge badge-info">
-                        @Model.Uniformes.Count item(s)
+                        @Model.Uniformes.Count ítem(s)
                     </span>
                 </div>
                 <div class="card-body p-0">
@@ -138,10 +138,10 @@
                                             <select asp-for="Uniformes[i].IdTipoUniforme"
                                                     class="form-select"
                                                     asp-items="@(new SelectList(
-                                                                                                            Model.TiposUniforme,
-                                                                                                            "IdTipoUniforme",
-                                                                                                            "NombreTipo",
-                                                                                                            Model.Uniformes[i].IdTipoUniforme))">
+                                                                                                                                                                Model.TiposUniforme,
+                                                                                                                                                                "IdTipoUniforme",
+                                                                                                                                                                "NombreTipo",
+                                                                                                                                                                Model.Uniformes[i].IdTipoUniforme))">
                                         </select>
                                     </td>
                                     <td>
@@ -260,7 +260,7 @@
 
         function confirmarGuardar() {
             Alert.confirm(
-                'Se guardaran los cambios en la entrega de @Model.Uniformes.Count uniforme(s) para @Model.NombreColaborador. Desea continuar?',
+                'Se guardarán los cambios en la entrega de @Model.Uniformes.Count uniforme(s) para @Model.NombreColaborador. ¿Desea continuar?',
                 function () {
                     document.getElementById('formEditar').submit();
                 },

@@ -97,6 +97,23 @@ namespace Proyecto1.Controllers
         {
             try
             {
+                // ✅ VALIDACIÓN: El usuario logueado NO puede aprobar sus propias solicitudes
+                int? idUsuarioLogueado = HttpContext.Session.GetInt32("IdColaborador");
+                var solicitud = await _service.ObtenerDetalleAsync(id);
+
+                if (solicitud == null)
+                {
+                    TempData["Error"] = "No se encontró la solicitud.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // Si el usuario logueado es el que hizo la solicitud, NO PUEDE aprobarla
+                if (idUsuarioLogueado.HasValue && solicitud.IdColaborador == idUsuarioLogueado.Value)
+                {
+                    TempData["Error"] = "No puedes aprobar o rechazar tus propias solicitudes. Otro miembro de RRHH debe hacerlo.";
+                    return RedirectToAction(nameof(Index));
+                }
+
                 // 1️⃣ Cambiar estado en BD
                 await _service.CambiarEstadoAsync(id, estado);
 
@@ -155,7 +172,7 @@ Departamento de RRHH
                         "La solicitud fue procesada, pero el colaborador no tiene correo registrado.";
                 }
 
-                // 5️⃣ ENVIAR CORREO A RRHH - VALIDAR QUE NO SEA NULO
+                // 5️⃣ ENVIAR CORREO A RRHH
                 string correoRRHH = _config["SendGrid:CorreoRRHH"];
 
                 if (!string.IsNullOrWhiteSpace(correoRRHH))
@@ -185,6 +202,7 @@ Departamento de RRHH
                 return RedirectToAction(nameof(Index));
             }
         }
+
 
         public async Task<IActionResult> MisHorasExtras()
         {

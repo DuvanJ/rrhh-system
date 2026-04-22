@@ -1,7 +1,7 @@
 ﻿@model List<Proyecto1.Models.AsistenciaReporteVM>
 
 @{
-    ViewData["Title"] = "Historico de Asistencia";
+    ViewData["Title"] = "Histórico de Asistencia";
     var rol = Context.Session.GetString("Perfil");
     int total = ViewBag.Total ?? 0;
     int puntuales = ViewBag.Puntuales ?? 0;
@@ -13,7 +13,7 @@
    ================================================ *@
 <div class="page-header">
     <h3 class="page-title">
-        <i class="bi bi-calendar-check"></i>Historico de Asistencia
+        <i class="bi bi-calendar-check"></i>Histórico de Asistencia
     </h3>
     <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
         <i class="bi bi-house"></i>Inicio
@@ -58,7 +58,7 @@
     <div class="col-md-4">
         <div class="kpi-card">
             <div>
-                <div class="kpi-label">Tardias</div>
+                <div class="kpi-label">Tardías</div>
                 <div class="kpi-value" style="color:var(--amber)">@tardias</div>
                 @if (total > 0)
                 {
@@ -126,7 +126,7 @@
 </div>
 
 @* ================================================
-   ESTADO VACIO
+   ESTADO VACÍO
    ================================================ *@
 @if (!Model.Any())
 {
@@ -176,7 +176,7 @@
                             string estado = a.Estado switch
                             {
                                 "Presente" => "Puntual",
-                                "Tardanza" => "Tardia",
+                                "Tardanza" => "Tardía",
                                 _ => "Sin salida"
                             };
 

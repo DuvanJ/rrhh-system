@@ -1,7 +1,7 @@
 ﻿@model Proyecto1.Models.EvaluacionVM
 
 @{
-    ViewData["Title"] = "Registrar Evaluacion";
+    ViewData["Title"] = "Registrar Evaluación";
 }
 
 @* ================================================
@@ -9,7 +9,7 @@
    ================================================ *@
 <div class="page-header">
     <h3 class="page-title">
-        <i class="bi bi-clipboard-plus"></i>Registrar Evaluacion
+        <i class="bi bi-clipboard-plus"></i>Registrar Evaluación
     </h3>
     <a asp-action="Index" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left"></i>Volver
@@ -83,12 +83,12 @@
             </div>
 
             @* ================================================
-               PASO 2 — Datos de la evaluacion
+               PASO 2 — Datos de la evaluación
                ================================================ *@
             <div class="card mb-4">
                 <div class="card-header">
                     <span class="card-header-title">
-                        <i class="bi bi-calendar-check"></i>Paso 2 — Datos de la evaluacion
+                        <i class="bi bi-calendar-check"></i>Paso 2 — Datos de la evaluación
                     </span>
                 </div>
                 <div class="card-body">
@@ -96,7 +96,7 @@
 
                         <div class="col-md-4">
                             <label class="form-label">
-                                Fecha de evaluacion <span class="required">*</span>
+                                Fecha de evaluación <span class="required">*</span>
                             </label>
                             <input asp-for="FechaEvaluacion"
                                    type="date"
@@ -110,7 +110,7 @@
                                       id="inputComentarios"
                                       class="form-control"
                                       rows="3"
-                                      placeholder="Observaciones generales sobre el desempeno del colaborador..."
+                                      placeholder="Observaciones generales sobre el desempeño del colaborador..."
                                       style="resize:vertical;"></textarea>
                             <div class="d-flex justify-content-end mt-1">
                                 <span id="contadorComentarios"
@@ -123,12 +123,12 @@
             </div>
 
             @* ================================================
-               PASO 3 — Criterios de evaluacion
+               PASO 3 — Criterios de evaluación
                ================================================ *@
             <div class="card mb-4">
                 <div class="card-header">
                     <span class="card-header-title">
-                        <i class="bi bi-list-check"></i>Paso 3 — Criterios de evaluacion
+                        <i class="bi bi-list-check"></i>Paso 3 — Criterios de evaluación
                     </span>
                     <span id="badgePuntaje" class="badge badge-info">
                         Puntaje: 0 / 100
@@ -143,7 +143,7 @@
                                     <th class="text-center" style="width:140px;">
                                         Puntaje (0-100)
                                     </th>
-                                    <th>Observacion</th>
+                                    <th>Observación</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -171,7 +171,7 @@
                                             <td>
                                                 <input asp-for="Detalles[@i].Observacion"
                                                        class="form-control"
-                                                       placeholder="Observacion opcional..." />
+                                                       placeholder="Observación opcional..." />
                                             </td>
                                         </tr>
                                     }
@@ -191,7 +191,7 @@
                 <button type="button"
                         class="btn btn-success"
                         onclick="confirmarGuardar()">
-                    <i class="bi bi-check-circle"></i>Guardar evaluacion
+                    <i class="bi bi-check-circle"></i>Guardar evaluación
                 </button>
             </div>
 
@@ -314,12 +314,12 @@
             }
 
             if (!fecha) {
-                Alert.warning('Debe seleccionar la fecha de evaluacion.');
+                Alert.warning('Debe seleccionar la fecha de evaluación.');
                 return;
             }
 
             Alert.confirm(
-                'Se registrara la evaluacion de ' + nombre + ' con fecha ' + fecha + '. Desea continuar?',
+                'Se registrará la evaluación de ' + nombre + ' con fecha ' + fecha + '. ¿Desea continuar?',
                 function () {
                     document.getElementById('formEvaluacion').submit();
                 },

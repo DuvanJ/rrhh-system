@@ -1,0 +1,351 @@
+﻿@model Proyecto1.Models.Usuario
+
+@{
+    ViewData["Title"] = "Crear Usuario";
+}
+
+<div class="page-header">
+    <h3 class="page-title">
+        <i class="bi bi-person-plus-fill"></i>Crear Usuario
+    </h3>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-xl-8 col-lg-10">
+        <form asp-action="GuardarUsuarioDesdeColaborador" method="post" id="formCrear" novalidate>
+
+            @* ================================================
+               INFORMACIÓN DEL COLABORADOR
+               ================================================ *@
+            <div class="card mb-4">
+                <div class="card-header">
+                    <span class="card-header-title">
+                        <i class="bi bi-info-circle"></i>Información del colaborador
+                    </span>
+                </div>
+                <div class="card-body pb-0">
+
+                    @* Panel de colaborador encontrado *@
+                    <div class="colaborador-found">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="avatar-circle avatar-blue"
+                                 id="avatarColaborador"
+                                 style="width:40px;height:40px;font-size:0.9rem;flex-shrink:0;font-weight:600;">
+                                --
+                            </div>
+                            <div style="flex: 1; min-width: 0;">
+                                <div id="labelNombrePanel"
+                                     style="font-weight:600;font-size:0.95rem;color:var(--text);word-break:break-word;">
+                                    @ViewBag.NombreColaborador
+                                </div>
+                                <div id="labelCorreoPanel"
+                                     style="font-size:0.8rem;color:var(--text-3);margin-top:2px;word-break:break-all;">
+                                    @Model.Correo
+                                </div>
+                            </div>
+                            <span class="badge bg-success badge-pill" style="flex-shrink:0;margin-left:auto;">
+                                <i class="bi bi-check-circle-fill me-1" style="font-size:0.75rem;"></i>Activo
+                            </span>
+                        </div>
+                    </div>
+
+                    @* Campos ocultos *@
+                    <input type="hidden" asp-for="IdColaborador" value="@ViewBag.IdColaborador" />
+                    <input type="hidden" asp-for="Correo" />
+
+                </div>
+            </div>
+
+            @* ================================================
+               DATOS DEL USUARIO
+               ================================================ *@
+            <div class="card mb-4">
+                <div class="card-header">
+                    <span class="card-header-title">
+                        <i class="bi bi-person-gear"></i>Datos del usuario
+                    </span>
+                </div>
+                <div class="card-body">
+
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Nombre de usuario <span class="required">*</span>
+                            </label>
+                            <input asp-for="NombreUsuario"
+                                   id="inputNombreUsuario"
+                                   class="form-control"
+                                   placeholder="Ej: jperez"
+                                   required />
+                            <span asp-validation-for="NombreUsuario" class="form-error d-block"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Perfil <span class="required">*</span>
+                            </label>
+                            <select asp-for="IdPerfil"
+                                    class="form-select"
+                                    asp-items="ViewBag.Perfiles"
+                                    required>
+                                <option value="">-- Seleccione un perfil --</option>
+                            </select>
+                            <span asp-validation-for="IdPerfil" class="form-error d-block"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Contraseña <span class="required">*</span>
+                            </label>
+                            <div class="input-group position-relative">
+                                <input asp-for="ContrasenaHash"
+                                       id="inputPassword"
+                                       type="password"
+                                       class="form-control"
+                                       placeholder="Mínimo 6 caracteres"
+                                       required />
+                                <button type="button"
+                                        class="btn-toggle-password"
+                                        onclick="togglePass('inputPassword','iconPass')"
+                                        tabindex="-1">
+                                    <i id="iconPass" class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="ContrasenaHash" class="form-error d-block"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Confirmar contraseña <span class="required">*</span>
+                            </label>
+                            <div class="input-group position-relative">
+                                <input type="password"
+                                       id="inputConfirmar"
+                                       class="form-control"
+                                       placeholder="Repite la contraseña"
+                                       required />
+                                <button type="button"
+                                        class="btn-toggle-password"
+                                        onclick="togglePass('inputConfirmar','iconPass2')"
+                                        tabindex="-1">
+                                    <i id="iconPass2" class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <p id="matchMsg" class="form-text mt-1" style="display:none;"></p>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            @* Botones *@
+            <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap">
+                <a asp-action="Index" asp-controller="Colaboradores" class="btn btn-outline-secondary">
+                    <i class="bi bi-skip-forward"></i>Saltar
+                </a>
+                <div class="d-flex gap-2">
+                    <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i>Cancelar
+                    </a>
+                    <button type="button" class="btn btn-success" onclick="confirmarGuardar()">
+                        <i class="bi bi-check-circle"></i>Guardar usuario
+                    </button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .required {
+            color: var(--red);
+            margin-left: 2px;
+        }
+
+        .colaborador-found {
+            background: var(--green-l);
+            border: 1px solid #bbf7d0;
+            border-radius: var(--radius);
+            padding: 12px 14px;
+            margin-bottom: 0;
+        }
+
+        .badge-pill {
+            padding: 4px 10px !important;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .bg-success {
+            background-color: var(--green) !important;
+            color: white;
+        }
+
+        .field-validation-error {
+            color: var(--red);
+            font-size: 0.78rem;
+            margin-top: 4px;
+        }
+
+        .input-validation-error {
+            border-color: var(--red) !important;
+        }
+
+        .form-error {
+            color: var(--red);
+            font-size: 0.78rem;
+            margin-top: 4px;
+        }
+
+        .avatar-circle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            color: white;
+            font-weight: 600;
+        }
+
+        .avatar-blue {
+            background-color: #3b82f6;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .btn-toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: var(--text-3);
+            font-size: 1rem;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            z-index: 10;
+        }
+
+            .btn-toggle-password:hover {
+                color: var(--text);
+            }
+
+            .btn-toggle-password:focus {
+                outline: none;
+            }
+
+        .form-control {
+            padding-right: 40px;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+
+        // ================================================
+        // INICIALIZAR AVATAR CON INICIALES
+        // ================================================
+        function inicializarAvatar() {
+            const nombrePanel = document.getElementById('labelNombrePanel').textContent.trim();
+            const iniciales = nombrePanel
+                .split(' ')
+                .slice(0, 2)
+                .map(n => n[0])
+                .join('')
+                .toUpperCase();
+
+            document.getElementById('avatarColaborador').textContent = iniciales || '--';
+        }
+
+        // Ejecutar al cargar
+        document.addEventListener('DOMContentLoaded', inicializarAvatar);
+
+        // ================================================
+        // TOGGLE CONTRASEÑA
+        // ================================================
+        function togglePass(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'bi bi-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'bi bi-eye';
+            }
+        }
+
+        // ================================================
+        // VALIDACIÓN COINCIDENCIA DE CONTRASEÑA
+        // ================================================
+        const pass = document.getElementById('inputPassword');
+        const confirm = document.getElementById('inputConfirmar');
+        const matchMsg = document.getElementById('matchMsg');
+
+        function validarCoincidencia() {
+            if (confirm.value.length === 0) {
+                matchMsg.style.display = 'none';
+                return;
+            }
+            matchMsg.style.display = 'block';
+            if (pass.value === confirm.value) {
+                matchMsg.textContent = '✓ Las contraseñas coinciden';
+                matchMsg.style.color = 'var(--green)';
+                confirm.style.borderColor = 'var(--green)';
+            } else {
+                matchMsg.textContent = '✗ Las contraseñas no coinciden';
+                matchMsg.style.color = 'var(--red)';
+                confirm.style.borderColor = 'var(--red)';
+            }
+        }
+
+        confirm.addEventListener('input', validarCoincidencia);
+        pass.addEventListener('input', validarCoincidencia);
+
+        // ================================================
+        // CONFIRMAR GUARDAR
+        // ================================================
+        function confirmarGuardar() {
+            const nombre = document.getElementById('inputNombreUsuario').value.trim();
+            const perfil = document.getElementById('IdPerfil').value;
+            const passVal = pass.value;
+            const confVal = confirm.value;
+
+            if (!nombre || !perfil) {
+                Alert.warning('Complete todos los campos obligatorios.');
+                return;
+            }
+
+            if (!passVal) {
+                Alert.warning('Debe ingresar una contraseña.');
+                return;
+            }
+
+            if (passVal !== confVal) {
+                Alert.error('Las contraseñas no coinciden.');
+                return;
+            }
+
+            Alert.confirm(
+                `Se creará el usuario "${nombre}". ¿Desea continuar?`,
+                () => {
+                    document.getElementById('formCrear').submit();
+                },
+                'question'
+            );
+        }
+
+    </script>
+}

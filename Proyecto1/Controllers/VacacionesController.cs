@@ -140,6 +140,24 @@ namespace Proyecto1.Controllers
         {
             try
             {
+                // ✅ VALIDACIÓN: El usuario logueado NO puede aprobar sus propias vacaciones
+                int? idUsuarioLogueado = HttpContext.Session.GetInt32("IdColaborador");
+                var solicitud = await _service.ObtenerDetalleAsync(id);
+
+                if (solicitud == null)
+                {
+                    TempData["Error"] = "No se encontró la solicitud de vacaciones.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // Si el usuario logueado es el que hizo la solicitud, NO PUEDE aprobarla
+                if (idUsuarioLogueado.HasValue && solicitud.IdColaborador == idUsuarioLogueado.Value)
+                {
+                    TempData["Error"] = "No puedes aprobar o rechazar tus propias solicitudes de vacaciones. Otro miembro de RRHH debe hacerlo.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // ✅ Si pasa la validación, continúa normalmente
                 // 1️⃣ Cambiar estado en BD
                 await _service.CambiarEstadoAsync(id, estado);
 
@@ -222,6 +240,44 @@ Departamento de Recursos Humanos
                 TempData["Error"] = $"Error al procesar la solicitud: {ex.Message}";
                 return RedirectToAction(nameof(Index));
             }
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> HistoricoColaborador(int idColaborador)
+        {
+            // Verificar que el colaborador existe
+            bool existe = await _service.ColaboradorExisteAsync(idColaborador);
+
+            if (!existe)
+            {
+                TempData["Error"] = $"No existe ningún colaborador con ID {idColaborador}.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var colaborador = await _colaboradoresService.ObtenerPorId(idColaborador);
+            var historico = await _service.ObtenerHistoricoColaboradorAsync(idColaborador);
+
+            // ✅ Calcular iniciales en el controller
+            var nombres = colaborador.Nombre.Split(' ');
+            string iniciales = nombres.Take(2)
+                .Select(n => n[0])
+                .Aggregate("", (a, c) => a + c)
+                .ToUpper();
+
+            ViewBag.NombreColaborador = $"{colaborador.Nombre} {colaborador.Apellidos}";
+            ViewBag.Iniciales = iniciales;
+            ViewBag.IdColaborador = idColaborador;
+            ViewBag.DiasDisponibles = await _service.CalcularDiasDisponiblesAsync(idColaborador);
+
+            // Estadísticas
+            ViewBag.TotalSolicitudes = historico.Count;
+            ViewBag.TotalAprobadas = historico.Count(v => v.Estado == "Aprobada");
+            ViewBag.TotalPendientes = historico.Count(v => v.Estado == "Pendiente");
+            ViewBag.TotalRechazadas = historico.Count(v => v.Estado == "Rechazada");
+            ViewBag.TotalDiasUsados = historico.Where(v => v.Estado == "Aprobada").Sum(v => v.DiasSolicitados);
+
+            return View(historico);
         }
 
 

@@ -108,7 +108,7 @@
 </div>
 
 @* ================================================
-   BOTON CREAR
+   BOTÓN CREAR
    ================================================ *@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <span class="text-muted" style="font-size:0.82rem;">
@@ -249,17 +249,17 @@
 @section Scripts {
     <script>
 
-                $(document).ready(function () {
+        $(document).ready(function () {
             if (@Model.Any().ToString().ToLower()) {
                 $('#tablaUsuarios').DataTable(DataTableConfig);
             }
         });
 
-        // Cambiar estado con confirmacion
+        // Cambiar estado con confirmación
         function cambiarEstado(id, nombre, estadoActual) {
             const accion  = estadoActual ? 'desactivar' : 'activar';
             const tipo    = estadoActual ? 'warning' : 'question';
-            const mensaje = `Se va a ${accion} al usuario ${nombre}. Desea continuar?`;
+            const mensaje = `Se va a ${accion} al usuario ${nombre}. ¿Desea continuar?`;
 
             Alert.confirm(mensaje, () => {
                 window.location.href = `/Usuarios/CambiarEstado/${id}`;
@@ -269,9 +269,9 @@
         // Sin resultados
         @if (ViewBag.SinResultados == true)
         {
-                <text>
-                Alert.info('No se encontraron usuarios con ese criterio de busqueda.');
-                </text>
+                    <text>
+                    Alert.info('No se encontraron usuarios con ese criterio de búsqueda.');
+                    </text>
         }
 
     </script>

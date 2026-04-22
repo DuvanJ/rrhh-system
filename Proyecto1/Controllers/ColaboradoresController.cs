@@ -2,16 +2,21 @@
 using Proyecto1.Models;
 using Proyecto1.Services;
 using System.Text.RegularExpressions;
+using Microsoft.EntityFrameworkCore;
 
 namespace Proyecto1.Controllers
 {
     public class ColaboradoresController : Controller
     {
         private readonly ColaboradoresService _service;
+        private readonly UsuarioService _usuarioService;
 
-        public ColaboradoresController(ColaboradoresService service)
+        public ColaboradoresController(
+            ColaboradoresService service,
+            UsuarioService usuarioService)
         {
             _service = service;
+            _usuarioService = usuarioService;
         }
 
         // ========== LISTAS PARA DROPDOWNS ==========
@@ -161,19 +166,128 @@ namespace Proyecto1.Controllers
                 return View(c);
             }
 
-            // ========== GUARDAR ==========
+            // ========== GUARDAR COLABORADOR ==========
             try
             {
                 await _service.Insertar(c);
+
+                // ✅ OBTENER EL COLABORADOR CREADO
+                var colaborador = (await _service.ObtenerColaboradores())
+                    .FirstOrDefault(col => col.Cedula == c.Cedula);
+
+                if (colaborador != null)
+                {
+                    return RedirectToAction("Index", new
+                    {
+                        showModal = true,
+                        idCol = colaborador.IdColaborador,
+                        nomCol = $"{c.Nombre} {c.Apellidos}",
+                        corrCol = c.Correo
+                    });
+                }
+
                 TempData["Success"] = "Colaborador registrado correctamente.";
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
+                // ✅ MEJORAR MENSAJE DE ERROR DE CÉDULA DUPLICADA
+                string mensajeError = "Error al registrar el colaborador.";
+                string mensajeCampo = "";
+
+                // Verificar si es error de cédula duplicada
+                string mensajeCompleto = ex.ToString().ToUpper();
+
+                if (mensajeCompleto.Contains("UNIQUE") || mensajeCompleto.Contains("DUPLICADA") ||
+                    ex.InnerException?.Message.Contains("UNIQUE") == true ||
+                    ex.InnerException?.ToString().Contains("UNIQUE") == true)
+                {
+                    mensajeError = $"La cédula '{c.Cedula}' ya está registrada para otro colaborador. Por favor verifique.";
+                    mensajeCampo = $"La cédula '{c.Cedula}' ya está registrada para otro colaborador.";
+                    ModelState.AddModelError("Cedula", mensajeCampo);
+                }
+                else
+                {
+                    mensajeError = $"Error: {ex.Message}";
+                }
+
                 CargarDropdowns();
-                TempData["Error"] = "Error al registrar el colaborador: " + ex.Message;
+                ViewBag.Errores = ModelState
+                    .Where(x => x.Value.Errors.Count > 0)
+                    .ToDictionary(x => x.Key, x => x.Value.Errors.Select(e => e.ErrorMessage).ToList());
+
+                TempData["Error"] = mensajeError;
                 return View(c);
             }
+        }
+
+        // ✅ NUEVA ACCIÓN: CREAR USUARIO DESDE COLABORADOR
+        [HttpGet]
+        public IActionResult CrearUsuarioDesdeColaborador(int idColaborador, string nombreColaborador, string correo)
+        {
+            // Cargar perfiles
+            ViewBag.Perfiles = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>
+            {
+                new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = "1", Text = "Administrador" },
+                new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = "2", Text = "RRHH" },
+                new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = "3", Text = "Colaborador" }
+            };
+
+            var usuario = new Usuario
+            {
+                IdColaborador = idColaborador,
+                Correo = correo
+            };
+
+            ViewBag.NombreColaborador = nombreColaborador;
+            ViewBag.IdColaborador = idColaborador;
+
+            return View(usuario);
+        }
+
+        // ✅ GUARDAR USUARIO DESDE COLABORADOR
+        [HttpPost]
+        public async Task<IActionResult> GuardarUsuarioDesdeColaborador(Usuario u)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Perfiles = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>
+                {
+                    new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = "1", Text = "Administrador" },
+                    new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = "2", Text = "RRHH" },
+                    new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = "3", Text = "Colaborador" }
+                };
+
+                TempData["Error"] = "Error: revise los datos ingresados.";
+                return View("CrearUsuarioDesdeColaborador", u);
+            }
+
+            try
+            {
+                await _usuarioService.InsertarAsync(u);
+                TempData["Success"] = "Usuario creado correctamente.";
+                return RedirectToAction("Index", "Colaboradores");
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Perfiles = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>
+                {
+                    new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = "1", Text = "Administrador" },
+                    new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = "2", Text = "RRHH" },
+                    new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = "3", Text = "Colaborador" }
+                };
+
+                TempData["Error"] = "Error al crear el usuario: " + ex.Message;
+                return View("CrearUsuarioDesdeColaborador", u);
+            }
+        }
+
+        // ✅ ACCIÓN PARA SALTAR LA CREACIÓN DE USUARIO (Solo colaborador)
+        [HttpPost]
+        public IActionResult SaltarCreacionUsuario()
+        {
+            TempData["Success"] = "Colaborador registrado correctamente. Podrá crear su usuario después.";
+            return RedirectToAction("Index");
         }
 
         public async Task<IActionResult> Details(int id)
@@ -202,10 +316,8 @@ namespace Proyecto1.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(Colaborador c)
         {
-            // ========== LIMPIAR VALIDACIONES AUTOMÁTICAS ==========
             ModelState.Clear();
 
-            // ========== VALIDAR CÉDULA ==========
             if (string.IsNullOrWhiteSpace(c.Cedula))
             {
                 ModelState.AddModelError("Cedula", "La cédula es requerida.");
@@ -224,7 +336,6 @@ namespace Proyecto1.Controllers
                 }
             }
 
-            // ========== VALIDAR NOMBRE ==========
             if (string.IsNullOrWhiteSpace(c.Nombre))
             {
                 ModelState.AddModelError("Nombre", "El nombre es requerido.");
@@ -234,7 +345,6 @@ namespace Proyecto1.Controllers
                 ModelState.AddModelError("Nombre", "El nombre debe tener al menos 3 caracteres.");
             }
 
-            // ========== VALIDAR APELLIDOS ==========
             if (string.IsNullOrWhiteSpace(c.Apellidos))
             {
                 ModelState.AddModelError("Apellidos", "Los apellidos son requeridos.");
@@ -244,7 +354,6 @@ namespace Proyecto1.Controllers
                 ModelState.AddModelError("Apellidos", "Los apellidos deben tener al menos 3 caracteres.");
             }
 
-            // ========== VALIDAR CORREO ==========
             if (!string.IsNullOrWhiteSpace(c.Correo))
             {
                 if (!Regex.IsMatch(c.Correo, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
@@ -253,7 +362,6 @@ namespace Proyecto1.Controllers
                 }
             }
 
-            // ========== VALIDAR PUESTO ==========
             if (string.IsNullOrWhiteSpace(c.Puesto))
             {
                 ModelState.AddModelError("Puesto", "El puesto es requerido.");
@@ -263,7 +371,6 @@ namespace Proyecto1.Controllers
                 ModelState.AddModelError("Puesto", "Debe seleccionar un puesto válido.");
             }
 
-            // ========== VALIDAR DEPARTAMENTO ==========
             if (string.IsNullOrWhiteSpace(c.Departamento))
             {
                 ModelState.AddModelError("Departamento", "El departamento es requerido.");
@@ -273,7 +380,6 @@ namespace Proyecto1.Controllers
                 ModelState.AddModelError("Departamento", "Debe seleccionar un departamento válido.");
             }
 
-            // ========== VALIDAR FECHA DE INGRESO ==========
             if (c.FechaIngreso == default)
             {
                 ModelState.AddModelError("FechaIngreso", "La fecha de ingreso es requerida.");
@@ -283,13 +389,11 @@ namespace Proyecto1.Controllers
                 ModelState.AddModelError("FechaIngreso", "La fecha de ingreso no puede ser futura.");
             }
 
-            // ========== VALIDAR SALARIO BASE ==========
             if (c.SalarioBase <= 0)
             {
                 ModelState.AddModelError("SalarioBase", "El salario base debe ser mayor a cero.");
             }
 
-            // ========== SI HAY ERRORES ==========
             if (!ModelState.IsValid)
             {
                 CargarDropdowns();
@@ -301,7 +405,6 @@ namespace Proyecto1.Controllers
                 return View(c);
             }
 
-            // ========== ACTUALIZAR ==========
             try
             {
                 await _service.Actualizar(c);
@@ -310,8 +413,32 @@ namespace Proyecto1.Controllers
             }
             catch (Exception ex)
             {
+                // ✅ MEJORAR MENSAJE DE ERROR DE CÉDULA DUPLICADA
+                string mensajeError = "Error al actualizar el colaborador.";
+                string mensajeCampo = "";
+
+                // Verificar si es error de cédula duplicada
+                string mensajeCompleto = ex.ToString().ToUpper();
+
+                if (mensajeCompleto.Contains("UNIQUE") || mensajeCompleto.Contains("DUPLICADA") ||
+                    ex.InnerException?.Message.Contains("UNIQUE") == true ||
+                    ex.InnerException?.ToString().Contains("UNIQUE") == true)
+                {
+                    mensajeError = $"La cédula '{c.Cedula}' ya está registrada para otro colaborador. Por favor verifique.";
+                    mensajeCampo = $"La cédula '{c.Cedula}' ya está registrada para otro colaborador.";
+                    ModelState.AddModelError("Cedula", mensajeCampo);
+                }
+                else
+                {
+                    mensajeError = $"Error: {ex.Message}";
+                }
+
                 CargarDropdowns();
-                TempData["Error"] = "Error al actualizar el colaborador: " + ex.Message;
+                ViewBag.Errores = ModelState
+                    .Where(x => x.Value.Errors.Count > 0)
+                    .ToDictionary(x => x.Key, x => x.Value.Errors.Select(e => e.ErrorMessage).ToList());
+
+                TempData["Error"] = mensajeError;
                 return View(c);
             }
         }
@@ -334,8 +461,22 @@ namespace Proyecto1.Controllers
         {
             try
             {
+                // ✅ Obtener el colaborador antes de eliminarlo
+                var colaborador = await _service.ObtenerPorId(IdColaborador);
+
+                if (colaborador == null)
+                {
+                    TempData["Error"] = "El colaborador no existe.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // ✅ Desactivar el colaborador
                 await _service.Eliminar(IdColaborador);
-                TempData["Success"] = "Colaborador desactivado correctamente.";
+
+                // ✅ NUEVO: Desactivar el usuario asociado
+                await _usuarioService.DesactivarPorColaboradorAsync(IdColaborador);
+
+                TempData["Success"] = "Colaborador y usuario desactivados correctamente.";
             }
             catch (Exception ex)
             {
@@ -344,8 +485,8 @@ namespace Proyecto1.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // LISTADO + BUSCADOR
-        public async Task<IActionResult> Index(int? buscar, int? estado)
+        // ========== INDEX - LISTADO + BUSCADOR ==========
+        public async Task<IActionResult> Index(int? buscar, int? estado, bool showModal = false, int? idCol = null, string nomCol = null, string corrCol = null)
         {
             var lista = await _service.ObtenerColaboradores();
 
@@ -371,10 +512,18 @@ namespace Proyecto1.Controllers
             ViewBag.Activos = lista.Count(c => c.Estado);
             ViewBag.Inactivos = lista.Count(c => !c.Estado);
 
+            // ✅ PASAR DATOS AL VIEWBAG PARA MOSTRAR MODAL
+            if (showModal && idCol.HasValue && !string.IsNullOrEmpty(nomCol) && !string.IsNullOrEmpty(corrCol))
+            {
+                ViewBag.ShowModal = true;
+                ViewBag.IdColaborador = idCol;
+                ViewBag.NombreColaborador = nomCol;
+                ViewBag.CorreoColaborador = corrCol;
+            }
+
             return View(lista);
         }
 
-        // ENDPOINT AJAX PARA BUSCAR
         [HttpGet]
         public async Task<IActionResult> BuscarColaborador(int id)
         {
@@ -390,7 +539,5 @@ namespace Proyecto1.Controllers
                 puesto = c.Puesto
             });
         }
-
-
     }
 }
