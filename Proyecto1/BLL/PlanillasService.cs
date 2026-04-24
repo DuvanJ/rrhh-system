@@ -33,6 +33,19 @@ namespace Proyecto1.BLL
             );
         }
 
+
+        // ================= CAMBIAR ESTADO PLANILLA =================
+        public async Task CambiarEstadoAsync(int idPlanilla, int estado)
+        {
+            await _context.Database.ExecuteSqlRawAsync(
+                "EXEC sp_Planilla_CambiarEstado @IdPlanilla, @Estado",
+                new SqlParameter("@IdPlanilla", idPlanilla),
+                new SqlParameter("@Estado", estado)
+            );
+        }
+
+
+
         // ================= LISTAR PLANILLAS =================
         public async Task<List<Planilla>> ListarAsync()
         {

@@ -86,13 +86,22 @@
                     <div class="mb-4">
                         <div class="detail-field">
                             <span class="detail-label">
-                                <i class="bi bi-calendar-range"></i>Días solicitados
+                                <i class="bi bi-calendar-range"></i>Resumen de días
                             </span>
-                            <span id="diasCalculados"
-                                  style="font-size:1.1rem;font-weight:700;
-                                         color:var(--blue);font-family:'Consolas',monospace;">
-                                —
-                            </span>
+                            <div style="display: grid; gap: 8px; margin-top: 4px;">
+                                <div style="font-size: 0.9rem; display: flex; justify-content: space-between;">
+                                    <span style="color: var(--text-2);">Días totales:</span>
+                                    <span id="diasTotales" style="font-weight: 600; color: var(--blue);">—</span>
+                                </div>
+                                <div style="font-size: 0.9rem; display: flex; justify-content: space-between;">
+                                    <span style="color: var(--text-2);">Días libres semanales:</span>
+                                    <span id="diasLibres" style="font-weight: 600; color: var(--amber);">—</span>
+                                </div>
+                                <div style="border-top: 1px solid var(--border); padding-top: 8px; font-size: 0.95rem; display: flex; justify-content: space-between; font-weight: 700;">
+                                    <span style="color: var(--text);">Días de vacaciones:</span>
+                                    <span id="diasCalculados" style="color: var(--green); font-size: 1.1rem;">—</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -178,15 +187,38 @@
 
         var inputInicio = document.getElementById('inputFechaInicio');
         var inputFin    = document.getElementById('inputFechaFin');
+        var diasTotales = document.getElementById('diasTotales');
+        var diasLibres  = document.getElementById('diasLibres');
         var diasSpan    = document.getElementById('diasCalculados');
         var msgFechas   = document.getElementById('msgFechas');
         var disponibles = @diasDisponibles;
+
+        // ✅ Función para contar días libres semanales entre dos fechas
+        function contarDiasLibresSemanales(inicio, fin) {
+            var diasLibresSemanales = 0;
+            var fecha = new Date(inicio);
+            fecha.setHours(0, 0, 0, 0);
+
+            var fechaFin = new Date(fin);
+            fechaFin.setHours(0, 0, 0, 0);
+
+            while (fecha <= fechaFin) {
+                if (fecha.getDay() === 0) { // 0 = domingo
+                    diasLibresSemanales++;
+                }
+                fecha.setDate(fecha.getDate() + 1);
+            }
+
+            return diasLibresSemanales;
+        }
 
         function calcularDias() {
             var inicio = inputInicio.value;
             var fin    = inputFin.value;
 
             if (!inicio || !fin) {
+                diasTotales.textContent = '—';
+                diasLibres.textContent  = '—';
                 diasSpan.textContent    = '—';
                 diasSpan.style.color    = 'var(--blue)';
                 msgFechas.style.display = 'none';
@@ -198,25 +230,35 @@
             var diff = Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
 
             if (diff <= 0) {
+                diasTotales.textContent    = '—';
+                diasLibres.textContent     = '—';
                 diasSpan.textContent       = '—';
                 msgFechas.style.display    = 'block';
                 msgFechas.style.color      = 'var(--red)';
                 msgFechas.textContent      = 'La fecha fin debe ser posterior a la fecha inicio';
                 inputFin.style.borderColor = 'var(--red)';
-            } else if (diff > disponibles) {
-                diasSpan.textContent       = diff + ' día(s)';
-                diasSpan.style.color       = 'var(--red)';
-                msgFechas.style.display    = 'block';
-                msgFechas.style.color      = 'var(--red)';
-                msgFechas.textContent      = 'Supera los ' + disponibles + ' días disponibles';
-                inputFin.style.borderColor = 'var(--red)';
             } else {
-                diasSpan.textContent       = diff + ' día(s)';
-                diasSpan.style.color       = 'var(--green)';
-                msgFechas.style.display    = 'block';
-                msgFechas.style.color      = 'var(--green)';
-                msgFechas.textContent      = diff + ' día(s) solicitados de ' + disponibles + ' disponibles';
-                inputFin.style.borderColor = 'var(--green)';
+                // ✅ Calcular días libres semanales
+                var diasLibresSemanales = contarDiasLibresSemanales(d1, d2);
+                var diasVacaciones = diff - diasLibresSemanales;
+
+                diasTotales.textContent = diff + ' día(s)';
+                diasLibres.textContent  = diasLibresSemanales + ' día(s)';
+                diasSpan.textContent    = diasVacaciones + ' día(s)';
+
+                if (diasVacaciones > disponibles) {
+                    diasSpan.style.color       = 'var(--red)';
+                    msgFechas.style.display    = 'block';
+                    msgFechas.style.color      = 'var(--red)';
+                    msgFechas.textContent      = 'Supera los ' + disponibles + ' días disponibles';
+                    inputFin.style.borderColor = 'var(--red)';
+                } else {
+                    diasSpan.style.color       = 'var(--green)';
+                    msgFechas.style.display    = 'block';
+                    msgFechas.style.color      = 'var(--green)';
+                    msgFechas.textContent      = diasVacaciones + ' día(s) de vacaciones de ' + disponibles + ' disponibles';
+                    inputFin.style.borderColor = 'var(--green)';
+                }
             }
         }
 
@@ -241,13 +283,17 @@
                 return;
             }
 
-            if (diff > disponibles) {
-                Alert.error('Los días solicitados (' + diff + ') superan los días disponibles (' + disponibles + ').');
+            // ✅ Calcular días libres semanales para validación
+            var diasLibresSemanales = contarDiasLibresSemanales(d1, d2);
+            var diasVacaciones = diff - diasLibresSemanales;
+
+            if (diasVacaciones > disponibles) {
+                Alert.error('Los días de vacaciones solicitados (' + diasVacaciones + ') superan los días disponibles (' + disponibles + ').');
                 return;
             }
 
             Alert.confirm(
-                'Se enviará la solicitud de ' + diff + ' día(s) de vacaciones. ¿Desea continuar?',
+                'Se enviará la solicitud de ' + diasVacaciones + ' día(s) de vacaciones (total ' + diff + ' días, descontando ' + diasLibresSemanales + ' día(s) libre(s) semanal(es)). ¿Desea continuar?',
                 function () {
                     document.getElementById('formVacaciones').submit();
                 },

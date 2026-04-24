@@ -79,10 +79,22 @@ namespace Proyecto1.Controllers
             int diasDisponibles =
                 await _service.CalcularDiasDisponiblesAsync(idColaborador.Value);
 
-            int diasSolicitados =
-                (int)(model.FechaFin - model.FechaInicio).TotalDays + 1;
+            // ✅ CALCULAR DÍAS DE VACACIONES DESCONTANDO DÍAS LIBRES
+            int diasSolicitados = (int)(model.FechaFin - model.FechaInicio).TotalDays + 1;
+            int diasLibres = 0;
 
-            // 🔴 VALIDACIÓN 1: fechas inválidas (negativo)
+            // Contar domingos (días libres semanales) en el rango
+            for (DateTime fecha = model.FechaInicio; fecha <= model.FechaFin; fecha = fecha.AddDays(1))
+            {
+                if (fecha.DayOfWeek == DayOfWeek.Sunday)
+                {
+                    diasLibres++;
+                }
+            }
+
+            int diasVacacionesReales = diasSolicitados - diasLibres;
+
+            // 🔴 VALIDACIÓN 1: fechas inválidas
             if (diasSolicitados < 1)
             {
                 ModelState.AddModelError(
@@ -94,12 +106,12 @@ namespace Proyecto1.Controllers
                 return View(model);
             }
 
-            // 🔴 VALIDACIÓN 2: no exceder días disponibles
-            if (diasSolicitados > diasDisponibles)
+            // 🔴 VALIDACIÓN 2: no exceder días disponibles (DESCONTANDO DÍAS LIBRES)
+            if (diasVacacionesReales > diasDisponibles)
             {
                 ModelState.AddModelError(
                     "",
-                    $"No tiene suficientes días disponibles. Días disponibles: {diasDisponibles}"
+                    $"No tiene suficientes días disponibles. Solicitó {diasVacacionesReales} días de vacaciones (descontando {diasLibres} día(s) libre(s)). Días disponibles: {diasDisponibles}"
                 );
 
                 ViewBag.DiasDisponibles = diasDisponibles;
@@ -109,7 +121,7 @@ namespace Proyecto1.Controllers
             model.IdColaborador = idColaborador.Value;
             model.FechaSolicitud = DateTime.Now;
             model.Estado = "Pendiente";
-            model.DiasSolicitados = diasSolicitados;
+            model.DiasSolicitados = diasVacacionesReales; // 👈 Guardar días REALES de vacaciones
             model.DiasDisponibles = diasDisponibles;
 
             await _service.RegistrarAsync(model);

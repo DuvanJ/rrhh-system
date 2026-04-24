@@ -6,6 +6,7 @@
 
     var lista = Model.ToList();
     var generadas = lista.Count(p => p.Estado == 1);
+    var aprobadas = lista.Count(p => p.Estado == 4);
     var anuladas = lista.Count(p => p.Estado == 2);
     var regeneradas = lista.Count(p => p.Estado == 3);
 }
@@ -40,7 +41,19 @@
         <div class="kpi-card">
             <div>
                 <div class="kpi-label">Generadas</div>
-                <div class="kpi-value" style="color:var(--green)">@generadas</div>
+                <div class="kpi-value" style="color:var(--amber)">@generadas</div>
+            </div>
+            <div class="kpi-icon amber">
+                <i class="bi bi-clock-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">Aprobadas</div>
+                <div class="kpi-value" style="color:var(--green)">@aprobadas</div>
             </div>
             <div class="kpi-icon green">
                 <i class="bi bi-check-circle-fill"></i>
@@ -56,18 +69,6 @@
             </div>
             <div class="kpi-icon red">
                 <i class="bi bi-x-circle-fill"></i>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="kpi-card">
-            <div>
-                <div class="kpi-label">Regeneradas</div>
-                <div class="kpi-value" style="color:var(--amber)">@regeneradas</div>
-            </div>
-            <div class="kpi-icon amber">
-                <i class="bi bi-arrow-repeat"></i>
             </div>
         </div>
     </div>
@@ -138,8 +139,6 @@
     </div>
 </div>
 
-
-
 @* ================================================
    TABLA
    ================================================ *@
@@ -184,9 +183,10 @@
                         {
                             string estadoBadge = p.Estado switch
                             {
-                                1 => "bg-success",
+                                1 => "bg-warning",
                                 2 => "bg-danger",
-                                3 => "bg-warning",
+                                3 => "bg-info",
+                                4 => "bg-success",
                                 _ => "bg-secondary"
                             };
 
@@ -195,6 +195,7 @@
                                 1 => "Generada",
                                 2 => "Anulada",
                                 3 => "Regenerada",
+                                4 => "Aprobada",
                                 _ => "Desconocido"
                             };
 
@@ -229,8 +230,20 @@
                                             <i class="bi bi-file-earmark-pdf"></i>PDF
                                         </a>
 
-                                        @if (p.Estado == 1)
+                                        @if (p.Estado == 1) // Generada
                                         {
+                                            <form asp-action="Aprobar"
+                                                  method="post"
+                                                  id="formAprobar_@p.IdPlanilla"
+                                                  class="d-inline">
+                                                <input type="hidden" name="idPlanilla" value="@p.IdPlanilla" />
+                                                <button type="button"
+                                                        class="btn btn-success btn-sm"
+                                                        onclick="confirmarAprobar(@p.IdPlanilla, '@cultura.DateTimeFormat.GetMonthName(p.Mes) @p.Año')">
+                                                    <i class="bi bi-check-circle"></i>Aprobar
+                                                </button>
+                                            </form>
+
                                             <form asp-action="Anular"
                                                   method="post"
                                                   id="formAnular_@p.IdPlanilla"
@@ -246,10 +259,24 @@
                                             </form>
                                         }
 
-                                        @if (p.Estado == 2)
+                                        @if (p.Estado == 4) // Aprobada
                                         {
-                                            <span class="badge bg-secondary">
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle"></i>Aprobada
+                                            </span>
+                                        }
+
+                                        @if (p.Estado == 2) // Anulada
+                                        {
+                                            <span class="badge bg-danger">
                                                 <i class="bi bi-lock"></i>Anulada
+                                            </span>
+                                        }
+
+                                        @if (p.Estado == 3) // Regenerada
+                                        {
+                                            <span class="badge bg-info">
+                                                <i class="bi bi-arrow-repeat"></i>Regenerada
                                             </span>
                                         }
 
@@ -311,18 +338,6 @@
             }
         });
 
-        function filtrarPlanillas(estado) {
-            if (!tablaDataTable) return;
-
-            // Actualizar botones activos
-            document.querySelectorAll('.btn-group .btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.closest('.btn').classList.add('active');
-
-            
-        }
-
         function confirmarGenerar() {
             var mes      = document.getElementById('selectMes');
             var anio     = document.getElementById('inputAnio').value;
@@ -341,6 +356,14 @@
             Alert.confirm(
                 'Se generará la planilla del mes de ' + mesTexto + ' ' + anio + '. ¿Desea continuar?',
                 function () { document.getElementById('formGenerar').submit(); },
+                'question'
+            );
+        }
+
+        function confirmarAprobar(id, periodo) {
+            Alert.confirm(
+                'Se aprobará la planilla de ' + periodo + '. ¿Desea continuar?',
+                function () { document.getElementById('formAprobar_' + id).submit(); },
                 'question'
             );
         }

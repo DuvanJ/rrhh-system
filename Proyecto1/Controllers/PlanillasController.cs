@@ -98,6 +98,25 @@ namespace Proyecto1.Controllers
         }
 
 
+
+        // ================= APROBAR =================
+        [HttpPost]
+        public async Task<IActionResult> Aprobar(int idPlanilla)
+        {
+            try
+            {
+                await _service.CambiarEstadoAsync(idPlanilla, 4); // 4 = Aprobada
+                TempData["Success"] = "Planilla aprobada correctamente.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error al aprobar la planilla: {ex.Message}";
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+
         public async Task<IActionResult> DetalleColaborador(int idPlanilla, int idColaborador)
         {
             var detalle = await _service.ObtenerDetalleColaboradorAsync(idPlanilla, idColaborador);
