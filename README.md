@@ -27,7 +27,13 @@ Sistema integral de gestión administrativa de recursos humanos desarrollado en 
 
 ## 📸 Screenshots
 
-> _Próximamente_
+| Login | Dashboard |
+|-------|-----------|
+| ![Login](screenshots/01-login.png) | ![Dashboard](screenshots/02-dashboard.png) |
+
+| Gestión de Planillas | Incapacidades |
+|----------------------|---------------|
+| ![Planillas](screenshots/03-planillas.png) | ![Incapacidades](screenshots/04-incapacidades.png) |
 
 ## 🚀 Correr Localmente
 
