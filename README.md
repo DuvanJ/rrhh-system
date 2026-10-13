@@ -40,6 +40,16 @@ SQL Server (Almacenamiento)
 | Reportes | QuestPDF |
 | Autenticación | Session-based + Stored Procedures (50+) |
 
+## 📸 Screenshots
+
+| Login | Dashboard |
+|-------|-----------|
+| ![Login](screenshots/01-login.png) | ![Dashboard](screenshots/02-dashboard.png) |
+
+| Gestión de Planillas | Incapacidades |
+|----------------------|---------------|
+| ![Planillas](screenshots/03-planillas.png) | ![Incapacidades](screenshots/04-incapacidades.png) |
+
 ## 🔒 Características de Seguridad
 
 ✅ Validaciones en múltiples niveles (BD + Aplicación)  
@@ -68,8 +78,8 @@ SQL Server (Almacenamiento)
 
 **1. Clonar el repositorio**
 ```bash
-git clone https://github.com/DuvanJ/Proyecto.git
-cd Proyecto1
+git clone https://github.com/DuvanJ/rrhh-system.git
+cd rrhh-system
 ```
 
 **2. Restaurar la base de datos**
